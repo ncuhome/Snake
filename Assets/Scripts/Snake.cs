@@ -1,4 +1,4 @@
-using System.Collections;
+using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,6 +9,9 @@ public class Snake : MonoBehaviour
   List<Transform> tail = new List<Transform>();
 
   bool ate = false;
+
+  int score=0;
+  string rawText="Score:";
 
   public GameObject menu;
   public GameObject tailPrefab;
@@ -44,6 +47,8 @@ public class Snake : MonoBehaviour
       ate = true;
 
       Destroy(other.gameObject);
+      score+=10;
+      GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text=rawText+score.ToString();
     }
     else
     {
