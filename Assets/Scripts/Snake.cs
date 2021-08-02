@@ -1,6 +1,7 @@
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Math;
 using UnityEngine;
 
 public class Snake : MonoBehaviour
@@ -8,10 +9,13 @@ public class Snake : MonoBehaviour
   Vector2 dir = Vector2.right;
   List<Transform> tail = new List<Transform>();
 
-  bool ate = false;
+  bool ate = false, isPause = false;
 
-  int score=0;
-  string rawText="Score:";
+  int score = 0;
+  float runningTime = 1;
+  string rawText = "Score:";
+
+  public double boostScale = 1.1f;
 
   public GameObject menu;
   public GameObject tailPrefab;
@@ -39,6 +43,11 @@ public class Snake : MonoBehaviour
       dir = -Vector2.right;
     else if (Input.GetKey(KeyCode.UpArrow) && (dir == Vector2.right || dir == -Vector2.right))
       dir = Vector2.up;
+    if (!isPause)
+    {
+      runningTime += Time.deltaTime;
+      Time.timeScale = (float)Pow(boostScale, Log(runningTime));
+    }
   }
   void OnTriggerEnter2D(Collider2D other)
   {
@@ -47,11 +56,12 @@ public class Snake : MonoBehaviour
       ate = true;
 
       Destroy(other.gameObject);
-      score+=10;
-      GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text=rawText+score.ToString();
+      score += 10;
+      GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text = rawText + score.ToString();
     }
     else
     {
+      isPause = true;
       Time.timeScale = 0;
       menu.SetActive(true);
     }
