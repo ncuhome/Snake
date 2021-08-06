@@ -367,8 +367,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -451.19, y: 227.17}
-  m_SizeDelta: {x: 198.615, y: 63.6644}
+  m_AnchoredPosition: {x: -400.5, y: 227.17}
+  m_SizeDelta: {x: 300, y: 63.6644}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &274670215
 MonoBehaviour:
@@ -1053,6 +1053,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e59ef0a335e93ee48918574ceb6b325d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  eatClip: {fileID: 8300000, guid: 9f601274636f08049a1e7837a263f831, type: 3}
   boostScale: 1.4
   menu: {fileID: 820648523}
   tailPrefab: {fileID: 2800614914970172069, guid: 9c15c67d8fc7d294aa36f13b36bcefd1, type: 3}

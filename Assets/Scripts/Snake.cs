@@ -15,6 +15,8 @@ public class Snake : MonoBehaviour
   float runningTime = 1;
   string rawText = "Score:";
 
+  public AudioClip eatClip;
+
   public double boostScale = 1.1f;
 
   public GameObject menu;
@@ -82,6 +84,7 @@ public class Snake : MonoBehaviour
 
     if (ate)
     {
+      AudioSource.PlayClipAtPoint(eatClip,new Vector3(0,0,-10));
       GameObject g = (GameObject)Instantiate(tailPrefab, v, Quaternion.identity);
 
       tail.Insert(0, g.transform);
