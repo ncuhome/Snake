@@ -51,12 +51,20 @@ public class Snake : MonoBehaviour
   }
   void OnTriggerEnter2D(Collider2D other)
   {
-    if (other.name.StartsWith("FoodPrefab"))
+    if (other.name.StartsWith("FoodPrefab") || other.name.StartsWith("RewardPrefab"))
     {
       ate = true;
 
       Destroy(other.gameObject);
-      score += 10;
+      if (other.name.StartsWith("RewardPrefab"))
+      {
+        score += 50;
+        Time.timeScale -= 0.5f;
+      }
+      else
+      {
+        score += 10;
+      }
       GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text = rawText + score.ToString();
     }
     else

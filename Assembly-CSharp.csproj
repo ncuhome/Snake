@@ -37,9 +37,9 @@
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\GlobalManager.cs" />
+     <Compile Include="Assets\Scripts\DetectSnake.cs" />
      <Compile Include="Assets\Scripts\Snake.cs" />
      <Compile Include="Assets\Scripts\SpawnFood.cs" />
-     <Compile Include="Assets\Scripts\DetectSnake.cs" />
     <Reference Include="UnityEngine">
         <HintPath>E:/unity/2021.1.15f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
