@@ -9,7 +9,7 @@ public class Snake : MonoBehaviour
   Vector2 dir = Vector2.right;
   List<Transform> tail = new List<Transform>();
 
-  bool ate = false, isPause = false;
+  bool ate = false, dead = false;
 
   int score = 0;
   float runningTime = 1;
@@ -45,7 +45,7 @@ public class Snake : MonoBehaviour
       dir = -Vector2.right;
     else if (Input.GetKey(KeyCode.UpArrow) && (dir == Vector2.right || dir == -Vector2.right))
       dir = Vector2.up;
-    if (!isPause)
+    if (!dead)
     {
       runningTime += Time.deltaTime;
       Time.timeScale = (float)Pow(boostScale, Log(runningTime));
@@ -69,22 +69,23 @@ public class Snake : MonoBehaviour
       }
       GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text = rawText + score.ToString();
     }
-    else
-    {
-      isPause = true;
-      Time.timeScale = 0;
-      menu.SetActive(true);
-    }
   }
   void Move()
   {
+    if (!isDead(dir))
+    {
+      dead = true;
+      Time.timeScale = 0;
+      menu.SetActive(true);
+      return;
+    }
     Vector2 v = transform.position;
 
     transform.Translate(dir);
 
     if (ate)
     {
-      AudioSource.PlayClipAtPoint(eatClip,new Vector3(0,0,-10));
+      AudioSource.PlayClipAtPoint(eatClip, new Vector3(0, 0, -10));
       GameObject g = (GameObject)Instantiate(tailPrefab, v, Quaternion.identity);
 
       tail.Insert(0, g.transform);
@@ -98,5 +99,15 @@ public class Snake : MonoBehaviour
       tail.Insert(0, tail.Last());
       tail.RemoveAt(tail.Count - 1);
     }
+  }
+
+  private bool isDead(Vector2 dir)
+  {
+    Vector2 pos = transform.position;
+    //从pos+dir向pos发射一条射线
+    RaycastHit2D hit = Physics2D.Linecast(pos + dir, pos);
+    if (hit.collider.transform.name.StartsWith("TailPrefab")) return false;
+    if (hit.collider.transform.parent == null) return true;
+    return !(hit.collider.transform.parent.name == "Wall");
   }
 }
