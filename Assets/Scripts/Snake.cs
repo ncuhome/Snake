@@ -106,7 +106,7 @@ public class Snake : MonoBehaviour
     Vector2 pos = transform.position;
     //从pos+dir向pos发射一条射线
     RaycastHit2D hit = Physics2D.Linecast(pos + dir, pos);
-    if (hit.collider.transform.name.StartsWith("TailPrefab")) return false;
+    if (hit.collider.name.StartsWith("TailPrefab") || hit.collider.name=="MonsterPrefab") return false;
     if (hit.collider.transform.parent == null) return true;
     return !(hit.collider.transform.parent.name == "Wall");
   }
