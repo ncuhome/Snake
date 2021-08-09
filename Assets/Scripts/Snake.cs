@@ -9,22 +9,19 @@ public class Snake : MonoBehaviour
   Vector2 dir = Vector2.right;
   List<Transform> tail = new List<Transform>();
 
-  bool ate = false, dead = false;
+  private bool ate = false, dead = false;
 
-  int score = 0;
-  float runningTime = 1;
-  string rawText = "Score:";
+  private int score = 0;
+  private float runningTime = 1;
 
   public AudioClip eatClip;
 
   public double boostScale = 1.1f;
 
-  public GameObject menu;
   public GameObject tailPrefab;
   // Start is called before the first frame update
   void Start()
   {
-    menu.SetActive(false);
     for (int i = 1; i < 5; i++)
     {
       GameObject g = (GameObject)Instantiate(tailPrefab, new Vector2(this.transform.position.x - i, this.transform.position.y), Quaternion.identity);
@@ -37,16 +34,16 @@ public class Snake : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
-    if (Input.GetKey(KeyCode.RightArrow) && (dir == Vector2.up || dir == -Vector2.up))
-      dir = Vector2.right;
-    else if (Input.GetKey(KeyCode.DownArrow) && (dir == Vector2.right || dir == -Vector2.right))
-      dir = -Vector2.up;
-    else if (Input.GetKey(KeyCode.LeftArrow) && (dir == Vector2.up || dir == -Vector2.up))
-      dir = -Vector2.right;
-    else if (Input.GetKey(KeyCode.UpArrow) && (dir == Vector2.right || dir == -Vector2.right))
-      dir = Vector2.up;
-    if (!dead)
+    if (!dead && !GlobalManager.Instance.getPaused())
     {
+      if (Input.GetKey(KeyCode.RightArrow) && (dir == Vector2.up || dir == -Vector2.up))
+        dir = Vector2.right;
+      else if (Input.GetKey(KeyCode.DownArrow) && (dir == Vector2.right || dir == -Vector2.right))
+        dir = -Vector2.up;
+      else if (Input.GetKey(KeyCode.LeftArrow) && (dir == Vector2.up || dir == -Vector2.up))
+        dir = -Vector2.right;
+      else if (Input.GetKey(KeyCode.UpArrow) && (dir == Vector2.right || dir == -Vector2.right))
+        dir = Vector2.up;
       runningTime += Time.deltaTime;
       Time.timeScale = (float)Pow(boostScale, Log(runningTime));
     }
@@ -61,22 +58,25 @@ public class Snake : MonoBehaviour
       if (other.name.StartsWith("RewardPrefab"))
       {
         score += 50;
-        Time.timeScale -= 0.5f;
+        Time.timeScale -= 0.9f;
       }
       else
       {
         score += 10;
       }
-      GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text = rawText + score.ToString();
+      GlobalManager.Instance.updateScore(score);
     }
   }
   void Move()
   {
-    if (!isDead(dir))
+    if (dead)
+    {
+      return;
+    }
+    if (isDead(dir) && !dead)
     {
       dead = true;
-      Time.timeScale = 0;
-      menu.SetActive(true);
+      GlobalManager.Instance.dead();
       return;
     }
     Vector2 v = transform.position;
@@ -106,8 +106,8 @@ public class Snake : MonoBehaviour
     Vector2 pos = transform.position;
     //从pos+dir向pos发射一条射线
     RaycastHit2D hit = Physics2D.Linecast(pos + dir, pos);
-    if (hit.collider.name.StartsWith("TailPrefab") || hit.collider.name=="MonsterPrefab") return false;
-    if (hit.collider.transform.parent == null) return true;
-    return !(hit.collider.transform.parent.name == "Wall");
+    if (hit.collider.name.StartsWith("TailPrefab") || hit.collider.name == "MonsterPrefab") return true;
+    if (hit.collider.transform.parent == null) return false;
+    return hit.collider.transform.parent.name == "Wall";
   }
 }
