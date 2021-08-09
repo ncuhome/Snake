@@ -45,7 +45,7 @@ public class SpawnFood : MonoBehaviour
     int x = (int)Random.Range(borderLeft.position.x, borderRight.position.x);
 
     int y = (int)Random.Range(borderBottom.position.y, borderTop.position.y);
-
+    
     RaycastHit2D hit = Physics2D.BoxCast(new Vector2(x, y), new Vector2(1, 1), 0, new Vector2(1, 0));
 
     while (hit.collider.name.StartsWith("FoodPrefab") || hit.collider.name.StartsWith("RewardPrefab"))
