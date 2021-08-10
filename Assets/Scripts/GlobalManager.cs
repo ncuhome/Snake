@@ -8,6 +8,8 @@ public class GlobalManager : MonoBehaviour
   public GameObject pauseMenu;
   public GameObject loseMenu;
   public GameObject gui;
+
+  public GameObject monsterPrefab;
   private static GlobalManager _instance;
   public static GlobalManager Instance
   {
@@ -37,6 +39,11 @@ public class GlobalManager : MonoBehaviour
   {
     pauseMenu.SetActive(false);
     loseMenu.SetActive(false);
+    InvokeRepeating("instantiateMonster",1.0f,90.0f);
+  }
+
+  void instantiateMonster(){
+    Instantiate(monsterPrefab,new Vector2(-38,20),Quaternion.identity);
   }
 
   public void dead()

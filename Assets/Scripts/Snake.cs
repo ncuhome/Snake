@@ -9,7 +9,7 @@ public class Snake : MonoBehaviour
   Vector2 dir = Vector2.right;
   List<Transform> tail = new List<Transform>();
 
-  private bool ate = false, dead = false;
+  private bool ate = false, dead = false, moved = false;
 
   private int score = 0;
   private float runningTime = 1;
@@ -36,14 +36,19 @@ public class Snake : MonoBehaviour
   {
     if (!dead && !GlobalManager.Instance.getPaused())
     {
-      if (Input.GetKey(KeyCode.RightArrow) && (dir == Vector2.up || dir == -Vector2.up))
-        dir = Vector2.right;
-      else if (Input.GetKey(KeyCode.DownArrow) && (dir == Vector2.right || dir == -Vector2.right))
-        dir = -Vector2.up;
-      else if (Input.GetKey(KeyCode.LeftArrow) && (dir == Vector2.up || dir == -Vector2.up))
-        dir = -Vector2.right;
-      else if (Input.GetKey(KeyCode.UpArrow) && (dir == Vector2.right || dir == -Vector2.right))
-        dir = Vector2.up;
+      //一次输入后，在移动之前，使输入无效化，防止出现同时按下两个键，在移动判断之前导致dir变换两个方向，导致自己撞自己的bug产生而死亡
+      if (!moved)
+      {
+        if (Input.GetKey(KeyCode.RightArrow) && (dir == Vector2.up || dir == -Vector2.up))
+          dir = Vector2.right;
+        else if (Input.GetKey(KeyCode.DownArrow) && (dir == Vector2.right || dir == -Vector2.right))
+          dir = -Vector2.up;
+        else if (Input.GetKey(KeyCode.LeftArrow) && (dir == Vector2.up || dir == -Vector2.up))
+          dir = -Vector2.right;
+        else if (Input.GetKey(KeyCode.UpArrow) && (dir == Vector2.right || dir == -Vector2.right))
+          dir = Vector2.up;
+        moved = true;
+      }
       runningTime += Time.deltaTime;
       Time.timeScale = (float)Pow(boostScale, Log(runningTime));
     }
@@ -99,6 +104,7 @@ public class Snake : MonoBehaviour
       tail.Insert(0, tail.Last());
       tail.RemoveAt(tail.Count - 1);
     }
+    moved = false;
   }
 
   private bool isDead(Vector2 dir)
@@ -106,7 +112,7 @@ public class Snake : MonoBehaviour
     Vector2 pos = transform.position;
     //从pos+dir向pos发射一条射线
     RaycastHit2D hit = Physics2D.Linecast(pos + dir, pos);
-    if (hit.collider.name.StartsWith("TailPrefab") || hit.collider.name == "MonsterPrefab") return true;
+    if (hit.collider.name.StartsWith("TailPrefab") || hit.collider.name.StartsWith("MonsterPrefab")) return true;
     if (hit.collider.transform.parent == null) return false;
     return hit.collider.transform.parent.name == "Wall";
   }
