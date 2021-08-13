@@ -20,6 +20,20 @@ public class Snake : MonoBehaviour
 
   public GameObject tailPrefab;
   // Start is called before the first frame update
+  private static Snake instance;
+
+  private Coroutine monsterCanBeEatenCoroutine;
+  public static Snake Instance
+  {
+    get { return instance; }
+  }
+  void Awake()
+  {
+    if (instance == null)
+    {
+      instance = this;
+    }
+  }
   void Start()
   {
     for (int i = 1; i < 5; i++)
@@ -55,15 +69,27 @@ public class Snake : MonoBehaviour
   }
   void OnTriggerEnter2D(Collider2D other)
   {
-    if (other.name.StartsWith("FoodPrefab") || other.name.StartsWith("RewardPrefab"))
+    if (other.name.StartsWith("FoodPrefab") || other.name.StartsWith("RewardPrefab") || (other.name.StartsWith("MonsterPrefab") && other.GetComponent<EnemyMove>().canBeEaten))
     {
       ate = true;
 
       Destroy(other.gameObject);
       if (other.name.StartsWith("RewardPrefab"))
       {
-        score += 50;
-        Time.timeScale -= 0.9f;
+        if (monsterCanBeEatenCoroutine != null) StopCoroutine(monsterCanBeEatenCoroutine);
+        monsterCanBeEatenCoroutine = StartCoroutine(GlobalManager.Instance.monsterEnterCanBeEatenStatus());
+        score += 200;
+        Time.timeScale -= 1.2f;
+      }
+      else if (other.name.StartsWith("MonsterPrefab"))
+      {
+        var coroutines = GlobalManager.Instance.getCoroutines();
+        if (coroutines.ContainsKey(other.gameObject))
+        {
+          GlobalManager.Instance.StopCoroutine(coroutines[other.gameObject]);
+          coroutines.Remove(other.gameObject);
+        }
+        score += 300;
       }
       else
       {
@@ -81,7 +107,7 @@ public class Snake : MonoBehaviour
     if (isDead(dir) && !dead)
     {
       dead = true;
-      GlobalManager.Instance.dead();
+      GlobalManager.Instance.dead(score);
       return;
     }
     Vector2 v = transform.position;
@@ -112,7 +138,7 @@ public class Snake : MonoBehaviour
     Vector2 pos = transform.position;
     //从pos+dir向pos发射一条射线
     RaycastHit2D hit = Physics2D.Linecast(pos + dir, pos);
-    if (hit.collider.name.StartsWith("TailPrefab") || hit.collider.name.StartsWith("MonsterPrefab")) return true;
+    if (hit.collider.name.StartsWith("TailPrefab") || (hit.collider.name.StartsWith("MonsterPrefab") && !hit.collider.GetComponent<EnemyMove>().canBeEaten)) return true;
     if (hit.collider.transform.parent == null) return false;
     return hit.collider.transform.parent.name == "Wall";
   }

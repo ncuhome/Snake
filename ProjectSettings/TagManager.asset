@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Score
   - wall
+  - monster
+  - selected
   layers:
   - Default
   - TransparentFX

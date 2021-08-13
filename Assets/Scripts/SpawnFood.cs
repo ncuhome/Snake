@@ -20,7 +20,7 @@ public class SpawnFood : MonoBehaviour
   public Transform borderLeft;
   public Transform borderRight;
 
-  public float rewardProb = 0.1f;
+  public float rewardProb = 0.01f;
 
   void Awake()
   {

@@ -8,6 +8,8 @@ public class EnemyMove : MonoBehaviour
   private List<Vector3> wayPoints = new List<Vector3>();
   public float speed = 0.15f;
 
+  public bool canBeEaten = false;
+
   private int index = 0;
 
   private Vector3 startPos;
@@ -35,7 +37,6 @@ public class EnemyMove : MonoBehaviour
         loadAPath(wayPointsGo[Random.Range(0, wayPointsGo.Length)]);
       }
     }
-
   }
   private void loadAPath(GameObject obj)
   {
