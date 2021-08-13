@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: a28b71c747f434941b57232bc5e56161
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Microsoft YaHei
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 70d19e9c7e06192479d4189aa3ab0b31, type: 3}
+  - {fileID: 12800000, guid: c1a3766db0c90a84385613226ab3734b, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

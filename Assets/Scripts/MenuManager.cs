@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.Text;
 using Newtonsoft.Json;
+using UnityEngine.SceneManagement;
 
 public class RegisterInfo
 {
@@ -38,12 +39,22 @@ public class LoginInfo
 {
   public string username { get; set; }
   public string password { get; set; }
+  public LoginInfo()
+  {
+    username = "guest";
+    password = "12345678";
+  }
+  public LoginInfo(string username, string password)
+  {
+    this.username = username;
+    this.password = password;
+  }
 }
 public class MenuManager : MonoBehaviour
 {
   private static MenuManager instance;
   public static MenuManager Instance { get { return instance; } }
-  private string rootUrl = "https://snake-api.nspyf.top";
+  private readonly string rootUrl = "https://snake-api.nspyf.top";
   // private string rootUrl = "http://localhost:8000/api/test";
   private LoginResponse loginResponse;
 
@@ -76,6 +87,15 @@ public class MenuManager : MonoBehaviour
   }
   public void onClickOpenLoginPanel()
   {
+    string username = PlayerPrefs.GetString("username");
+    string password = PlayerPrefs.GetString("password");
+    if (username != "" && password != "")
+    {
+      LoginInfo info = new LoginInfo(username, password);
+      string jsonString = JsonConvert.SerializeObject(info);
+      StartCoroutine(Post(rootUrl + "/login", jsonString, loginResponse));
+      return;
+    }
     loginPanel.SetActive(true);
   }
   public void onClickOpenRegisterPanel()
@@ -92,11 +112,15 @@ public class MenuManager : MonoBehaviour
     .GetComponent<TMP_InputField>().text;
     string retypePassword = registerPanel.transform.Find("RepeatPasswordInput")
     .GetComponent<TMP_InputField>().text;
+    if (username == "" || nickname == "" || password == "" || retypePassword == "")
+    {
+      showTip("用户名，密码，昵称，重复密码不得为空！");
+    }
 
     if (password != retypePassword)
     {
       registerPanel.SetActive(false);
-      showTip("The two passwords you entered were inconsistent.");
+      showTip("您输入的两次密码不一致！");
       return;
     }
     RegisterInfo info = new RegisterInfo();
@@ -113,38 +137,55 @@ public class MenuManager : MonoBehaviour
     .GetComponent<TMP_InputField>().text;
     string password = loginPanel.transform.Find("PasswordInput")
     .GetComponent<TMP_InputField>().text;
+    if (username == "" || password == "")
+    {
+      showTip("用户名和密码不能为空！");
+      return;
+    }
+    PlayerPrefs.SetString("username", username);
+    PlayerPrefs.SetString("password", password);
+    PlayerPrefs.Save();
     LoginInfo info = new LoginInfo();
     info.username = username;
     info.password = password;
     string jsonString = JsonConvert.SerializeObject(info, Formatting.Indented);
-    //删除不可见字符
     Debug.Log(jsonString);
     StartCoroutine(Post(rootUrl + "/login", jsonString, loginResponse));
+    loginPanel.SetActive(false);
   }
 
   private void showTip(string tip)
   {
+    StartCoroutine(closeTip());
     tipPanel.gameObject.SetActive(true);
     tipPanel.Find("tip").GetComponent<TextMeshProUGUI>().text = tip;
-    StartCoroutine(closeTip());
   }
 
   private void finishRequest<T>(T response)
   {
-    ClassHelper.ForeachClassProperties(response);
     switch (typeof(T).ToString())
     {
       case "RegisterResponse":
         {
           var res = response as RegisterResponse;
-          Debug.Log(res.message);
+          showTip(res.message);
           break;
         }
       case "LoginResponse":
         {
           var res = response as LoginResponse;
-          Debug.Log(res.data.token);
-          Debug.Log(res.data.user_info.nickname);
+          if (res.code != 0)
+          {
+            showTip(res.message);
+            PlayerPrefs.DeleteKey("username");
+            PlayerPrefs.DeleteKey("password");
+            PlayerPrefs.Save();
+            return;
+          }
+          showTip("登陆成功！");
+          PlayerPrefs.SetString("token", res.data.token);
+          PlayerPrefs.SetString("nickname", res.data.user_info.nickname);
+          SceneManager.LoadSceneAsync("MainScene");
           break;
         }
     }
