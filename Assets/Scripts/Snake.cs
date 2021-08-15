@@ -118,7 +118,7 @@ public class Snake : MonoBehaviour
       {
         if (monsterCanBeEatenCoroutine != null) StopCoroutine(monsterCanBeEatenCoroutine);
         monsterCanBeEatenCoroutine = StartCoroutine(GlobalManager.Instance.monsterEnterCanBeEatenStatus());
-        score += 200;
+        score += 50;
         Time.timeScale -= 1.2f;
       }
       else if (other.name.StartsWith("MonsterPrefab"))
@@ -129,7 +129,7 @@ public class Snake : MonoBehaviour
           GlobalManager.Instance.StopCoroutine(coroutines[other.gameObject]);
           coroutines.Remove(other.gameObject);
         }
-        score += 300;
+        score += 100;
       }
       else
       {

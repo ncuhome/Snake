@@ -82,10 +82,12 @@ public class MenuManager : MonoBehaviour
   }
   public void onClickLoginPanelCancel()
   {
+    GameObject.Find("Menu").GetComponent<CanvasGroup>().alpha = 1;
     loginPanel.SetActive(false);
   }
   public void onClickRegisterPanelCancel()
   {
+    GameObject.Find("Menu").GetComponent<CanvasGroup>().alpha = 1;
     registerPanel.SetActive(false);
   }
   public void onClickOpenLoginPanel()
@@ -100,10 +102,14 @@ public class MenuManager : MonoBehaviour
       StartCoroutine(Post(rootUrl + "/login", jsonString, response));
       return;
     }
+    GameObject.Find("Menu").GetComponent<CanvasGroup>().alpha = 0.4f;
+    registerPanel.SetActive(false);
     loginPanel.SetActive(true);
   }
   public void onClickOpenRegisterPanel()
   {
+    GameObject.Find("Menu").GetComponent<CanvasGroup>().alpha = 0.4f;
+    loginPanel.SetActive(false);
     registerPanel.SetActive(true);
   }
   public void onClickSubmitRegistrationInfo()
@@ -175,6 +181,8 @@ public class MenuManager : MonoBehaviour
         {
           var res = response as RegisterResponse;
           showTip(res.message);
+          registerPanel.SetActive(false);
+          loginPanel.SetActive(true);
           break;
         }
       case "LoginResponse":
