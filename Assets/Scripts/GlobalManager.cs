@@ -11,7 +11,8 @@ public class GlobalManager : MonoBehaviour
   public GameObject loseMenu;
   public GameObject gui;
 
-  private Dictionary<GameObject, Coroutine> coroutines=new Dictionary<GameObject, Coroutine>();
+  //用于储存所有的二级协程，便于调用
+  private Dictionary<GameObject, Coroutine> coroutines = new Dictionary<GameObject, Coroutine>();
 
   public float fadeSpeed = 0.1f;
   public GameObject monsterPrefab;
@@ -109,7 +110,12 @@ public class GlobalManager : MonoBehaviour
     monster.GetComponent<EnemyMove>().canBeEaten = false;
     monster.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.None;
   }
-  public void stopResume(Coroutine coroutine){
+
+  public void backToMenu() { 
+    SceneManager.LoadScene("MainMenu");
+  }
+  public void stopResume(Coroutine coroutine)
+  {
     StopCoroutine(coroutine);
   }
 

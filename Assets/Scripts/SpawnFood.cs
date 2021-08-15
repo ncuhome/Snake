@@ -56,7 +56,7 @@ public class SpawnFood : MonoBehaviour
       
       hit = Physics2D.BoxCast(new Vector2(x, y), new Vector2(1, 1), 0, new Vector2(1, 0));
     }
-    if (Random.Range(0.0f, 1.0f) < rewardProb)
+    if (Random.Range(0.000000f, 1.000000f) < rewardProb)
     {
       Instantiate(rewardPrefab, new Vector2(x, y), Quaternion.identity);
       return;

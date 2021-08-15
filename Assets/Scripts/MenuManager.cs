@@ -56,13 +56,16 @@ public class MenuManager : MonoBehaviour
   public static MenuManager Instance { get { return instance; } }
   private readonly string rootUrl = "https://snake-api.nspyf.top";
   // private string rootUrl = "http://localhost:8000/api/test";
-  private LoginResponse loginResponse;
+  // private LoginResponse loginResponse;
 
-  private RegisterResponse registerResponse;
+  // private RegisterResponse registerResponse;
   public GameObject loginPanel;
   public GameObject registerPanel;
 
   public Transform tipPanel;
+
+  private bool isTiming = false;
+  private float CountDown;
   void Awake()
   {
     if (instance == null)
@@ -93,7 +96,8 @@ public class MenuManager : MonoBehaviour
     {
       LoginInfo info = new LoginInfo(username, password);
       string jsonString = JsonConvert.SerializeObject(info);
-      StartCoroutine(Post(rootUrl + "/login", jsonString, loginResponse));
+      LoginResponse response = new LoginResponse();
+      StartCoroutine(Post(rootUrl + "/login", jsonString, response));
       return;
     }
     loginPanel.SetActive(true);
@@ -129,7 +133,8 @@ public class MenuManager : MonoBehaviour
     info.password = password;
     string jsonString = JsonConvert.SerializeObject(info, Formatting.Indented);
     Debug.Log(jsonString);
-    StartCoroutine(Post(rootUrl + "/register", jsonString, registerResponse));
+    RegisterResponse response = new RegisterResponse();
+    StartCoroutine(Post(rootUrl + "/register", jsonString, response));
   }
   public void onClickSubmitLoginInfo()
   {
@@ -150,7 +155,8 @@ public class MenuManager : MonoBehaviour
     info.password = password;
     string jsonString = JsonConvert.SerializeObject(info, Formatting.Indented);
     Debug.Log(jsonString);
-    StartCoroutine(Post(rootUrl + "/login", jsonString, loginResponse));
+    LoginResponse response = new LoginResponse();
+    StartCoroutine(Post(rootUrl + "/login", jsonString, response));
     loginPanel.SetActive(false);
   }
 
@@ -193,8 +199,15 @@ public class MenuManager : MonoBehaviour
 
   private IEnumerator closeTip()
   {
-    yield return new WaitForSecondsRealtime(3.0f);
+    yield return new WaitForSecondsRealtime(2.0f);
+    var canvasGroup = tipPanel.GetComponent<CanvasGroup>();
+    while (canvasGroup.alpha > 0)
+    {
+      canvasGroup.alpha -= 0.1f;
+      yield return new WaitForSecondsRealtime(0.05f);
+    }
     tipPanel.gameObject.SetActive(false);
+    canvasGroup.alpha = 1f;
   }
   IEnumerator Post<T>(string url, string bodyJsonString, T response)
   {
@@ -211,5 +224,38 @@ public class MenuManager : MonoBehaviour
     Debug.Log("Received: " + request.downloadHandler.text);
     response = JsonConvert.DeserializeObject<T>(request.downloadHandler.text);
     finishRequest(response);
+  }
+
+  void Update()
+  {
+    exitDetection();
+  }
+  void exitDetection()
+  {
+    if (Input.GetKeyUp(KeyCode.Escape))
+    {
+      if (CountDown == 0)
+      {
+        CountDown = Time.time;
+        isTiming = true;
+        showTip("再次后退将退出游戏!");
+      }
+      else
+      {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+      }
+    }
+    if (isTiming)
+    {
+      if (Time.time - CountDown > 2.0)
+      {
+        CountDown = 0;
+        isTiming = false;
+      }
+    }
   }
 }

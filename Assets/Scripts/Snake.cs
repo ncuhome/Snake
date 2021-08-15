@@ -12,17 +12,23 @@ public class Snake : MonoBehaviour
   private bool ate = false, dead = false, moved = false;
 
   private int score = 0;
-  private float runningTime = 1;
+
+  //运行时间，以1为起始,用于时间加速
+  private float runningTime = 1f;
 
   public AudioClip eatClip;
 
+  //时间加速单位
   public double boostScale = 1.1f;
 
   public GameObject tailPrefab;
   // Start is called before the first frame update
-  private static Snake instance;
 
+  //手机滑屏触发输入距离的平方
+  private float minDistance = 1.0f;
   private Coroutine monsterCanBeEatenCoroutine;
+
+  private static Snake instance;
   public static Snake Instance
   {
     get { return instance; }
@@ -36,6 +42,8 @@ public class Snake : MonoBehaviour
   }
   void Start()
   {
+    Input.simulateMouseWithTouches = true;
+    Input.multiTouchEnabled = true;
     for (int i = 1; i < 5; i++)
     {
       GameObject g = (GameObject)Instantiate(tailPrefab, new Vector2(this.transform.position.x - i, this.transform.position.y), Quaternion.identity);
@@ -53,6 +61,9 @@ public class Snake : MonoBehaviour
       //一次输入后，在移动之前，使输入无效化，防止出现同时按下两个键，在移动判断之前导致dir变换两个方向，导致自己撞自己的bug产生而死亡
       if (!moved)
       {
+
+        #region
+        //桌面端输入控制
         if (Input.GetKey(KeyCode.RightArrow) && (dir == Vector2.up || dir == -Vector2.up))
           dir = Vector2.right;
         else if (Input.GetKey(KeyCode.DownArrow) && (dir == Vector2.right || dir == -Vector2.right))
@@ -61,6 +72,36 @@ public class Snake : MonoBehaviour
           dir = -Vector2.right;
         else if (Input.GetKey(KeyCode.UpArrow) && (dir == Vector2.right || dir == -Vector2.right))
           dir = Vector2.up;
+        #endregion
+        #region
+        //手机端输入控制
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Moved)
+        {
+          Debug.Log(Vector2.SqrMagnitude(Input.GetTouch(0).deltaPosition));
+          if (Vector2.SqrMagnitude(Input.GetTouch(0).deltaPosition) > minDistance)
+          {
+            Vector2 deltaDir = Input.GetTouch(0).deltaPosition;
+            if (Mathf.Abs(deltaDir.x) > Mathf.Abs(deltaDir.y))
+            {
+              if (deltaDir.x > 0 && (dir == Vector2.up || dir == -Vector2.up))
+                dir = Vector2.right;
+              if (deltaDir.x < 0 && (dir == Vector2.up || dir == -Vector2.up))
+                dir = -Vector2.right;
+            }
+            if (Mathf.Abs(deltaDir.y) > Mathf.Abs(deltaDir.x))
+            {
+              if (deltaDir.y > 0 && (dir == Vector2.right || dir == -Vector2.right))
+              {
+                dir = Vector2.up;
+              }
+              if (deltaDir.y < 0 && (dir == Vector2.right || dir == -Vector2.right))
+              {
+                dir = -Vector2.up;
+              }
+            }
+          }
+        }
+        #endregion
         moved = true;
       }
       runningTime += Time.deltaTime;
@@ -73,7 +114,6 @@ public class Snake : MonoBehaviour
     {
       ate = true;
 
-      Destroy(other.gameObject);
       if (other.name.StartsWith("RewardPrefab"))
       {
         if (monsterCanBeEatenCoroutine != null) StopCoroutine(monsterCanBeEatenCoroutine);
@@ -95,6 +135,7 @@ public class Snake : MonoBehaviour
       {
         score += 10;
       }
+      Destroy(other.gameObject);
       GlobalManager.Instance.updateScore(score);
     }
   }
