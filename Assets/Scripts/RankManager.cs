@@ -31,6 +31,7 @@ public class RankManager : MonoBehaviour
 
   public Transform rankUI;
   public GameObject item;
+  public GameObject loseMenu;
   private static RankManager instance;
   public static RankManager Instance
   {
@@ -48,11 +49,17 @@ public class RankManager : MonoBehaviour
     }
   }
 
-  void finishRequest(RankResponse response)
+  void finishRequest(RankResponse response, int score)
   {
     int rank = 0;
     float posY = 117;
     Transform content = rankUI.Find("Scroll View/Viewport/Content");
+    int thisRank = getThisRank(response.data.ToArray(), score, 0, response.data.ToArray().Length);
+    if (thisRank == -1)
+      loseMenu.transform.Find("Rank/ScoreDisplay").GetComponent<TextMeshProUGUI>().text = "你的分数: " + score.ToString() + "  排名：" + thisRank.ToString() + "+";
+    else
+      loseMenu.transform.Find("Rank/ScoreDisplay").GetComponent<TextMeshProUGUI>().text = "你的分数: " + score.ToString() + "  排名：" + thisRank.ToString();
+    loseMenu.SetActive(true);
     foreach (var itemData in response.data)
     {
       GameObject obj = Instantiate(item, content);
@@ -66,8 +73,19 @@ public class RankManager : MonoBehaviour
       scoreComponent.text = itemData.game_record.score.ToString();
     }
   }
-  public IEnumerator getRank(RankResponse response)
+  int getThisRank(RankData[] data, int score, int min, int max)
   {
+    int mid = (min + max) / 2;
+    if (data[mid].game_record.score == score) return mid + 1;
+    if (mid + 1 >= data.Length) return -1;
+    if (data[mid].game_record.score > score && data[mid + 1].game_record.score < score) return mid + 2;
+    if (data[mid].game_record.score < score) return getThisRank(data, score, min, mid);
+    if (data[mid].game_record.score > score) return getThisRank(data, score, mid, max);
+    return -1;
+  }
+  public IEnumerator getRank(RankResponse response, int score)
+  {
+    yield return new WaitForSecondsRealtime(0.05f);
     UnityWebRequest request = UnityWebRequest.Get("https://snake-api.nspyf.top/game/rank");
     yield return request.SendWebRequest();
     if (request.result == UnityWebRequest.Result.ConnectionError)
@@ -76,7 +94,7 @@ public class RankManager : MonoBehaviour
     }
     Debug.Log("Received: " + request.downloadHandler.text);
     response = JsonConvert.DeserializeObject<RankResponse>(request.downloadHandler.text);
-    finishRequest(response);
+    finishRequest(response, score);
   }
 
   // Update is called once per frame

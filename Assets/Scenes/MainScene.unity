@@ -537,7 +537,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u4F60\u7684\u5206\u6570\uFF1A0"
+  m_text: "\u4F60\u7684\u5206\u6570\uFF1A0  \u6392\u540D\uFF1A100+"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ec1a142a5f29082439bad9e971dcf2be, type: 2}
   m_sharedMaterial: {fileID: 3654463274476496470, guid: ec1a142a5f29082439bad9e971dcf2be, type: 2}
@@ -829,7 +829,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -0.000060019436}
   m_SizeDelta: {x: 0, y: 405}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &379336626
@@ -1328,7 +1328,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 40
+  orthographic size: 30
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -3203,6 +3203,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rankUI: {fileID: 581669829}
   item: {fileID: 3132777159982679527, guid: 34a3c15eb087d1744982893a84de2af7, type: 3}
+  loseMenu: {fileID: 444000763}
 --- !u!4 &1671047245
 Transform:
   m_ObjectHideFlags: 0

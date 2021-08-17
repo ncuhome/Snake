@@ -154,11 +154,11 @@ public class GlobalManager : MonoBehaviour
     gui.SetActive(false);
     StartCoroutine(postScore(score));
     RankResponse response = new RankResponse();
-    StartCoroutine(RankManager.Instance.getRank(response));
-    loseMenu.transform.Find("Rank/ScoreDisplay").GetComponent<TextMeshProUGUI>().text = "你的分数: " + score.ToString();
-    loseMenu.SetActive(true);
+    StartCoroutine(RankManager.Instance.getRank(response,score));
     Time.timeScale = 0;
   }
+
+  
   public void pause()
   {
     gui.SetActive(false);
