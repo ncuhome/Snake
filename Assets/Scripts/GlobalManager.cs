@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Networking;
+using System.Text;
 using TMPro;
 
 public class GlobalManager : MonoBehaviour
@@ -25,6 +27,8 @@ public class GlobalManager : MonoBehaviour
 
   private float currentTimeScale;
 
+  private string token;
+
   public Dictionary<GameObject, Coroutine> getCoroutines() { return coroutines; }
 
   public void updateScore(int score)
@@ -45,6 +49,8 @@ public class GlobalManager : MonoBehaviour
   }
   void Start()
   {
+    token = PlayerPrefs.GetString("token");
+    Debug.Log(token);
     pauseMenu.SetActive(false);
     loseMenu.SetActive(false);
     InvokeRepeating("instantiateMonster", 1.0f, 90.0f);
@@ -80,6 +86,24 @@ public class GlobalManager : MonoBehaviour
     }
   }
 
+  IEnumerator postScore(int score)
+  {
+    var request = new UnityWebRequest("https://snake-api.nspyf.top/auth/game/record", "POST");
+    string body = @"{""score"":""" + score.ToString() + @"""}";
+    Debug.Log(body);
+    byte[] bodyRaw = Encoding.UTF8.GetBytes(body);
+    request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
+    request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+    request.SetRequestHeader("Content-Type", "application/json");
+    request.SetRequestHeader("token", token);
+    yield return request.SendWebRequest();
+    if (request.result == UnityWebRequest.Result.ConnectionError)
+    {
+      Debug.Log("Error while sending: " + request.error);
+    }
+    Debug.Log("Received: " + request.downloadHandler.text);
+  }
+
   IEnumerator enterResumeStatus(GameObject monster)
   {
     var sprite = monster.GetComponent<SpriteRenderer>();
@@ -111,7 +135,8 @@ public class GlobalManager : MonoBehaviour
     monster.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.None;
   }
 
-  public void backToMenu() { 
+  public void backToMenu()
+  {
     SceneManager.LoadScene("MainMenu");
   }
   public void stopResume(Coroutine coroutine)
@@ -127,7 +152,8 @@ public class GlobalManager : MonoBehaviour
   public void dead(int score)
   {
     gui.SetActive(false);
-    loseMenu.transform.Find("ScoreDisplay").GetComponent<TextMeshProUGUI>().text = "你的分数: " + score.ToString();
+    StartCoroutine(postScore(score));
+    loseMenu.transform.Find("Rank/ScoreDisplay").GetComponent<TextMeshProUGUI>().text = "你的分数: " + score.ToString();
     loseMenu.SetActive(true);
     Time.timeScale = 0;
   }
