@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
+using TMPro;
 public class gameRecord
 {
   public long id { get; set; }
@@ -28,26 +29,44 @@ public class RankResponse
 public class RankManager : MonoBehaviour
 {
 
-  public Transform rank;
+  public Transform rankUI;
   public GameObject item;
-  // Start is called before the first frame update
-  void Start()
+  private static RankManager instance;
+  public static RankManager Instance
   {
-    RankResponse response = new RankResponse();
-    StartCoroutine(getRank(response));
+    get
+    {
+      return instance;
+    }
+  }
+  // Start is called before the first frame update
+  void Awake()
+  {
+    if (instance == null)
+    {
+      instance = this;
+    }
   }
 
   void finishRequest(RankResponse response)
   {
     int rank = 0;
-    foreach (var item in response.data)
+    float posY = 117;
+    Transform content = rankUI.Find("Scroll View/Viewport/Content");
+    foreach (var itemData in response.data)
     {
-      Debug.Log(++rank);
-      Debug.Log(item.user.nickname);
-      Debug.Log(item.game_record.score);
+      GameObject obj = Instantiate(item, content);
+      obj.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, posY);
+      posY -= obj.GetComponent<RectTransform>().rect.height;
+      var rankComponent = obj.transform.Find("rank").GetComponent<TextMeshProUGUI>();
+      var nicknameComponent = obj.transform.Find("nickname").GetComponent<TextMeshProUGUI>();
+      var scoreComponent = obj.transform.Find("score").GetComponent<TextMeshProUGUI>();
+      rankComponent.text = (++rank).ToString();
+      nicknameComponent.text = itemData.user.nickname;
+      scoreComponent.text = itemData.game_record.score.ToString();
     }
   }
-  IEnumerator getRank(RankResponse response)
+  public IEnumerator getRank(RankResponse response)
   {
     UnityWebRequest request = UnityWebRequest.Get("https://snake-api.nspyf.top/game/rank");
     yield return request.SendWebRequest();
