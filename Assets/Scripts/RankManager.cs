@@ -56,7 +56,7 @@ public class RankManager : MonoBehaviour
     Transform content = rankUI.Find("Scroll View/Viewport/Content");
     int thisRank = getThisRank(response.data.ToArray(), score, 0, response.data.ToArray().Length);
     if (thisRank == -1)
-      loseMenu.transform.Find("Rank/ScoreDisplay").GetComponent<TextMeshProUGUI>().text = "你的分数: " + score.ToString() + "  排名：" + thisRank.ToString() + "+";
+      loseMenu.transform.Find("Rank/ScoreDisplay").GetComponent<TextMeshProUGUI>().text = "你的分数: " + score.ToString() + "  排名：" + response.data.ToArray().Length.ToString() + "+";
     else
       loseMenu.transform.Find("Rank/ScoreDisplay").GetComponent<TextMeshProUGUI>().text = "你的分数: " + score.ToString() + "  排名：" + thisRank.ToString();
     loseMenu.SetActive(true);
@@ -75,6 +75,7 @@ public class RankManager : MonoBehaviour
   }
   int getThisRank(RankData[] data, int score, int min, int max)
   {
+    if (min > max) return -1;
     int mid = (min + max) / 2;
     if (data[mid].game_record.score == score) return mid + 1;
     if (mid + 1 >= data.Length) return -1;

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 using System.Text;
+using System;
 using TMPro;
 
 public class GlobalManager : MonoBehaviour
@@ -18,6 +19,8 @@ public class GlobalManager : MonoBehaviour
 
   public float fadeSpeed = 0.1f;
   public GameObject monsterPrefab;
+
+  public GameObject JoyStickToggle;
   private static GlobalManager _instance;
   public static GlobalManager Instance
   {
@@ -28,6 +31,12 @@ public class GlobalManager : MonoBehaviour
   private float currentTimeScale;
 
   private string token;
+
+  private bool isJoyStick;
+  public bool getIsJoyStick()
+  {
+    return isJoyStick;
+  }
 
   public Dictionary<GameObject, Coroutine> getCoroutines() { return coroutines; }
 
@@ -51,11 +60,36 @@ public class GlobalManager : MonoBehaviour
   {
     token = PlayerPrefs.GetString("token");
     Debug.Log(token);
+    Transform joyStick = gui.transform.Find("JoyStick");
+    int haveJoyStick = PlayerPrefs.GetInt("joyStickToggle");
+    pauseMenu.transform.Find("JoyStickToggle").GetComponent<Toggle>().onValueChanged.AddListener(OnTogglejoyStick);
+    joyStick.Find("left").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickLeft);
+    joyStick.Find("right").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickRight);
+    joyStick.Find("up").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickUp);
+    joyStick.Find("down").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickDown);
+    if (haveJoyStick == 0)
+    {
+      isJoyStick = false;
+      JoyStickToggle.GetComponent<Toggle>().isOn = false;
+      gui.transform.Find("JoyStick").gameObject.SetActive(false);
+    }
+    else
+    {
+      isJoyStick = true;
+      JoyStickToggle.GetComponent<Toggle>().isOn = true;
+      gui.transform.Find("JoyStick").gameObject.SetActive(true);
+    }
     pauseMenu.SetActive(false);
     loseMenu.SetActive(false);
     InvokeRepeating("instantiateMonster", 1.0f, 90.0f);
   }
-
+  void OnTogglejoyStick(bool isOn)
+  {
+    Debug.Log(isOn);
+    PlayerPrefs.SetInt("joyStickToggle", Convert.ToInt32(isOn));
+    gui.transform.Find("JoyStick").gameObject.SetActive(isOn);
+    isJoyStick = isOn;
+  }
   public IEnumerator monsterEnterCanBeEatenStatus()
   {
     StopAllCoroutines();
@@ -154,11 +188,11 @@ public class GlobalManager : MonoBehaviour
     gui.SetActive(false);
     StartCoroutine(postScore(score));
     RankResponse response = new RankResponse();
-    StartCoroutine(RankManager.Instance.getRank(response,score));
+    StartCoroutine(RankManager.Instance.getRank(response, score));
     Time.timeScale = 0;
   }
 
-  
+
   public void pause()
   {
     gui.SetActive(false);

@@ -21,6 +21,8 @@ public class Snake : MonoBehaviour
   //时间加速单位
   public double boostScale = 1.1f;
 
+  public Transform joyStick;
+
   public GameObject tailPrefab;
   // Start is called before the first frame update
 
@@ -61,51 +63,105 @@ public class Snake : MonoBehaviour
       //一次输入后，在移动之前，使输入无效化，防止出现同时按下两个键，在移动判断之前导致dir变换两个方向，导致自己撞自己的bug产生而死亡
       if (!moved)
       {
-
         #region
         //桌面端输入控制
         if (Input.GetKey(KeyCode.RightArrow) && (dir == Vector2.up || dir == -Vector2.up))
+        {
           dir = Vector2.right;
+          moved = true;
+        }
         else if (Input.GetKey(KeyCode.DownArrow) && (dir == Vector2.right || dir == -Vector2.right))
+        {
           dir = -Vector2.up;
+          moved = true;
+        }
         else if (Input.GetKey(KeyCode.LeftArrow) && (dir == Vector2.up || dir == -Vector2.up))
+        {
           dir = -Vector2.right;
+          moved = true;
+        }
         else if (Input.GetKey(KeyCode.UpArrow) && (dir == Vector2.right || dir == -Vector2.right))
+        {
           dir = Vector2.up;
+          moved = true;
+        }
         #endregion
         #region
         //手机端输入控制
-        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Moved)
+        //滑屏控制
+        if (!GlobalManager.Instance.getIsJoyStick())
         {
-          Debug.Log(Vector2.SqrMagnitude(Input.GetTouch(0).deltaPosition));
-          if (Vector2.SqrMagnitude(Input.GetTouch(0).deltaPosition) > minDistance)
+          if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Moved)
           {
-            Vector2 deltaDir = Input.GetTouch(0).deltaPosition;
-            if (Mathf.Abs(deltaDir.x) > Mathf.Abs(deltaDir.y))
+            if (Vector2.SqrMagnitude(Input.GetTouch(0).deltaPosition) > minDistance)
             {
-              if (deltaDir.x > 0 && (dir == Vector2.up || dir == -Vector2.up))
-                dir = Vector2.right;
-              if (deltaDir.x < 0 && (dir == Vector2.up || dir == -Vector2.up))
-                dir = -Vector2.right;
-            }
-            if (Mathf.Abs(deltaDir.y) > Mathf.Abs(deltaDir.x))
-            {
-              if (deltaDir.y > 0 && (dir == Vector2.right || dir == -Vector2.right))
+              Vector2 deltaDir = Input.GetTouch(0).deltaPosition;
+              if (Mathf.Abs(deltaDir.x) > Mathf.Abs(deltaDir.y))
               {
-                dir = Vector2.up;
+                if (deltaDir.x > 0 && (dir == Vector2.up || dir == -Vector2.up))
+                {
+                  dir = Vector2.right;
+                  moved = true;
+                }
+                if (deltaDir.x < 0 && (dir == Vector2.up || dir == -Vector2.up))
+                {
+                  dir = -Vector2.right;
+                  moved = true;
+                }
               }
-              if (deltaDir.y < 0 && (dir == Vector2.right || dir == -Vector2.right))
+              if (Mathf.Abs(deltaDir.y) > Mathf.Abs(deltaDir.x))
               {
-                dir = -Vector2.up;
+                if (deltaDir.y > 0 && (dir == Vector2.right || dir == -Vector2.right))
+                {
+                  dir = Vector2.up;
+                  moved = true;
+                }
+                if (deltaDir.y < 0 && (dir == Vector2.right || dir == -Vector2.right))
+                {
+                  dir = -Vector2.up;
+                  moved = true;
+                }
               }
             }
           }
         }
         #endregion
-        moved = true;
       }
       runningTime += Time.deltaTime;
       Time.timeScale = (float)Pow(boostScale, Log(runningTime));
+    }
+  }
+
+  public void onClickLeft()
+  {
+    if (!moved && (dir == Vector2.up || dir == -Vector2.up))
+    {
+      dir = -Vector2.right;
+      moved = true;
+    }
+  }
+  public void onClickRight()
+  {
+    if (!moved && (dir == Vector2.up || dir == -Vector2.up))
+    {
+      dir = Vector2.right;
+      moved = true;
+    }
+  }
+  public void onClickUp()
+  {
+    if (!moved && (dir == Vector2.right || dir == -Vector2.right))
+    {
+      dir = Vector2.up;
+      moved = true;
+    }
+  }
+  public void onClickDown()
+  {
+    if (!moved && (dir == Vector2.right || dir == -Vector2.right))
+    {
+      dir = -Vector2.up;
+      moved = true;
     }
   }
   void OnTriggerEnter2D(Collider2D other)
