@@ -131,7 +131,9 @@ public class Snake : MonoBehaviour
       Time.timeScale = (float)Pow(boostScale, Log(runningTime));
     }
   }
-
+  #region 
+  //虚拟按键控制,放在这方便控制方向变量
+  //但是挂载函数放在了globalManager
   public void onClickLeft()
   {
     if (!moved && (dir == Vector2.up || dir == -Vector2.up))
@@ -164,6 +166,7 @@ public class Snake : MonoBehaviour
       moved = true;
     }
   }
+  #endregion
   void OnTriggerEnter2D(Collider2D other)
   {
     if (other.name.StartsWith("FoodPrefab") || other.name.StartsWith("RewardPrefab") || (other.name.StartsWith("MonsterPrefab") && other.GetComponent<EnemyMove>().canBeEaten))
