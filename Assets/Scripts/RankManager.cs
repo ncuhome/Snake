@@ -73,6 +73,7 @@ public class RankManager : MonoBehaviour
       scoreComponent.text = itemData.game_record.score.ToString();
     }
   }
+  //二分法寻找此次分数在排行榜对应的排名
   int getThisRank(RankData[] data, int score, int min, int max)
   {
     if (min > max) return -1;

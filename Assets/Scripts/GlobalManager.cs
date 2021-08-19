@@ -62,6 +62,7 @@ public class GlobalManager : MonoBehaviour
     Debug.Log(token);
     Transform joyStick = gui.transform.Find("JoyStick");
     int haveJoyStick = PlayerPrefs.GetInt("joyStickToggle");
+    //挂载函数
     pauseMenu.transform.Find("JoyStickToggle").GetComponent<Toggle>().onValueChanged.AddListener(OnTogglejoyStick);
     joyStick.Find("left").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickLeft);
     joyStick.Find("right").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickRight);
@@ -87,6 +88,7 @@ public class GlobalManager : MonoBehaviour
   {
     Debug.Log(isOn);
     PlayerPrefs.SetInt("joyStickToggle", Convert.ToInt32(isOn));
+    PlayerPrefs.Save();
     gui.transform.Find("JoyStick").gameObject.SetActive(isOn);
     isJoyStick = isOn;
   }
