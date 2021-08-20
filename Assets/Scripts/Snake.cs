@@ -1,4 +1,3 @@
-using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 using static System.Math;
@@ -20,8 +19,6 @@ public class Snake : MonoBehaviour
 
   //时间加速单位
   public double boostScale = 1.1f;
-
-  public Transform joyStick;
 
   public GameObject tailPrefab;
   // Start is called before the first frame update
