@@ -25,6 +25,7 @@ public class Snake : MonoBehaviour
 
   //手机滑屏触发输入距离的平方
   private float minDistance = 1.0f;
+  private Vector2 lastDir;
   // private Coroutine monsterCanBeEatenCoroutine;
 
   private static Snake instance;
@@ -43,12 +44,6 @@ public class Snake : MonoBehaviour
   {
     Input.simulateMouseWithTouches = true;
     Input.multiTouchEnabled = true;
-    for (int i = 1; i < 5; i++)
-    {
-      GameObject g = (GameObject)Instantiate(tailPrefab, new Vector2(this.transform.position.x - i, this.transform.position.y), Quaternion.identity);
-
-      tail.Add(g.transform);
-    }
   }
 
   // Update is called once per frame
@@ -62,21 +57,25 @@ public class Snake : MonoBehaviour
       //桌面端输入控制
       if (Input.GetKeyDown(KeyCode.RightArrow) && dir != -Vector2.right)
       {
+        lastDir = dir;
         dir = Vector2.right;
         Move();
       }
       else if (Input.GetKeyDown(KeyCode.DownArrow) && dir != Vector2.up)
       {
+        lastDir = dir;
         dir = -Vector2.up;
         Move();
       }
       else if (Input.GetKeyDown(KeyCode.LeftArrow) && dir != Vector2.right)
       {
+        lastDir = dir;
         dir = -Vector2.right;
         Move();
       }
       else if (Input.GetKeyDown(KeyCode.UpArrow) && dir != -Vector2.up)
       {
+        lastDir = dir;
         dir = Vector2.up;
         Move();
       }
@@ -95,11 +94,13 @@ public class Snake : MonoBehaviour
             {
               if (deltaDir.x > 0 && dir != -Vector2.right)
               {
+                lastDir = dir;
                 dir = Vector2.right;
                 Move();
               }
               if (deltaDir.x < 0 && dir != Vector2.right)
               {
+                lastDir = dir;
                 dir = -Vector2.right;
                 Move();
               }
@@ -108,11 +109,13 @@ public class Snake : MonoBehaviour
             {
               if (deltaDir.y > 0 && dir != -Vector2.up)
               {
+                lastDir = dir;
                 dir = Vector2.up;
                 Move();
               }
               if (deltaDir.y < 0 && dir != Vector2.up)
               {
+                lastDir = dir;
                 dir = -Vector2.up;
                 Move();
               }
@@ -132,6 +135,7 @@ public class Snake : MonoBehaviour
   {
     if (dir != Vector2.right)
     {
+      lastDir = dir;
       dir = -Vector2.right;
       Move();
     }
@@ -140,6 +144,7 @@ public class Snake : MonoBehaviour
   {
     if (dir != -Vector2.right)
     {
+      lastDir = dir;
       dir = Vector2.right;
       Move();
     }
@@ -148,6 +153,7 @@ public class Snake : MonoBehaviour
   {
     if (dir != -Vector2.up)
     {
+      lastDir = dir;
       dir = Vector2.up;
       Move();
     }
@@ -156,6 +162,7 @@ public class Snake : MonoBehaviour
   {
     if (dir != Vector2.up)
     {
+      lastDir = dir;
       dir = -Vector2.up;
       Move();
     }
@@ -225,6 +232,11 @@ public class Snake : MonoBehaviour
       tail.RemoveAt(tail.Count - 1);
     }
     // moved = false;
+  }
+
+  public void FallBack(){
+    //todo:考虑吃掉食物的那一次移动，此时长度还未增长并且ate==true，还需要增加一个缓存吃掉的食物的操作，
+    //然后正常移动相对来讲比较好回溯，吃掉食物之后再移动了一格的话，就得将头部前面的第一个尾巴删除,然后还得将ate状态置为true
   }
 
   private bool isDead(Vector2 dir)
