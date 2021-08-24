@@ -505,6 +505,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 122190521}
   m_CullTransparentMesh: 1
+--- !u!4 &241079289 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8403471528257394727, guid: 747960eb712e3b741a14b12cd16d4dca, type: 3}
+  m_PrefabInstance: {fileID: 3218765684373012344}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &264880466
 GameObject:
   m_ObjectHideFlags: 0
@@ -1373,10 +1378,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   foodPrefab: {fileID: 5543527175124618204, guid: 41a3033d05a3c6741a8ffa08e25726d0, type: 3}
   rewardPrefab: {fileID: 819799143974891774, guid: 4c9ea4af89a4f3b438a0cc7d6d300bce, type: 3}
-  borderTop: {fileID: 0}
-  borderBottom: {fileID: 0}
-  borderLeft: {fileID: 0}
-  borderRight: {fileID: 0}
+  borderTop: {fileID: 1717686285}
+  borderBottom: {fileID: 241079289}
+  borderLeft: {fileID: 1049547816}
+  borderRight: {fileID: 1323731099}
   rewardProb: 0.03
 --- !u!20 &519420031
 Camera:
@@ -2519,6 +2524,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1049547816 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2214665518196211905, guid: 747960eb712e3b741a14b12cd16d4dca, type: 3}
+  m_PrefabInstance: {fileID: 3218765684373012344}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1225196198
 GameObject:
   m_ObjectHideFlags: 0
@@ -2872,6 +2882,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1262179023}
   m_CullTransparentMesh: 1
+--- !u!4 &1323731099 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 569125981711167827, guid: 747960eb712e3b741a14b12cd16d4dca, type: 3}
+  m_PrefabInstance: {fileID: 3218765684373012344}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1422057007
 GameObject:
   m_ObjectHideFlags: 0
@@ -3273,6 +3288,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1717686285 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2603394829776827398, guid: 747960eb712e3b741a14b12cd16d4dca, type: 3}
+  m_PrefabInstance: {fileID: 3218765684373012344}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1831593826
 GameObject:
   m_ObjectHideFlags: 0
@@ -3782,7 +3802,6 @@ MonoBehaviour:
   loseMenu: {fileID: 444000763}
   gui: {fileID: 20373518}
   fadeSpeed: 0.1
-  monsterPrefab: {fileID: 3274209970694540088, guid: 43f01a227a8f5274382ddf9f5f611b44, type: 3}
   JoyStickToggle: {fileID: 1233846957}
 --- !u!4 &1979719643
 Transform:

@@ -8,24 +8,24 @@ public class Snake : MonoBehaviour
   Vector2 dir = Vector2.right;
   List<Transform> tail = new List<Transform>();
 
-  private bool ate = false, dead = false, moved = false;
+  private bool ate = false, dead = false;
 
   private int score = 0;
 
   //运行时间，以1为起始,用于时间加速
-  private float runningTime = 1f;
+  // private float runningTime = 1f;
 
   public AudioClip eatClip;
 
   //时间加速单位
-  public double boostScale = 1.1f;
+  // public double boostScale = 1.1f;
 
   public GameObject tailPrefab;
   // Start is called before the first frame update
 
   //手机滑屏触发输入距离的平方
   private float minDistance = 1.0f;
-  private Coroutine monsterCanBeEatenCoroutine;
+  // private Coroutine monsterCanBeEatenCoroutine;
 
   private static Snake instance;
   public static Snake Instance
@@ -49,7 +49,6 @@ public class Snake : MonoBehaviour
 
       tail.Add(g.transform);
     }
-    InvokeRepeating("Move", 0.3f, 0.3f);
   }
 
   // Update is called once per frame
@@ -58,74 +57,72 @@ public class Snake : MonoBehaviour
     if (!dead && !GlobalManager.Instance.getPaused())
     {
       //一次输入后，在移动之前，使输入无效化，防止出现同时按下两个键，在移动判断之前导致dir变换两个方向，导致自己撞自己的bug产生而死亡
-      if (!moved)
+
+      #region
+      //桌面端输入控制
+      if (Input.GetKeyDown(KeyCode.RightArrow) && dir != -Vector2.right)
       {
-        #region
-        //桌面端输入控制
-        if (Input.GetKey(KeyCode.RightArrow) && (dir == Vector2.up || dir == -Vector2.up))
+        dir = Vector2.right;
+        Move();
+      }
+      else if (Input.GetKeyDown(KeyCode.DownArrow) && dir != Vector2.up)
+      {
+        dir = -Vector2.up;
+        Move();
+      }
+      else if (Input.GetKeyDown(KeyCode.LeftArrow) && dir != Vector2.right)
+      {
+        dir = -Vector2.right;
+        Move();
+      }
+      else if (Input.GetKeyDown(KeyCode.UpArrow) && dir != -Vector2.up)
+      {
+        dir = Vector2.up;
+        Move();
+      }
+      #endregion
+      #region
+      //手机端输入控制
+      //滑屏控制
+      if (!GlobalManager.Instance.getIsJoyStick())
+      {
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Moved)
         {
-          dir = Vector2.right;
-          moved = true;
-        }
-        else if (Input.GetKey(KeyCode.DownArrow) && (dir == Vector2.right || dir == -Vector2.right))
-        {
-          dir = -Vector2.up;
-          moved = true;
-        }
-        else if (Input.GetKey(KeyCode.LeftArrow) && (dir == Vector2.up || dir == -Vector2.up))
-        {
-          dir = -Vector2.right;
-          moved = true;
-        }
-        else if (Input.GetKey(KeyCode.UpArrow) && (dir == Vector2.right || dir == -Vector2.right))
-        {
-          dir = Vector2.up;
-          moved = true;
-        }
-        #endregion
-        #region
-        //手机端输入控制
-        //滑屏控制
-        if (!GlobalManager.Instance.getIsJoyStick())
-        {
-          if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Moved)
+          if (Vector2.SqrMagnitude(Input.GetTouch(0).deltaPosition) > minDistance)
           {
-            if (Vector2.SqrMagnitude(Input.GetTouch(0).deltaPosition) > minDistance)
+            Vector2 deltaDir = Input.GetTouch(0).deltaPosition;
+            if (Mathf.Abs(deltaDir.x) > Mathf.Abs(deltaDir.y))
             {
-              Vector2 deltaDir = Input.GetTouch(0).deltaPosition;
-              if (Mathf.Abs(deltaDir.x) > Mathf.Abs(deltaDir.y))
+              if (deltaDir.x > 0 && dir != -Vector2.right)
               {
-                if (deltaDir.x > 0 && (dir == Vector2.up || dir == -Vector2.up))
-                {
-                  dir = Vector2.right;
-                  moved = true;
-                }
-                if (deltaDir.x < 0 && (dir == Vector2.up || dir == -Vector2.up))
-                {
-                  dir = -Vector2.right;
-                  moved = true;
-                }
+                dir = Vector2.right;
+                Move();
               }
-              if (Mathf.Abs(deltaDir.y) > Mathf.Abs(deltaDir.x))
+              if (deltaDir.x < 0 && dir != Vector2.right)
               {
-                if (deltaDir.y > 0 && (dir == Vector2.right || dir == -Vector2.right))
-                {
-                  dir = Vector2.up;
-                  moved = true;
-                }
-                if (deltaDir.y < 0 && (dir == Vector2.right || dir == -Vector2.right))
-                {
-                  dir = -Vector2.up;
-                  moved = true;
-                }
+                dir = -Vector2.right;
+                Move();
+              }
+            }
+            if (Mathf.Abs(deltaDir.y) > Mathf.Abs(deltaDir.x))
+            {
+              if (deltaDir.y > 0 && dir != -Vector2.up)
+              {
+                dir = Vector2.up;
+                Move();
+              }
+              if (deltaDir.y < 0 && dir != Vector2.up)
+              {
+                dir = -Vector2.up;
+                Move();
               }
             }
           }
         }
         #endregion
       }
-      runningTime += Time.deltaTime;
-      Time.timeScale = (float)Pow(boostScale, Log(runningTime));
+      // runningTime += Time.deltaTime;
+      // Time.timeScale = (float)Pow(boostScale, Log(runningTime));
     }
   }
   #region 
@@ -133,60 +130,61 @@ public class Snake : MonoBehaviour
   //但是挂载函数放在了globalManager
   public void onClickLeft()
   {
-    if (!moved && (dir == Vector2.up || dir == -Vector2.up))
+    if (dir != Vector2.right)
     {
       dir = -Vector2.right;
-      moved = true;
+      Move();
     }
   }
   public void onClickRight()
   {
-    if (!moved && (dir == Vector2.up || dir == -Vector2.up))
+    if (dir != -Vector2.right)
     {
       dir = Vector2.right;
-      moved = true;
+      Move();
     }
   }
   public void onClickUp()
   {
-    if (!moved && (dir == Vector2.right || dir == -Vector2.right))
+    if (dir != -Vector2.up)
     {
       dir = Vector2.up;
-      moved = true;
+      Move();
     }
   }
   public void onClickDown()
   {
-    if (!moved && (dir == Vector2.right || dir == -Vector2.right))
+    if (dir != Vector2.up)
     {
       dir = -Vector2.up;
-      moved = true;
+      Move();
     }
   }
   #endregion
   void OnTriggerEnter2D(Collider2D other)
   {
-    if (other.name.StartsWith("FoodPrefab") || other.name.StartsWith("RewardPrefab") || (other.name.StartsWith("MonsterPrefab") && other.GetComponent<EnemyMove>().canBeEaten))
+    // if (other.name.StartsWith("FoodPrefab") || other.name.StartsWith("RewardPrefab") || (other.name.StartsWith("MonsterPrefab") && other.GetComponent<EnemyMove>().canBeEaten))
+    if (other.name.StartsWith("FoodPrefab") || other.name.StartsWith("RewardPrefab"))
     {
       ate = true;
-
+      AudioSource.PlayClipAtPoint(eatClip, new Vector3(0, 0, -10));
       if (other.name.StartsWith("RewardPrefab"))
       {
-        if (monsterCanBeEatenCoroutine != null) StopCoroutine(monsterCanBeEatenCoroutine);
-        monsterCanBeEatenCoroutine = StartCoroutine(GlobalManager.Instance.monsterEnterCanBeEatenStatus());
+        // if (monsterCanBeEatenCoroutine != null) StopCoroutine(monsterCanBeEatenCoroutine);
+        // monsterCanBeEatenCoroutine = StartCoroutine(GlobalManager.Instance.monsterEnterCanBeEatenStatus());
         score += 50;
-        Time.timeScale -= 1.2f;
+        // Time.timeScale -= 1.2f;
       }
-      else if (other.name.StartsWith("MonsterPrefab"))
-      {
-        var coroutines = GlobalManager.Instance.getCoroutines();
-        if (coroutines.ContainsKey(other.gameObject))
-        {
-          GlobalManager.Instance.StopCoroutine(coroutines[other.gameObject]);
-          coroutines.Remove(other.gameObject);
-        }
-        score += 100;
-      }
+      // else if (other.name.StartsWith("MonsterPrefab"))
+      // {
+      //   var coroutines = GlobalManager.Instance.getCoroutines();
+      //   if (coroutines.ContainsKey(other.gameObject))
+      //   {
+      //     GlobalManager.Instance.StopCoroutine(coroutines[other.gameObject]);
+      //     coroutines.Remove(other.gameObject);
+      //   }
+      //   score += 100;
+      // }
       else
       {
         score += 10;
@@ -213,7 +211,6 @@ public class Snake : MonoBehaviour
 
     if (ate)
     {
-      AudioSource.PlayClipAtPoint(eatClip, new Vector3(0, 0, -10));
       GameObject g = (GameObject)Instantiate(tailPrefab, v, Quaternion.identity);
 
       tail.Insert(0, g.transform);
@@ -227,7 +224,7 @@ public class Snake : MonoBehaviour
       tail.Insert(0, tail.Last());
       tail.RemoveAt(tail.Count - 1);
     }
-    moved = false;
+    // moved = false;
   }
 
   private bool isDead(Vector2 dir)
@@ -235,7 +232,8 @@ public class Snake : MonoBehaviour
     Vector2 pos = transform.position;
     //从pos+dir向pos发射一条射线
     RaycastHit2D hit = Physics2D.Linecast(pos + dir, pos);
-    if (hit.collider.name.StartsWith("TailPrefab") || (hit.collider.name.StartsWith("MonsterPrefab") && !hit.collider.GetComponent<EnemyMove>().canBeEaten)) return true;
+    // if (hit.collider.name.StartsWith("TailPrefab") || (hit.collider.name.StartsWith("MonsterPrefab") && !hit.collider.GetComponent<EnemyMove>().canBeEaten)) return true;
+    if (hit.collider.name.StartsWith("TailPrefab")) return true;
     if (hit.collider.transform.parent == null) return false;
     return hit.collider.transform.parent.name == "Wall";
   }
