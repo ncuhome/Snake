@@ -14,6 +14,8 @@ public class GlobalManager : MonoBehaviour
   public GameObject loseMenu;
   public GameObject gui;
 
+  public GameObject fallBackButton;
+
   //用于储存所有的二级协程，便于调用
   private Dictionary<GameObject, Coroutine> coroutines = new Dictionary<GameObject, Coroutine>();
 
@@ -68,6 +70,7 @@ public class GlobalManager : MonoBehaviour
     joyStick.Find("right").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickRight);
     joyStick.Find("up").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickUp);
     joyStick.Find("down").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickDown);
+    fallBackButton.GetComponent<Button>().onClick.AddListener(Snake.Instance.FallBack);
     if (haveJoyStick == 0)
     {
       isJoyStick = false;
@@ -219,6 +222,13 @@ public class GlobalManager : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
-
+    if (Snake.Instance.IsFallBack)
+    {
+      fallBackButton.GetComponent<Button>().interactable = false;
+    }
+    else
+    {
+      fallBackButton.GetComponent<Button>().interactable = true;
+    }
   }
 }

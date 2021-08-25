@@ -5,10 +5,13 @@ using UnityEngine;
 
 public class Snake : MonoBehaviour
 {
-  Vector2 dir = Vector2.right;
+  Vector2 dir;
   List<Transform> tail = new List<Transform>();
 
   private bool ate = false, dead = false;
+
+  private bool isFallBack = true;
+  public bool IsFallBack { get => isFallBack; }
 
   private int score = 0;
 
@@ -17,6 +20,7 @@ public class Snake : MonoBehaviour
 
   public AudioClip eatClip;
 
+  public GameObject foodPrefab;
   //时间加速单位
   // public double boostScale = 1.1f;
 
@@ -25,7 +29,11 @@ public class Snake : MonoBehaviour
 
   //手机滑屏触发输入距离的平方
   private float minDistance = 1.0f;
+  private Vector2 tailEndPos;
+
   private Vector2 lastDir;
+
+  private bool lastAte;
   // private Coroutine monsterCanBeEatenCoroutine;
 
   private static Snake instance;
@@ -216,6 +224,7 @@ public class Snake : MonoBehaviour
 
     transform.Translate(dir);
 
+    lastAte = ate;
     if (ate)
     {
       GameObject g = (GameObject)Instantiate(tailPrefab, v, Quaternion.identity);
@@ -226,17 +235,82 @@ public class Snake : MonoBehaviour
     }
     else if (tail.Count > 0)
     {
+      tailEndPos = tail.Last().position;
       tail.Last().position = v;
 
       tail.Insert(0, tail.Last());
       tail.RemoveAt(tail.Count - 1);
     }
+    isFallBack = false;
     // moved = false;
   }
 
-  public void FallBack(){
+  public void FallBack()
+  {
     //todo:考虑吃掉食物的那一次移动，此时长度还未增长并且ate==true，还需要增加一个缓存吃掉的食物的操作，
     //然后正常移动相对来讲比较好回溯，吃掉食物之后再移动了一格的话，就得将头部前面的第一个尾巴删除,然后还得将ate状态置为true
+    if (lastAte)
+    {
+      //连续吃两个食物
+      if (ate)
+      {
+        lastAte = false;
+        Vector2 headPos = transform.position;
+        var tailObj = tail.First().gameObject;
+        tail.RemoveAt(0);
+        Destroy(tailObj);
+        transform.Translate(-dir);
+        Instantiate(foodPrefab, headPos, Quaternion.identity);
+      }
+      //只吃了一个食物
+      else
+      {
+        lastAte = false;
+        ate = true;
+        var tailObj = tail.First().gameObject;
+        tail.RemoveAt(0);
+        Destroy(tailObj);
+        transform.Translate(-dir);
+      }
+    }
+    else if (tail.Count > 0)
+    {
+      if (ate)
+      {
+        ate = false;
+        var tailFirst = tail.First();
+        Vector2 headPos = transform.position;
+        tailFirst.position = tailEndPos;
+        tail.Add(tailFirst);
+        tail.RemoveAt(0);
+        transform.Translate(-dir);
+        Instantiate(foodPrefab, headPos, Quaternion.identity);
+      }
+      else
+      {
+        var tailFirst = tail.First();
+        tailFirst.position = tailEndPos;
+        tail.Add(tailFirst);
+        tail.RemoveAt(0);
+        transform.Translate(-dir);
+      }
+    }
+    else
+    {
+      if (ate)
+      {
+        ate = false;
+        Vector2 headPos = transform.position;
+        transform.Translate(-dir);
+        Instantiate(foodPrefab, headPos, Quaternion.identity);
+      }
+      else
+      {
+        transform.Translate(-dir);
+      }
+    }
+    dir = lastDir;
+    isFallBack = true;
   }
 
   private bool isDead(Vector2 dir)
