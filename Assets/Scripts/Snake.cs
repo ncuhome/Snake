@@ -63,25 +63,25 @@ public class Snake : MonoBehaviour
 
       #region
       //桌面端输入控制
-      if (Input.GetKeyDown(KeyCode.RightArrow) && dir != -Vector2.right)
+      if (Input.GetKeyDown(KeyCode.RightArrow) && (dir != -Vector2.right || tail.Count == 0))
       {
         lastDir = dir;
         dir = Vector2.right;
         Move();
       }
-      else if (Input.GetKeyDown(KeyCode.DownArrow) && dir != Vector2.up)
+      else if (Input.GetKeyDown(KeyCode.DownArrow) && (dir != Vector2.up || tail.Count == 0))
       {
         lastDir = dir;
         dir = -Vector2.up;
         Move();
       }
-      else if (Input.GetKeyDown(KeyCode.LeftArrow) && dir != Vector2.right)
+      else if (Input.GetKeyDown(KeyCode.LeftArrow) && (dir != Vector2.right || tail.Count == 0))
       {
         lastDir = dir;
         dir = -Vector2.right;
         Move();
       }
-      else if (Input.GetKeyDown(KeyCode.UpArrow) && dir != -Vector2.up)
+      else if (Input.GetKeyDown(KeyCode.UpArrow) && (dir != -Vector2.up || tail.Count == 0))
       {
         lastDir = dir;
         dir = Vector2.up;
@@ -100,13 +100,13 @@ public class Snake : MonoBehaviour
             Vector2 deltaDir = Input.GetTouch(0).deltaPosition;
             if (Mathf.Abs(deltaDir.x) > Mathf.Abs(deltaDir.y))
             {
-              if (deltaDir.x > 0 && dir != -Vector2.right)
+              if (deltaDir.x > 0 && (dir != -Vector2.right || tail.Count == 0))
               {
                 lastDir = dir;
                 dir = Vector2.right;
                 Move();
               }
-              if (deltaDir.x < 0 && dir != Vector2.right)
+              if (deltaDir.x < 0 && (dir != Vector2.right || tail.Count == 0))
               {
                 lastDir = dir;
                 dir = -Vector2.right;
@@ -115,13 +115,13 @@ public class Snake : MonoBehaviour
             }
             if (Mathf.Abs(deltaDir.y) > Mathf.Abs(deltaDir.x))
             {
-              if (deltaDir.y > 0 && dir != -Vector2.up)
+              if (deltaDir.y > 0 && (dir != -Vector2.up || tail.Count == 0))
               {
                 lastDir = dir;
                 dir = Vector2.up;
                 Move();
               }
-              if (deltaDir.y < 0 && dir != Vector2.up)
+              if (deltaDir.y < 0 && (dir != Vector2.up || tail.Count == 0))
               {
                 lastDir = dir;
                 dir = -Vector2.up;
@@ -141,7 +141,7 @@ public class Snake : MonoBehaviour
   //但是挂载函数放在了globalManager
   public void onClickLeft()
   {
-    if (dir != Vector2.right)
+    if (dir != Vector2.right || tail.Count == 0)
     {
       lastDir = dir;
       dir = -Vector2.right;
@@ -150,7 +150,7 @@ public class Snake : MonoBehaviour
   }
   public void onClickRight()
   {
-    if (dir != -Vector2.right)
+    if (dir != -Vector2.right || tail.Count == 0)
     {
       lastDir = dir;
       dir = Vector2.right;
@@ -159,7 +159,7 @@ public class Snake : MonoBehaviour
   }
   public void onClickUp()
   {
-    if (dir != -Vector2.up)
+    if (dir != -Vector2.up || tail.Count == 0)
     {
       lastDir = dir;
       dir = Vector2.up;
@@ -168,7 +168,7 @@ public class Snake : MonoBehaviour
   }
   public void onClickDown()
   {
-    if (dir != Vector2.up)
+    if (dir != Vector2.up || tail.Count == 0)
     {
       lastDir = dir;
       dir = -Vector2.up;
