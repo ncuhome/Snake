@@ -179,10 +179,10 @@ public class Snake : MonoBehaviour
   void OnTriggerEnter2D(Collider2D other)
   {
     // if (other.name.StartsWith("FoodPrefab") || other.name.StartsWith("RewardPrefab") || (other.name.StartsWith("MonsterPrefab") && other.GetComponent<EnemyMove>().canBeEaten))
-    if (other.name.StartsWith("FoodPrefab") || other.name.StartsWith("RewardPrefab"))
+    if (other.name.StartsWith("FoodPrefab"))
     {
       ate = true;
-      AudioSource.PlayClipAtPoint(eatClip, new Vector3(0, 0, -10));
+      AudioSource.PlayClipAtPoint(eatClip, Camera.main.transform.position);
       // if (other.name.StartsWith("RewardPrefab"))
       // {
       // if (monsterCanBeEatenCoroutine != null) StopCoroutine(monsterCanBeEatenCoroutine);
@@ -320,7 +320,7 @@ public class Snake : MonoBehaviour
     RaycastHit2D hit = Physics2D.Linecast(pos + dir, pos);
     // if (hit.collider.name.StartsWith("TailPrefab") || (hit.collider.name.StartsWith("MonsterPrefab") && !hit.collider.GetComponent<EnemyMove>().canBeEaten)) return true;
     if (hit.collider.name.StartsWith("TailPrefab")) return true;
-    if (hit.collider.transform.parent == null) return false;
-    return hit.collider.transform.parent.name == "Wall";
+    if (hit.collider.name.StartsWith("WallPrefab")) return true;
+    return false;
   }
 }

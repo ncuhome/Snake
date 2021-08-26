@@ -6,18 +6,19 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 using System.Text;
 using System;
-using TMPro;
 
 public class GlobalManager : MonoBehaviour
 {
   public GameObject pauseMenu;
   public GameObject loseMenu;
+
+  public GameObject winMenu;
   public GameObject gui;
 
   public GameObject fallBackButton;
 
   //用于储存所有的二级协程，便于调用
-  private Dictionary<GameObject, Coroutine> coroutines = new Dictionary<GameObject, Coroutine>();
+  // private Dictionary<GameObject, Coroutine> coroutines = new Dictionary<GameObject, Coroutine>();
 
   public float fadeSpeed = 0.1f;
   // public GameObject monsterPrefab;
@@ -40,7 +41,7 @@ public class GlobalManager : MonoBehaviour
     return isJoyStick;
   }
 
-  public Dictionary<GameObject, Coroutine> getCoroutines() { return coroutines; }
+  // public Dictionary<GameObject, Coroutine> getCoroutines() { return coroutines; }
 
   public void updateScore(int score)
   {
@@ -176,12 +177,12 @@ public class GlobalManager : MonoBehaviour
 
   public void backToMenu()
   {
-    SceneManager.LoadScene("MainMenu");
+    SceneManager.LoadScene("Menu");
   }
-  public void stopResume(Coroutine coroutine)
-  {
-    StopCoroutine(coroutine);
-  }
+  // public void stopResume(Coroutine coroutine)
+  // {
+  //   StopCoroutine(coroutine);
+  // }
 
   // void instantiateMonster()
   // {
@@ -196,32 +197,37 @@ public class GlobalManager : MonoBehaviour
     StartCoroutine(RankManager.Instance.getRank(response, score));
     Time.timeScale = 0;
   }
-
-
   public void pause()
   {
     gui.SetActive(false);
     pauseMenu.SetActive(true);
-    currentTimeScale = Time.timeScale;
+    // currentTimeScale = Time.timeScale;
     paused = true;
-    Time.timeScale = 0;
+    // Time.timeScale = 0;
   }
   public void resume()
   {
     pauseMenu.SetActive(false);
     gui.SetActive(true);
     paused = false;
-    Time.timeScale = currentTimeScale;
+    // Time.timeScale = currentTimeScale;
   }
   public void restart()
   {
     SceneManager.LoadScene("MainScene");
-    Time.timeScale = 1;
+    // Time.timeScale = 1;
   }
-
+  public void win()
+  {
+    winMenu.SetActive(true);
+  }
   // Update is called once per frame
   void Update()
   {
+    if (GameObject.FindWithTag("food") == null)
+    {
+      GlobalManager.Instance.win();
+    }
     if (Snake.Instance.IsFallBack)
     {
       fallBackButton.GetComponent<Button>().interactable = false;

@@ -11,8 +11,9 @@ public class SpawnMap : MonoBehaviour
 
   public GameObject mainCamera;
   // public GameObject backgroundPrefab;
-  private static string root = "./Assets/Levels";
+  private static string root = "./Assets/Levels/";
 
+  public static string level;
   private static SpawnMap instance;
   public static SpawnMap Instance
   {
@@ -33,7 +34,7 @@ public class SpawnMap : MonoBehaviour
     {
       instance = this;
     }
-    LoadMap(root + "/2.txt");
+    LoadMap(root + level + ".txt");
   }
   // Start is called before the first frame update
 
