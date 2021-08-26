@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 
-//todo:建立一个方法从文件中读取地图然后进行加载，同时控制相机距离来调整相应的地图缩放
+//建立一个方法从文件中读取地图然后进行加载，同时控制相机距离来调整相应的地图缩放
 public class SpawnMap : MonoBehaviour
 {
   public GameObject wallPrefab;
@@ -11,7 +11,6 @@ public class SpawnMap : MonoBehaviour
 
   public GameObject mainCamera;
   // public GameObject backgroundPrefab;
-  private static string root = "./Assets/Levels/";
 
   public static string level;
   private static SpawnMap instance;
@@ -34,13 +33,14 @@ public class SpawnMap : MonoBehaviour
     {
       instance = this;
     }
-    LoadMap(root + level + ".txt");
+    LoadMap("Levels/" + level);
   }
   // Start is called before the first frame update
 
   private void LoadMap(string filename)
   {
-    using (StreamReader sr = new StreamReader(filename))
+    var file = Resources.Load<TextAsset>(filename);
+    using (StringReader sr = new StringReader(file.text))
     {
       string line;
       line = sr.ReadLine();
