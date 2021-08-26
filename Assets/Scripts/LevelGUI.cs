@@ -21,41 +21,43 @@ public class LevelGUI : MonoBehaviour
   }
   void LoadLevels()
   {
-    DirectoryInfo root = new DirectoryInfo("./Assets/Levels");
-    FileInfo[] files = root.GetFiles();
+    // DirectoryInfo root = new DirectoryInfo("./Assets/Resources/Levels");
+    var files = Resources.LoadAll("Levels");
+    // FileInfo[] files = root.GetFiles();
 
-    int y = -100;
+    float y = -100;
     var rectTransform = transform.Find("Scroll View").GetComponent<RectTransform>();
     //关键语句，获取canvas长度
-    var width = rectTransform.rect.width * GetComponent<Canvas>().scaleFactor;
-    float split = (width - 1500) / 6.0f;
-    float x = 150 + split;
+    var width = rectTransform.rect.size.x;
+    var buttonWidth = levelButtonPrefab.GetComponent<RectTransform>().rect.size.x;
+    Debug.Log(width);
+    float split = (width - buttonWidth * 5) / 6.0f;
+    float x = split + buttonWidth / 2;
     int num = 0;
-    foreach (FileInfo file in files)
+    foreach (var file in files)
     {
-      if (Regex.IsMatch(file.Name, @"([1-9][0-9]*).txt$"))
+      GameObject button = Instantiate(levelButtonPrefab, content.transform);
+      button.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
+      button.transform.Find("text").GetComponent<TextMeshProUGUI>().text = file.name;
+      button.GetComponent<Button>().onClick.AddListener(() =>
       {
-        var match = Regex.Match(file.Name, @"([1-9][0-9]*).txt$");
-        GameObject button = Instantiate(levelButtonPrefab, content.transform);
-        button.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, y);
-        button.transform.Find("text").GetComponent<TextMeshProUGUI>().text = match.Groups[1].Value;
-        button.GetComponent<Button>().onClick.AddListener(() =>
-        {
-          SpawnMap.level = match.Groups[1].Value;
-          SceneManager.LoadScene("MainScene");
-        });
-        x += 300 + split;
-        num++;
-        if (num >= 5)
-        {
-          num = 0;
-          x = 150 + split;
-          y += 50;
-        }
+        SpawnMap.level = file.name;
+        SceneManager.LoadScene("MainScene");
+      });
+      x += buttonWidth + split;
+      num++;
+      if (num >= 5)
+      {
+        num = 0;
+        x = split + buttonWidth / 2;
+        y -= buttonWidth + 50;
       }
     }
   }
-  public void backToHome(){
+
+  public void backToHome()
+  {
     SceneManager.LoadScene("Home");
   }
 }
+
