@@ -199,7 +199,7 @@ public class MenuManager : MonoBehaviour
           showTip("登陆成功！");
           PlayerPrefs.SetString("token", res.data.token);
           PlayerPrefs.SetString("nickname", res.data.user_info.nickname);
-          SceneManager.LoadSceneAsync("MainScene");
+          SceneManager.LoadSceneAsync("Menu");
           break;
         }
     }
