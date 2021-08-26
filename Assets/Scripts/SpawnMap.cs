@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 //建立一个方法从文件中读取地图然后进行加载，同时控制相机距离来调整相应的地图缩放
 public class SpawnMap : MonoBehaviour
@@ -34,8 +35,17 @@ public class SpawnMap : MonoBehaviour
       instance = this;
     }
   }
-  void Start(){
+  void Start()
+  {
     LoadMap("Levels/" + level);
+  }
+
+  public void NextLevel()
+  {
+    var newLevel = Convert.ToInt32(level) + 1;
+    level = newLevel.ToString();
+    SceneManager.UnloadSceneAsync("MainScene");
+    SceneManager.LoadScene("MainScene");
   }
   // Start is called before the first frame update
 

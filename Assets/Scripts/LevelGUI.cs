@@ -1,32 +1,38 @@
 using UnityEngine.SceneManagement;
-using System.IO;
-using System.Text.RegularExpressions;
 using UnityEngine;
+using System.Collections;
 using UnityEngine.UI;
 using TMPro;
 
 public class LevelGUI : MonoBehaviour
 {
-  int screenWidth;
-  int screenHeight;
+  float CountDown;
+  bool isTiming;
 
+  public static bool isInLevelSelector = false;
+
+  public GameObject tipPanel;
+  public GameObject gui;
+  public GameObject homeCanvas;
   public GameObject content;
   public GameObject levelButtonPrefab;
   // Start is called before the first frame update
   void Start()
   {
-    screenWidth = Screen.width;
-    screenHeight = Screen.height;
-    LoadLevels();
+    if (isInLevelSelector)
+    {
+      enterLevelSelector();
+    }
   }
   void LoadLevels()
   {
     // DirectoryInfo root = new DirectoryInfo("./Assets/Resources/Levels");
     var files = Resources.LoadAll("Levels");
+    GlobalManager.totalLevel = files.Length;
     // FileInfo[] files = root.GetFiles();
 
     float y = -100;
-    var rectTransform = transform.Find("Scroll View").GetComponent<RectTransform>();
+    var rectTransform = gui.transform.Find("Scroll View").GetComponent<RectTransform>();
     //关键语句，获取canvas长度
     var width = rectTransform.rect.size.x;
     var buttonWidth = levelButtonPrefab.GetComponent<RectTransform>().rect.size.x;
@@ -57,7 +63,68 @@ public class LevelGUI : MonoBehaviour
 
   public void backToHome()
   {
-    SceneManager.LoadScene("Home");
+    isInLevelSelector = false;
+    gui.gameObject.SetActive(false);
+    homeCanvas.SetActive(true);
+    // SceneManager.LoadScene("Home");
+
+  }
+  public void enterLevelSelector()
+  {
+    isInLevelSelector = true;
+    gui.gameObject.SetActive(true);
+    LoadLevels();
+    homeCanvas.SetActive(false);
+  }
+  void Update()
+  {
+    exitDetection();
+  }
+  private IEnumerator closeTip()
+  {
+    yield return new WaitForSecondsRealtime(2.0f);
+    var canvasGroup = tipPanel.GetComponent<CanvasGroup>();
+    while (canvasGroup.alpha > 0)
+    {
+      canvasGroup.alpha -= 0.1f;
+      yield return new WaitForSecondsRealtime(0.05f);
+    }
+    tipPanel.gameObject.SetActive(false);
+    canvasGroup.alpha = 1f;
+  }
+  private void showTip(string tip)
+  {
+    StartCoroutine(closeTip());
+    tipPanel.SetActive(true);
+    tipPanel.transform.Find("tip").GetComponent<TextMeshProUGUI>().text = tip;
+  }
+  void exitDetection()
+  {
+    if (Input.GetKeyUp(KeyCode.Escape))
+    {
+      if (CountDown == 0)
+      {
+        CountDown = Time.time;
+        isTiming = true;
+        showTip("再次后退将退出游戏!");
+      }
+      else
+      {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+      }
+    }
+    if (isTiming)
+    {
+      if (Time.time - CountDown > 2.0)
+      {
+        CountDown = 0;
+        isTiming = false;
+      }
+    }
   }
 }
 
