@@ -1,19 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Networking;
-using System.Text;
 using System;
 
 public class GlobalManager : MonoBehaviour
 {
   public GameObject pauseMenu;
-  public GameObject loseMenu;
+  // public GameObject loseMenu;
 
   public GameObject winMenu;
   public GameObject gui;
+
+  public GameObject nextLevelBtn;
 
   public GameObject fallBackButton;
 
@@ -35,6 +33,7 @@ public class GlobalManager : MonoBehaviour
 
   private string token;
 
+  public static int totalLevel;
   private bool isJoyStick;
   public bool getIsJoyStick()
   {
@@ -61,8 +60,8 @@ public class GlobalManager : MonoBehaviour
   }
   void Start()
   {
-    token = PlayerPrefs.GetString("token");
-    Debug.Log(token);
+    // token = PlayerPrefs.GetString("token");
+    // Debug.Log(token);
     Transform joyStick = gui.transform.Find("JoyStick");
     int haveJoyStick = PlayerPrefs.GetInt("joyStickToggle");
     //挂载函数
@@ -85,7 +84,7 @@ public class GlobalManager : MonoBehaviour
       gui.transform.Find("JoyStick").gameObject.SetActive(true);
     }
     pauseMenu.SetActive(false);
-    loseMenu.SetActive(false);
+    // loseMenu.SetActive(false);
     // InvokeRepeating("instantiateMonster", 1.0f, 90.0f);
   }
   void OnTogglejoyStick(bool isOn)
@@ -126,23 +125,23 @@ public class GlobalManager : MonoBehaviour
   //   }
   // }
 
-  IEnumerator postScore(int score)
-  {
-    var request = new UnityWebRequest("https://snake-api.nspyf.top/auth/game/record", "POST");
-    string body = @"{""score"":""" + score.ToString() + @"""}";
-    Debug.Log(body);
-    byte[] bodyRaw = Encoding.UTF8.GetBytes(body);
-    request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
-    request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
-    request.SetRequestHeader("Content-Type", "application/json");
-    request.SetRequestHeader("token", token);
-    yield return request.SendWebRequest();
-    if (request.result == UnityWebRequest.Result.ConnectionError)
-    {
-      Debug.Log("Error while sending: " + request.error);
-    }
-    Debug.Log("Received: " + request.downloadHandler.text);
-  }
+  // IEnumerator postScore(int score)
+  // {
+  //   var request = new UnityWebRequest("https://snake-api.nspyf.top/auth/game/record", "POST");
+  //   string body = @"{""score"":""" + score.ToString() + @"""}";
+  //   Debug.Log(body);
+  //   byte[] bodyRaw = Encoding.UTF8.GetBytes(body);
+  //   request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
+  //   request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+  //   request.SetRequestHeader("Content-Type", "application/json");
+  //   request.SetRequestHeader("token", token);
+  //   yield return request.SendWebRequest();
+  //   if (request.result == UnityWebRequest.Result.ConnectionError)
+  //   {
+  //     Debug.Log("Error while sending: " + request.error);
+  //   }
+  //   Debug.Log("Received: " + request.downloadHandler.text);
+  // }
 
   // IEnumerator enterResumeStatus(GameObject monster)
   // {
@@ -189,14 +188,13 @@ public class GlobalManager : MonoBehaviour
   //   Instantiate(monsterPrefab, new Vector2(-38, 20), Quaternion.identity);
   // }
 
-  public void dead(int score)
-  {
-    gui.SetActive(false);
-    StartCoroutine(postScore(score));
-    RankResponse response = new RankResponse();
-    StartCoroutine(RankManager.Instance.getRank(response, score));
-    Time.timeScale = 0;
-  }
+  // public void dead(int score)
+  // {
+  //   gui.SetActive(false);
+  //   StartCoroutine(postScore(score));
+  //   RankResponse response = new RankResponse();
+  //   StartCoroutine(RankManager.Instance.getRank(response, score));
+  // }
   public void pause()
   {
     gui.SetActive(false);
@@ -214,6 +212,7 @@ public class GlobalManager : MonoBehaviour
   }
   public void restart()
   {
+    SceneManager.UnloadSceneAsync("MainScene");
     SceneManager.LoadScene("MainScene");
     // Time.timeScale = 1;
   }
@@ -224,11 +223,15 @@ public class GlobalManager : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
+    if (Convert.ToInt32(SpawnMap.level)>=totalLevel)
+    {
+      nextLevelBtn.SetActive(false);
+    }
     if (GameObject.FindWithTag("food") == null)
     {
       GlobalManager.Instance.win();
     }
-    if (Snake.Instance.IsFallBack)
+    if (!Snake.Instance.CanFallBack)
     {
       fallBackButton.GetComponent<Button>().interactable = false;
     }
