@@ -195,7 +195,6 @@ public class GlobalManager : MonoBehaviour
     StartCoroutine(postScore(score));
     RankResponse response = new RankResponse();
     StartCoroutine(RankManager.Instance.getRank(response, score));
-    Time.timeScale = 0;
   }
   public void pause()
   {
@@ -214,6 +213,7 @@ public class GlobalManager : MonoBehaviour
   }
   public void restart()
   {
+    SceneManager.UnloadSceneAsync("MainScene");
     SceneManager.LoadScene("MainScene");
     // Time.timeScale = 1;
   }

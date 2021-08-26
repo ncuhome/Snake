@@ -33,11 +33,13 @@ public class SpawnMap : MonoBehaviour
     {
       instance = this;
     }
+  }
+  void Start(){
     LoadMap("Levels/" + level);
   }
   // Start is called before the first frame update
 
-  private void LoadMap(string filename)
+  public void LoadMap(string filename)
   {
     var file = Resources.Load<TextAsset>(filename);
     using (StringReader sr = new StringReader(file.text))

@@ -28,7 +28,7 @@ public class Snake : MonoBehaviour
   // Start is called before the first frame update
 
   //手机滑屏触发输入距离的平方
-  private float minDistance = 1.0f;
+  private float minDistance = Screen.width * 0.05f;
   private Vector2 tailEndPos;
 
   private Vector2 lastDir;
