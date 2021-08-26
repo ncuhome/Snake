@@ -146,5 +146,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   eatClip: {fileID: 8300000, guid: 9f601274636f08049a1e7837a263f831, type: 3}
-  boostScale: 1.3
+  foodPrefab: {fileID: 5543527175124618204, guid: 41a3033d05a3c6741a8ffa08e25726d0, type: 3}
   tailPrefab: {fileID: 2800614914970172069, guid: 9c15c67d8fc7d294aa36f13b36bcefd1, type: 3}
