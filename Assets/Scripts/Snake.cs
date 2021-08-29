@@ -297,6 +297,7 @@ public class Snake : MonoBehaviour
       //连续吃两个食物
       if (ate)
       {
+        SpawnMap.Instance.foodNum++;
         Vector2 headPos = transform.position;
         var tailObj = tail.First().gameObject;
         tail.RemoveAt(0);
@@ -320,6 +321,7 @@ public class Snake : MonoBehaviour
     {
       if (ate)
       {
+        SpawnMap.Instance.foodNum++;
         ate = lastAte;
         var tailFirst = tail.First();
         Vector2 headPos = transform.position;
@@ -344,6 +346,7 @@ public class Snake : MonoBehaviour
     {
       if (ate)
       {
+        SpawnMap.Instance.foodNum++;
         ate = lastAte;
         Vector2 headPos = transform.position;
         transform.Translate(-dir);
