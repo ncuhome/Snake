@@ -46,7 +46,8 @@ public class SpawnMap : MonoBehaviour
   {
     var newLevel = Convert.ToInt32(level) + 1;
     level = newLevel.ToString();
-    SceneManager.LoadScene("MainScene");
+    Scene scene = SceneManager.GetActiveScene();
+    SceneManager.LoadScene(scene.name);
   }
   // Start is called before the first frame update
 

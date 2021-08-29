@@ -87,6 +87,7 @@ public class GlobalManager : MonoBehaviour
       gui.transform.Find("JoyStick").gameObject.SetActive(true);
     }
     pauseMenu.SetActive(false);
+    winMenu.SetActive(false);
     // loseMenu.SetActive(false);
     // InvokeRepeating("instantiateMonster", 1.0f, 90.0f);
   }
@@ -204,7 +205,7 @@ public class GlobalManager : MonoBehaviour
     pauseMenu.SetActive(true);
     // currentTimeScale = Time.timeScale;
     paused = true;
-    Time.timeScale = 0;
+    // Time.timeScale = 0;
   }
   public void resume()
   {
