@@ -14,6 +14,8 @@ public class SpawnMap : MonoBehaviour
   // public GameObject backgroundPrefab;
 
   public static string level;
+
+  public int foodNum;
   private static SpawnMap instance;
   public static SpawnMap Instance
   {
@@ -44,7 +46,6 @@ public class SpawnMap : MonoBehaviour
   {
     var newLevel = Convert.ToInt32(level) + 1;
     level = newLevel.ToString();
-    SceneManager.UnloadSceneAsync("MainScene");
     SceneManager.LoadScene("MainScene");
   }
   // Start is called before the first frame update
@@ -79,6 +80,7 @@ public class SpawnMap : MonoBehaviour
             case 'f':
               {
                 Instantiate(foodPrefab, new Vector2(j, i), Quaternion.identity);
+                foodNum++;
                 break;
               }
             case 's':

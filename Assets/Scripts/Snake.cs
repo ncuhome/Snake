@@ -24,7 +24,6 @@ public class Snake : MonoBehaviour
   private bool canFallBack = false;
   public bool CanFallBack { get => canFallBack; }
 
-  private int score = 0;
 
   //运行时间，以1为起始,用于时间加速
   // private float runningTime = 1f;
@@ -201,6 +200,7 @@ public class Snake : MonoBehaviour
     {
       ate = true;
       AudioSource.PlayClipAtPoint(eatClip, Camera.main.transform.position);
+
       // if (other.name.StartsWith("RewardPrefab"))
       // {
       // if (monsterCanBeEatenCoroutine != null) StopCoroutine(monsterCanBeEatenCoroutine);
@@ -220,10 +220,13 @@ public class Snake : MonoBehaviour
       // }
       // else
       // {
-      score += 10;
       // }
       Destroy(other.gameObject);
-      GlobalManager.Instance.updateScore(score);
+      SpawnMap.Instance.foodNum--;
+      if (SpawnMap.Instance.foodNum == 0)
+      {
+        GlobalManager.Instance.win();
+      }
     }
   }
   void Move()

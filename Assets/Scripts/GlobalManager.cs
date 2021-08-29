@@ -1,6 +1,7 @@
 using UnityEngine.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 using System;
 
 public class GlobalManager : MonoBehaviour
@@ -27,11 +28,13 @@ public class GlobalManager : MonoBehaviour
   {
     get { return _instance; }
   }
-  private bool paused = false;
+  private bool paused = false, won = false;
 
   private float currentTimeScale;
 
   private string token;
+
+  private DateTime standard = DateTime.Now;
 
   public static int totalLevel;
   private bool isJoyStick;
@@ -42,10 +45,10 @@ public class GlobalManager : MonoBehaviour
 
   // public Dictionary<GameObject, Coroutine> getCoroutines() { return coroutines; }
 
-  public void updateScore(int score)
-  {
-    GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text = "Score:" + score.ToString();
-  }
+  // public void updateScore(int score)
+  // {
+  //   GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text = "Score:" + score.ToString();
+  // }
 
   public bool getPaused()
   {
@@ -201,12 +204,17 @@ public class GlobalManager : MonoBehaviour
     pauseMenu.SetActive(true);
     // currentTimeScale = Time.timeScale;
     paused = true;
-    // Time.timeScale = 0;
+    Time.timeScale = 0;
   }
   public void resume()
   {
     pauseMenu.SetActive(false);
     gui.SetActive(true);
+    var text = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text;
+    var textArr = text.Split(' ');
+    TimeSpan interval;
+    TimeSpan.TryParseExact(textArr[1], @"mm\:ss\:ff", null, out interval);
+    standard = DateTime.Now.Subtract(interval);
     paused = false;
     // Time.timeScale = currentTimeScale;
   }
@@ -218,19 +226,27 @@ public class GlobalManager : MonoBehaviour
   }
   public void win()
   {
+    won = true;
+    winMenu.transform.Find("Time").GetComponent<TextMeshProUGUI>().text = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text;
     winMenu.SetActive(true);
+    gui.SetActive(false);
+  }
+
+  private void TimeUpdate(TimeSpan time)
+  {
+    GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text = "Time: " + time.ToString(@"mm\:ss\:ff");
   }
   // Update is called once per frame
   void Update()
   {
-    if (Convert.ToInt32(SpawnMap.level)>=totalLevel)
+    if (Convert.ToInt32(SpawnMap.level) >= totalLevel)
     {
       nextLevelBtn.SetActive(false);
     }
-    if (GameObject.FindWithTag("food") == null)
-    {
-      GlobalManager.Instance.win();
-    }
+    // if (GameObject.FindWithTag("food") == null)
+    // {
+    //   win();
+    // }
     if (!Snake.Instance.CanFallBack)
     {
       fallBackButton.GetComponent<Button>().interactable = false;
@@ -239,5 +255,9 @@ public class GlobalManager : MonoBehaviour
     {
       fallBackButton.GetComponent<Button>().interactable = true;
     }
+    DateTime now = DateTime.Now;
+    TimeSpan interval = now - standard;
+    if (!paused && !won)
+      TimeUpdate(interval);
   }
 }
