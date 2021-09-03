@@ -1352,10 +1352,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccf665d37f0c04343b4d7ff1d5ea4055, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wallPrefab: {fileID: 9152996108404347749, guid: 98d8a9b9ffc248440af36db3fe6bdfa0, type: 3}
-  foodPrefab: {fileID: 5543527175124618204, guid: 41a3033d05a3c6741a8ffa08e25726d0, type: 3}
+  wallPrefabs:
+  - {fileID: 1010703070257886619, guid: e6e363449f8733a4d89c576b4f972604, type: 3}
+  - {fileID: 7921603096915229611, guid: 2620fb0cb6ae6ff49908aa4668888bff, type: 3}
+  - {fileID: 2835953161403031522, guid: e7cebfbac2701dc42a644a35602adc3c, type: 3}
+  - {fileID: 5748052990245981631, guid: 6326f67d193cd394e9d6b338d288ab08, type: 3}
+  - {fileID: 4579798360392849867, guid: 7fb5a09eb330af543991a4d2a5d408fc, type: 3}
+  - {fileID: 3597449898556125118, guid: 8a4260b6e8f67af4680d1b6f0d774724, type: 3}
+  foodPrefabs:
+  - {fileID: 935810878013795353, guid: 85c5d4f67d296cd438de8671d4f8c3b9, type: 3}
+  - {fileID: 8619411692809034417, guid: ad0564eb4d04c58449a66aaed6367542, type: 3}
+  - {fileID: 1073947133679510617, guid: c7717d79b7a224b42bd2ad33098dcdc2, type: 3}
+  floorPrefabs:
+  - {fileID: 5870424031767076645, guid: ed9b19a9a5e809649a98fea9e3fa4afb, type: 3}
+  - {fileID: 5158515554588992724, guid: 5ef9c08a3d20ce546abf1771b3bb54bd, type: 3}
+  - {fileID: 4083045697131707240, guid: 30994fdd1076c1848b1807421b789de2, type: 3}
   headPrefab: {fileID: 8572244947379090347, guid: 7090209a8af596849a3eff36d9c58b81, type: 3}
+  obstacles:
+  - {fileID: 7557053160915997090, guid: 2765f30a03d79a242b94b286987fb79c, type: 3}
+  - {fileID: 6573071866518251106, guid: f464a3ce73cad0e4ab214f8037c8152c, type: 3}
+  - {fileID: 7259878270896982662, guid: b7b75f81a383874488274d92cc71cb39, type: 3}
+  - {fileID: 2632175837354027069, guid: 2632c2ce8090988478595fba79a59f85, type: 3}
   mainCamera: {fileID: 519420028}
+  foodNum: 0
 --- !u!4 &395855555
 Transform:
   m_ObjectHideFlags: 0

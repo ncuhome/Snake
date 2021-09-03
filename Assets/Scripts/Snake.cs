@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using static System.Math;
 using UnityEngine;
 
 public class Snake : MonoBehaviour
@@ -10,6 +9,7 @@ public class Snake : MonoBehaviour
   {
     //吃了还是没吃
     public bool ate;
+    public Sprite foodSprite;
     //有效移动的方向
     public Vector2 dir;
     //尾巴的最后位置
@@ -20,8 +20,10 @@ public class Snake : MonoBehaviour
   List<Transform> tail = new List<Transform>();
 
   private bool ate = false;
+  private Sprite foodSprite;
 
   private bool canFallBack = false;
+
   public bool CanFallBack { get => canFallBack; }
 
 
@@ -38,7 +40,7 @@ public class Snake : MonoBehaviour
   // Start is called before the first frame update
 
   //手机滑屏触发输入距离的平方
-  private float minDistance = Screen.width * 0.1f;
+  private float minDistance = Screen.width * 0.05f;
   // private Vector2 tailEndPos;
 
   private Vector2 lastDir;
@@ -196,7 +198,7 @@ public class Snake : MonoBehaviour
   void OnTriggerEnter2D(Collider2D other)
   {
     // if (other.name.StartsWith("FoodPrefab") || other.name.StartsWith("RewardPrefab") || (other.name.StartsWith("MonsterPrefab") && other.GetComponent<EnemyMove>().canBeEaten))
-    if (other.name.StartsWith("FoodPrefab"))
+    if (other.gameObject.tag == "food")
     {
       ate = true;
       AudioSource.PlayClipAtPoint(eatClip, Camera.main.transform.position);
@@ -221,6 +223,7 @@ public class Snake : MonoBehaviour
       // else
       // {
       // }
+      foodSprite = other.gameObject.GetComponent<SpriteRenderer>().sprite;
       Destroy(other.gameObject);
       SpawnMap.Instance.foodNum--;
       if (SpawnMap.Instance.foodNum == 0)
@@ -237,27 +240,8 @@ public class Snake : MonoBehaviour
     //   GlobalManager.Instance.dead(score);
     //   return;
     // }
-    Cache cache = new Cache();
-    cache.dir = lastDir;
-    cache.ate = ate;
-    if (tail.Count > 0)
-    {
-      cache.tailEndPosition = tail.Last().position;
-    }
-    else
-    {
-      cache.tailEndPosition = Vector2.zero;
-    }
-    if (fallbackCaches.Count >= 10)
-    {
-      fallbackCaches.RemoveAt(0);
-      fallbackCaches.Add(cache);
-    }
-    else
-    {
-      fallbackCaches.Add(cache);
-      canFallBack = true;
-    }
+    setCache();
+
 
     Vector2 v = transform.position;
 
@@ -282,6 +266,36 @@ public class Snake : MonoBehaviour
     }
     // isFallBack = false;
     // moved = false;
+
+  }
+
+  void setCache()
+  {
+    Cache cache = new Cache();
+    cache.dir = lastDir;
+    cache.ate = ate;
+    if (ate)
+    {
+      cache.foodSprite = foodSprite;
+    }
+    if (tail.Count > 0)
+    {
+      cache.tailEndPosition = tail.Last().position;
+    }
+    else
+    {
+      cache.tailEndPosition = Vector2.zero;
+    }
+    if (fallbackCaches.Count >= 10)
+    {
+      fallbackCaches.RemoveAt(0);
+      fallbackCaches.Add(cache);
+    }
+    else
+    {
+      fallbackCaches.Add(cache);
+      canFallBack = true;
+    }
   }
 
   public void FallBack()
@@ -292,6 +306,7 @@ public class Snake : MonoBehaviour
     var lastAte = cache.ate;
     var tailEndPos = cache.tailEndPosition;
     var lastDirection = cache.dir;
+    var lastSprite = cache.foodSprite;
     if (lastAte)
     {
       //连续吃两个食物
@@ -304,7 +319,9 @@ public class Snake : MonoBehaviour
         Destroy(tailObj);
         transform.Translate(-dir);
         dir = lastDirection;
-        Instantiate(foodPrefab, headPos, Quaternion.identity);
+        GameObject g = Instantiate(foodPrefab, headPos, Quaternion.identity);
+        g.GetComponent<SpriteRenderer>().sprite = foodSprite;
+        foodSprite = lastSprite;
       }
       //只吃了一个食物
       else
@@ -315,6 +332,7 @@ public class Snake : MonoBehaviour
         Destroy(tailObj);
         transform.Translate(-dir);
         dir = lastDirection;
+        foodSprite = lastSprite;
       }
     }
     else if (tail.Count > 0)
@@ -330,7 +348,9 @@ public class Snake : MonoBehaviour
         tail.RemoveAt(0);
         transform.Translate(-dir);
         dir = lastDirection;
-        Instantiate(foodPrefab, headPos, Quaternion.identity);
+        GameObject g = Instantiate(foodPrefab, headPos, Quaternion.identity);
+        g.GetComponent<SpriteRenderer>().sprite = lastSprite;
+        foodSprite = lastSprite;
       }
       else
       {
@@ -340,6 +360,7 @@ public class Snake : MonoBehaviour
         tail.RemoveAt(0);
         transform.Translate(-dir);
         dir = lastDirection;
+        foodSprite = lastSprite;
       }
     }
     else
@@ -351,12 +372,15 @@ public class Snake : MonoBehaviour
         Vector2 headPos = transform.position;
         transform.Translate(-dir);
         dir = lastDirection;
-        Instantiate(foodPrefab, headPos, Quaternion.identity);
+        GameObject g = Instantiate(foodPrefab, headPos, Quaternion.identity);
+        g.GetComponent<SpriteRenderer>().sprite = foodSprite;
+        foodSprite = lastSprite;
       }
       else
       {
         transform.Translate(-dir);
         dir = lastDirection;
+        foodSprite = lastSprite;
       }
     }
     // isFallBack = true;
@@ -369,7 +393,7 @@ public class Snake : MonoBehaviour
     RaycastHit2D hit = Physics2D.Linecast(pos + dir, pos);
     // if (hit.collider.name.StartsWith("TailPrefab") || (hit.collider.name.StartsWith("MonsterPrefab") && !hit.collider.GetComponent<EnemyMove>().canBeEaten)) return true;
     if (hit.collider.name.StartsWith("TailPrefab")) return false;
-    if (hit.collider.name.StartsWith("WallPrefab")) return false;
+    if (hit.collider.gameObject.tag == "wall") return false;
     return true;
   }
 }
