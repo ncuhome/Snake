@@ -45,7 +45,6 @@ SpriteRenderer:
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -75,7 +74,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 4
-  m_Sprite: {fileID: 21300000, guid: dcb746ff72baffe49b75562bba1dc716, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 36c02e51de7df774da643693ecd14742, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -145,6 +144,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e59ef0a335e93ee48918574ceb6b325d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bodyInFront: {fileID: 0}
+  bodyInBack: {fileID: 0}
+  spriteRenderer: {fileID: 8961652656336806554}
+  Head: {fileID: 21300000, guid: 36c02e51de7df774da643693ecd14742, type: 3}
+  Body1: {fileID: 21300000, guid: 77727d9fbb955d94586480fc80179ec0, type: 3}
+  Body2: {fileID: 21300000, guid: 5775e31a7ae5c5c489b6dbd0562f6968, type: 3}
+  Body3: {fileID: 21300000, guid: 8e6a71c72eab7fa4bb01b1a4b59f2c1e, type: 3}
+  Tail: {fileID: 21300000, guid: be1603ef4932edc4db20ca54c44ba2d1, type: 3}
+  dir: {x: 0, y: 0}
   eatClip: {fileID: 8300000, guid: 9f601274636f08049a1e7837a263f831, type: 3}
   foodPrefab: {fileID: 935810878013795353, guid: 85c5d4f67d296cd438de8671d4f8c3b9, type: 3}
-  tailPrefab: {fileID: 2800614914970172069, guid: 9c15c67d8fc7d294aa36f13b36bcefd1, type: 3}
+  tailPrefab: {fileID: 8572244947379090347}
