@@ -138,7 +138,7 @@ public class Snake : MonoBehaviour {
             // runningTime += Time.deltaTime;
             // Time.timeScale = (float)Pow(boostScale, Log(runningTime));
         }
-        ExchangeSprite();
+        //ExchangeSprite();
     }
     #region 
     //虚拟按键控制,放在这方便控制方向变量
@@ -243,7 +243,7 @@ public class Snake : MonoBehaviour {
     }
 
     bool Move(bool isEat = false) {
-        //ExchangeSprite();
+        //
         bool SpecialEat = false;
         if (bodyIsHead && isEatFood()) {
             isEat = true;
@@ -266,12 +266,16 @@ public class Snake : MonoBehaviour {
                 isEat = snakePtr.Move(isEat);
                 snakePtr = snakePtr.bodyInBack;
             }
-
             FallBackManager.Instace.addState(saver);
+            snakePtr = saver.body;
+            while (snakePtr != null) {
+                snakePtr.ExchangeSprite();
+                snakePtr = snakePtr.bodyInFront;
+            }
         } else {
             dir = bodyInFront.transform.position - transform.position;
         }
-
+        //ExchangeSprite();
         return isEat;
         #region
         /*
@@ -316,6 +320,7 @@ public class Snake : MonoBehaviour {
         Vector2 nxtDir = -dir;
         if (bodyIsHead && !bodyIsTail) dir = bodyInBack.dir;
         else dir = -saverDir;
+        ExchangeSprite();
         return nxtDir;
         #region
         /*
@@ -386,7 +391,7 @@ public class Snake : MonoBehaviour {
         RaycastHit2D hit = Physics2D.Linecast(pos + dir / 2, pos + dir);
         if (hit.collider == null) return true;
         if (hit.collider.name.StartsWith("Tail")) return false;
-        if (hit.collider.name.StartsWith("WallPrefab")) return false;
+        if (hit.collider.gameObject.tag == "wall") return false;
         return true;
     }
 }

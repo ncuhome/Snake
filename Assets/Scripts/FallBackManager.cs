@@ -31,6 +31,7 @@ namespace FallBack {
                 snakePtr = saver.body.bodyInFront;
                 saver.dir = -saver.body.dir;
                 GameObject.Destroy(saver.body.gameObject);
+                snakePtr.bodyInBack = null;
             }
             while (snakePtr != null) {
                 saver.dir = snakePtr.FallBack(saver.dir, saver.ate);

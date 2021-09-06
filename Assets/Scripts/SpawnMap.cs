@@ -55,6 +55,7 @@ public class SpawnMap : MonoBehaviour
 
   public void LoadMap(string filename)
   {
+    FallBack.FallBackManager.Instace.resetState();
     var file = Resources.Load<TextAsset>(filename);
     using (StringReader sr = new StringReader(file.text))
     {

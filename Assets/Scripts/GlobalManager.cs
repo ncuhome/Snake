@@ -244,10 +244,10 @@ public class GlobalManager : MonoBehaviour
     {
       nextLevelBtn.SetActive(false);
     }
-    // if (GameObject.FindWithTag("food") == null)
-    // {
-    //   win();
-    // }
+    if (GameObject.FindWithTag("food") == null)
+    {
+      win();
+    }
     DateTime now = DateTime.Now;
     TimeSpan interval = now - standard;
     if (!paused && !won)
