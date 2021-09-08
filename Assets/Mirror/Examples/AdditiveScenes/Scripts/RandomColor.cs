@@ -1,11 +1,8 @@
 using UnityEngine;
 
-namespace Mirror.Examples.Additive
-{
-    public class RandomColor : NetworkBehaviour
-    {
-        public override void OnStartServer()
-        {
+namespace Mirror.Examples.Additive {
+    public class RandomColor : NetworkBehaviour {
+        public override void OnStartServer() {
             base.OnStartServer();
             color = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
         }
@@ -18,14 +15,12 @@ namespace Mirror.Examples.Additive
         // Cache it here and destroy it in OnDestroy to prevent a memory leak
         Material cachedMaterial;
 
-        void SetColor(Color32 _, Color32 newColor)
-        {
+        void SetColor(Color32 _, Color32 newColor) {
             if (cachedMaterial == null) cachedMaterial = GetComponentInChildren<Renderer>().material;
             cachedMaterial.color = newColor;
         }
 
-        void OnDestroy()
-        {
+        void OnDestroy() {
             Destroy(cachedMaterial);
         }
     }

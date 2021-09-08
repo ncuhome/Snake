@@ -5,12 +5,10 @@ using System.Net.Sockets;
 using UnityEngine;
 
 // Replaced by Kcp November 2020
-namespace Mirror
-{
+namespace Mirror {
     [HelpURL("https://github.com/vis2k/Telepathy/blob/master/README.md")]
     [DisallowMultipleComponent]
-    public class TelepathyTransport : Transport
-    {
+    public class TelepathyTransport : Transport {
         // scheme used by this transport
         // "tcp4" means tcp with 4 bytes header, network byte order
         public const string Scheme = "tcp4";
@@ -61,8 +59,7 @@ namespace Mirror
         // let's only allocate it once.
         Func<bool> enabledCheck;
 
-        void Awake()
-        {
+        void Awake() {
             // tell Telepathy to use Unity's Debug.Log
             Telepathy.Log.Info = Debug.Log;
             Telepathy.Log.Warning = Debug.LogWarning;
@@ -74,15 +71,13 @@ namespace Mirror
             Debug.Log("TelepathyTransport initialized!");
         }
 
-        public override bool Available()
-        {
+        public override bool Available() {
             // C#'s built in TCP sockets run everywhere except on WebGL
             return Application.platform != RuntimePlatform.WebGLPlayer;
         }
 
         // client
-        private void CreateClient() 
-        {
+        private void CreateClient() {
             // create client
             client = new Telepathy.Client(clientMaxMessageSize);
             // client hooks
@@ -104,14 +99,12 @@ namespace Mirror
             client.ReceiveQueueLimit = clientReceiveQueueLimit;
         }
         public override bool ClientConnected() => client != null && client.Connected;
-        public override void ClientConnect(string address) 
-        {
+        public override void ClientConnect(string address) {
             CreateClient();
             client.Connect(address, port);
         }
 
-        public override void ClientConnect(Uri uri)
-        {
+        public override void ClientConnect(Uri uri) {
             CreateClient();
             if (uri.Scheme != Scheme)
                 throw new ArgumentException($"Invalid url {uri}, use {Scheme}://host:port instead", nameof(uri));
@@ -120,15 +113,13 @@ namespace Mirror
             client.Connect(uri.Host, serverPort);
         }
         public override void ClientSend(ArraySegment<byte> segment, int channelId) => client?.Send(segment);
-        public override void ClientDisconnect() 
-        {
+        public override void ClientDisconnect() {
             client?.Disconnect();
             client = null;
         }
 
         // messages should always be processed in early update
-        public override void ClientEarlyUpdate()
-        {
+        public override void ClientEarlyUpdate() {
             // note: we need to check enabled in case we set it to false
             // when LateUpdate already started.
             // (https://github.com/vis2k/Mirror/pull/379)
@@ -141,8 +132,7 @@ namespace Mirror
         }
 
         // server
-        public override Uri ServerUri()
-        {
+        public override Uri ServerUri() {
             UriBuilder builder = new UriBuilder();
             builder.Scheme = Scheme;
             builder.Host = Dns.GetHostName();
@@ -150,11 +140,10 @@ namespace Mirror
             return builder.Uri;
         }
         public override bool ServerActive() => server != null && server.Active;
-        public override void ServerStart() 
-        {
+        public override void ServerStart() {
             // create server
             server = new Telepathy.Server(serverMaxMessageSize);
-            
+
             // server hooks
             // other systems hook into transport events in OnCreate or
             // OnStartRunning in no particular order. the only way to avoid
@@ -172,20 +161,16 @@ namespace Mirror
             server.ReceiveTimeout = ReceiveTimeout;
             server.SendQueueLimit = serverSendQueueLimitPerConnection;
             server.ReceiveQueueLimit = serverReceiveQueueLimitPerConnection;
-            
+
             server.Start(port);
         }
 
         public override void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId) => server?.Send(connectionId, segment);
         public override void ServerDisconnect(int connectionId) => server?.Disconnect(connectionId);
-        public override string ServerGetClientAddress(int connectionId)
-        {
-            try
-            {
+        public override string ServerGetClientAddress(int connectionId) {
+            try {
                 return server?.GetClientAddress(connectionId);
-            }
-            catch (SocketException)
-            {
+            } catch (SocketException) {
                 // using server.listener.LocalEndpoint causes an Exception
                 // in UWP + Unity 2019:
                 //   Exception thrown at 0x00007FF9755DA388 in UWF.exe:
@@ -197,15 +182,13 @@ namespace Mirror
                 return "unknown";
             }
         }
-        public override void ServerStop() 
-        {
+        public override void ServerStop() {
             server?.Stop();
             server = null;
         }
 
         // messages should always be processed in early update
-        public override void ServerEarlyUpdate()
-        {
+        public override void ServerEarlyUpdate() {
             // note: we need to check enabled in case we set it to false
             // when LateUpdate already started.
             // (https://github.com/vis2k/Mirror/pull/379)
@@ -218,8 +201,7 @@ namespace Mirror
         }
 
         // common
-        public override void Shutdown()
-        {
+        public override void Shutdown() {
             Debug.Log("TelepathyTransport Shutdown()");
             client?.Disconnect();
             client = null;
@@ -227,15 +209,12 @@ namespace Mirror
             server = null;
         }
 
-        public override int GetMaxPacketSize(int channelId)
-        {
+        public override int GetMaxPacketSize(int channelId) {
             return serverMaxMessageSize;
         }
 
-        public override string ToString()
-        {
-            if (server != null && server.Active && server.listener != null)
-            {
+        public override string ToString() {
+            if (server != null && server.Active && server.listener != null) {
                 // printing server.listener.LocalEndpoint causes an Exception
                 // in UWP + Unity 2019:
                 //   Exception thrown at 0x00007FF9755DA388 in UWF.exe:
@@ -245,9 +224,7 @@ namespace Mirror
                 //   System.Net.Sockets.Socket.get_LocalEndPoint ()
                 // so let's use the regular port instead.
                 return "Telepathy Server port: " + port;
-            }
-            else if (client != null && (client.Connecting || client.Connected))
-            {
+            } else if (client != null && (client.Connecting || client.Connected)) {
                 return "Telepathy Client port: " + port;
             }
             return "Telepathy (inactive/disconnected)";

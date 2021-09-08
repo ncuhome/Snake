@@ -1,15 +1,13 @@
 //#if MIRROR <- commented out because MIRROR isn't defined on first import yet
+using Mirror;
 using System;
 using System.Linq;
 using System.Net;
 using UnityEngine;
-using Mirror;
 
-namespace kcp2k
-{
+namespace kcp2k {
     [DisallowMultipleComponent]
-    public class KcpTransport : Transport
-    {
+    public class KcpTransport : Transport {
         // scheme used by this transport
         public const string Scheme = "kcp";
 
@@ -49,15 +47,14 @@ namespace kcp2k
         // log statistics for headless servers that can't show them in GUI
         public bool statisticsLog;
 
-        void Awake()
-        {
+        void Awake() {
             // logging
             //   Log.Info should use Debug.Log if enabled, or nothing otherwise
             //   (don't want to spam the console on headless servers)
             if (debugLog)
                 Log.Info = Debug.Log;
             else
-                Log.Info = _ => {};
+                Log.Info = _ => { };
             Log.Warning = Debug.LogWarning;
             Log.Error = Debug.LogError;
 
@@ -111,17 +108,14 @@ namespace kcp2k
 
         // client
         public override bool ClientConnected() => client.connected;
-        public override void ClientConnect(string address)
-        {
+        public override void ClientConnect(string address) {
             client.Connect(address, Port, NoDelay, Interval, FastResend, CongestionWindow, SendWindowSize, ReceiveWindowSize, Timeout);
         }
-        public override void ClientSend(ArraySegment<byte> segment, int channelId)
-        {
+        public override void ClientSend(ArraySegment<byte> segment, int channelId) {
             // switch to kcp channel.
             // unreliable or reliable.
             // default to reliable just to be sure.
-            switch (channelId)
-            {
+            switch (channelId) {
                 case Channels.Unreliable:
                     client.Send(segment, KcpChannel.Unreliable);
                     break;
@@ -132,8 +126,7 @@ namespace kcp2k
         }
         public override void ClientDisconnect() => client.Disconnect();
         // process incoming in early update
-        public override void ClientEarlyUpdate()
-        {
+        public override void ClientEarlyUpdate() {
             // scene change messages disable transports to stop them from
             // processing while changing the scene.
             // -> we need to check enabled here
@@ -149,23 +142,20 @@ namespace kcp2k
         // stopped immediately after scene change (= after disabled)
         // => kcp has tests to guaranteed that calling .Pause() during the
         //    receive loop stops the receive loop immediately, not after.
-        void OnEnable()
-        {
+        void OnEnable() {
             // unpause when enabled again
             client?.Unpause();
             server?.Unpause();
         }
 
-        void OnDisable()
-        {
+        void OnDisable() {
             // pause immediately when not enabled anymore
             client?.Pause();
             server?.Pause();
         }
 
         // server
-        public override Uri ServerUri()
-        {
+        public override Uri ServerUri() {
             UriBuilder builder = new UriBuilder();
             builder.Scheme = Scheme;
             builder.Host = Dns.GetHostName();
@@ -174,13 +164,11 @@ namespace kcp2k
         }
         public override bool ServerActive() => server.IsActive();
         public override void ServerStart() => server.Start(Port);
-        public override void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId)
-        {
+        public override void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId) {
             // switch to kcp channel.
             // unreliable or reliable.
             // default to reliable just to be sure.
-            switch (channelId)
-            {
+            switch (channelId) {
                 case Channels.Unreliable:
                     server.Send(connectionId, segment, KcpChannel.Unreliable);
                     break;
@@ -189,11 +177,10 @@ namespace kcp2k
                     break;
             }
         }
-        public override void ServerDisconnect(int connectionId) =>  server.Disconnect(connectionId);
+        public override void ServerDisconnect(int connectionId) => server.Disconnect(connectionId);
         public override string ServerGetClientAddress(int connectionId) => server.GetClientAddress(connectionId);
         public override void ServerStop() => server.Stop();
-        public override void ServerEarlyUpdate()
-        {
+        public override void ServerEarlyUpdate() {
             // scene change messages disable transports to stop them from
             // processing while changing the scene.
             // -> we need to check enabled here
@@ -205,16 +192,14 @@ namespace kcp2k
         public override void ServerLateUpdate() => server.TickOutgoing();
 
         // common
-        public override void Shutdown() {}
+        public override void Shutdown() { }
 
         // max message size
-        public override int GetMaxPacketSize(int channelId = Channels.Reliable)
-        {
+        public override int GetMaxPacketSize(int channelId = Channels.Reliable) {
             // switch to kcp channel.
             // unreliable or reliable.
             // default to reliable just to be sure.
-            switch (channelId)
-            {
+            switch (channelId) {
                 case Channels.Unreliable:
                     return KcpConnection.UnreliableMaxMessageSize;
                 default:
@@ -257,8 +242,7 @@ namespace kcp2k
         // pretty prints bytes as KB/MB/GB/etc.
         // long to support > 2GB
         // divides by floats to return "2.5MB" etc.
-        public static string PrettyBytes(long bytes)
-        {
+        public static string PrettyBytes(long bytes) {
             // bytes
             if (bytes < 1024)
                 return $"{bytes} B";
@@ -272,14 +256,12 @@ namespace kcp2k
             return $"{(bytes / (1024f * 1024f * 1024f)):F2} GB";
         }
 
-        void OnGUI()
-        {
+        void OnGUI() {
             if (!statisticsGUI) return;
 
             GUILayout.BeginArea(new Rect(5, 110, 300, 300));
 
-            if (ServerActive())
-            {
+            if (ServerActive()) {
                 GUILayout.BeginVertical("Box");
                 GUILayout.Label("SERVER");
                 GUILayout.Label($"  connections: {server.connections.Count}");
@@ -292,8 +274,7 @@ namespace kcp2k
                 GUILayout.EndVertical();
             }
 
-            if (ClientConnected())
-            {
+            if (ClientConnected()) {
                 GUILayout.BeginVertical("Box");
                 GUILayout.Label("CLIENT");
                 GUILayout.Label($"  MaxSendRate: {PrettyBytes(client.connection.MaxSendRate)}/s");
@@ -308,10 +289,8 @@ namespace kcp2k
             GUILayout.EndArea();
         }
 
-        void OnLogStatistics()
-        {
-            if (ServerActive())
-            {
+        void OnLogStatistics() {
+            if (ServerActive()) {
                 string log = "kcp SERVER @ time: " + NetworkTime.localTime + "\n";
                 log += $"  connections: {server.connections.Count}\n";
                 log += $"  MaxSendRate (avg): {PrettyBytes(GetAverageMaxSendRate())}/s\n";
@@ -323,8 +302,7 @@ namespace kcp2k
                 Debug.Log(log);
             }
 
-            if (ClientConnected())
-            {
+            if (ClientConnected()) {
                 string log = "kcp CLIENT @ time: " + NetworkTime.localTime + "\n";
                 log += $"  MaxSendRate: {PrettyBytes(client.connection.MaxSendRate)}/s\n";
                 log += $"  MaxRecvRate: {PrettyBytes(client.connection.MaxReceiveRate)}/s\n";

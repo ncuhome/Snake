@@ -4,59 +4,48 @@
 using System;
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     // Deprecated 2021-05-13
     [HelpURL("https://mirror-networking.gitbook.io/docs/transports/fallback-transport")]
     [DisallowMultipleComponent]
     [Obsolete("Fallback Transport will be retired. It was only needed for Apathy/Libuv. Use kcp or Telepathy instead, those run everywhere.")]
-    public class FallbackTransport : Transport
-    {
+    public class FallbackTransport : Transport {
         public Transport[] transports;
 
         // the first transport that is available on this platform
         Transport available;
 
-        public void Awake()
-        {
-            if (transports == null || transports.Length == 0)
-            {
+        public void Awake() {
+            if (transports == null || transports.Length == 0) {
                 throw new Exception("FallbackTransport requires at least 1 underlying transport");
             }
             available = GetAvailableTransport();
             Debug.Log("FallbackTransport available: " + available.GetType());
         }
 
-        void OnEnable()
-        {
+        void OnEnable() {
             available.enabled = true;
         }
 
-        void OnDisable()
-        {
+        void OnDisable() {
             available.enabled = false;
         }
 
         // The client just uses the first transport available
-        Transport GetAvailableTransport()
-        {
-            foreach (Transport transport in transports)
-            {
-                if (transport.Available())
-                {
+        Transport GetAvailableTransport() {
+            foreach (Transport transport in transports) {
+                if (transport.Available()) {
                     return transport;
                 }
             }
             throw new Exception("No transport suitable for this platform");
         }
 
-        public override bool Available()
-        {
+        public override bool Available() {
             return available.Available();
         }
 
-        public override void ClientConnect(string address)
-        {
+        public override void ClientConnect(string address) {
             available.OnClientConnected = OnClientConnected;
             available.OnClientDataReceived = OnClientDataReceived;
             available.OnClientError = OnClientError;
@@ -64,19 +53,13 @@ namespace Mirror
             available.ClientConnect(address);
         }
 
-        public override void ClientConnect(Uri uri)
-        {
-            foreach (Transport transport in transports)
-            {
-                if (transport.Available())
-                {
-                    try
-                    {
+        public override void ClientConnect(Uri uri) {
+            foreach (Transport transport in transports) {
+                if (transport.Available()) {
+                    try {
                         transport.ClientConnect(uri);
                         available = transport;
-                    }
-                    catch (ArgumentException)
-                    {
+                    } catch (ArgumentException) {
                         // transport does not support the schema, just move on to the next one
                     }
                 }
@@ -84,18 +67,15 @@ namespace Mirror
             throw new Exception("No transport suitable for this platform");
         }
 
-        public override bool ClientConnected()
-        {
+        public override bool ClientConnected() {
             return available.ClientConnected();
         }
 
-        public override void ClientDisconnect()
-        {
+        public override void ClientDisconnect() {
             available.ClientDisconnect();
         }
 
-        public override void ClientSend(ArraySegment<byte> segment, int channelId)
-        {
+        public override void ClientSend(ArraySegment<byte> segment, int channelId) {
             available.ClientSend(segment, channelId);
         }
 
@@ -103,28 +83,23 @@ namespace Mirror
         // should we return the list of all available uri?
         public override Uri ServerUri() => available.ServerUri();
 
-        public override bool ServerActive()
-        {
+        public override bool ServerActive() {
             return available.ServerActive();
         }
 
-        public override string ServerGetClientAddress(int connectionId)
-        {
+        public override string ServerGetClientAddress(int connectionId) {
             return available.ServerGetClientAddress(connectionId);
         }
 
-        public override void ServerDisconnect(int connectionId)
-        {
+        public override void ServerDisconnect(int connectionId) {
             available.ServerDisconnect(connectionId);
         }
 
-        public override void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId)
-        {
+        public override void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId) {
             available.ServerSend(connectionId, segment, channelId);
         }
 
-        public override void ServerStart()
-        {
+        public override void ServerStart() {
             available.OnServerConnected = OnServerConnected;
             available.OnServerDataReceived = OnServerDataReceived;
             available.OnServerError = OnServerError;
@@ -132,8 +107,7 @@ namespace Mirror
             available.ServerStart();
         }
 
-        public override void ServerStop()
-        {
+        public override void ServerStop() {
             available.ServerStop();
         }
 
@@ -142,13 +116,11 @@ namespace Mirror
         public override void ClientLateUpdate() => available.ClientLateUpdate();
         public override void ServerLateUpdate() => available.ServerLateUpdate();
 
-        public override void Shutdown()
-        {
+        public override void Shutdown() {
             available.Shutdown();
         }
 
-        public override int GetMaxPacketSize(int channelId = 0)
-        {
+        public override int GetMaxPacketSize(int channelId = 0) {
             // finding the max packet size in a fallback environment has to be
             // done very carefully:
             // * servers and clients might run different transports depending on
@@ -161,16 +133,14 @@ namespace Mirror
             // => the safest solution is to use the smallest max size for all
             //    transports. that will never fail.
             int mininumAllowedSize = int.MaxValue;
-            foreach (Transport transport in transports)
-            {
+            foreach (Transport transport in transports) {
                 int size = transport.GetMaxPacketSize(channelId);
                 mininumAllowedSize = Mathf.Min(size, mininumAllowedSize);
             }
             return mininumAllowedSize;
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return available.ToString();
         }
 

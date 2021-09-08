@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     /// <summary>Base NetworkConnection class for server-to-client and client-to-server connection.</summary>
-    public abstract class NetworkConnection
-    {
+    public abstract class NetworkConnection {
         public const int LocalConnectionId = 0;
 
         // NetworkIdentities that this connection can see
@@ -66,27 +64,23 @@ namespace Mirror
         //       different connections.
         public double remoteTimeStamp { get; internal set; }
 
-        internal NetworkConnection()
-        {
+        internal NetworkConnection() {
             // set lastTime to current time when creating connection to make
             // sure it isn't instantly kicked for inactivity
             lastMessageTime = Time.time;
         }
 
-        internal NetworkConnection(int networkConnectionId) : this()
-        {
+        internal NetworkConnection(int networkConnectionId) : this() {
             connectionId = networkConnectionId;
             // TODO why isn't lastMessageTime set in here like in the other ctor?
         }
 
         // TODO if we only have Reliable/Unreliable, then we could initialize
         // two batches and avoid this code
-        protected Batcher GetBatchForChannelId(int channelId)
-        {
+        protected Batcher GetBatchForChannelId(int channelId) {
             // get existing or create new writer for the channelId
             Batcher batch;
-            if (!batches.TryGetValue(channelId, out batch))
-            {
+            if (!batches.TryGetValue(channelId, out batch)) {
                 // get max batch size for this channel
                 int threshold = Transport.activeTransport.GetBatchThreshold(channelId);
 
@@ -102,17 +96,14 @@ namespace Mirror
         //    would check max size and show errors internally. best to do it
         //    in one place in Mirror.
         // => it's important to log errors, so the user knows what went wrong.
-        protected static bool ValidatePacketSize(ArraySegment<byte> segment, int channelId)
-        {
+        protected static bool ValidatePacketSize(ArraySegment<byte> segment, int channelId) {
             int max = Transport.activeTransport.GetMaxPacketSize(channelId);
-            if (segment.Count > max)
-            {
+            if (segment.Count > max) {
                 Debug.LogError($"NetworkConnection.ValidatePacketSize: cannot send packet larger than {max} bytes, was {segment.Count} bytes");
                 return false;
             }
 
-            if (segment.Count == 0)
-            {
+            if (segment.Count == 0) {
                 // zero length packets getting into the packet queues are bad.
                 Debug.LogError("NetworkConnection.ValidatePacketSize: cannot send zero bytes");
                 return false;
@@ -125,10 +116,8 @@ namespace Mirror
         // Send stage one: NetworkMessage<T>
         /// <summary>Send a NetworkMessage to this connection over the given channel.</summary>
         public void Send<T>(T message, int channelId = Channels.Reliable)
-            where T : struct, NetworkMessage
-        {
-            using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
-            {
+            where T : struct, NetworkMessage {
+            using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter()) {
                 // pack message and send allocation free
                 MessagePacking.Pack(message, writer);
                 NetworkDiagnostics.OnSend(message, channelId, writer.Position, 1);
@@ -139,8 +128,7 @@ namespace Mirror
         // Send stage two: serialized NetworkMessage as ArraySegment<byte>
         // internal because no one except Mirror should send bytes directly to
         // the client. they would be detected as a message. send messages instead.
-        internal virtual void Send(ArraySegment<byte> segment, int channelId = Channels.Reliable)
-        {
+        internal virtual void Send(ArraySegment<byte> segment, int channelId = Channels.Reliable) {
             //Debug.Log("ConnectionSend " + this + " bytes:" + BitConverter.ToString(segment.Array, segment.Offset, segment.Count));
 
             // add to batch no matter what.
@@ -166,27 +154,22 @@ namespace Mirror
         protected abstract void SendToTransport(ArraySegment<byte> segment, int channelId = Channels.Reliable);
 
         // flush batched messages at the end of every Update.
-        internal virtual void Update()
-        {
+        internal virtual void Update() {
             // go through batches for all channels
-            foreach (KeyValuePair<int, Batcher> kvp in batches)
-            {
+            foreach (KeyValuePair<int, Batcher> kvp in batches) {
                 // make and send as many batches as necessary from the stored
                 // messages.
                 Batcher batcher = kvp.Value;
-                using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter())
-                {
+                using (PooledNetworkWriter writer = NetworkWriterPool.GetWriter()) {
                     // make a batch with our local time (double precision)
-                    while (batcher.MakeNextBatch(writer, NetworkTime.localTime))
-                    {
+                    while (batcher.MakeNextBatch(writer, NetworkTime.localTime)) {
                         // validate packet before handing the batch to the
                         // transport. this guarantees that we always stay
                         // within transport's max message size limit.
                         // => just in case transport forgets to check it
                         // => just in case mirror miscalulated it etc.
                         ArraySegment<byte> segment = writer.ToArraySegment();
-                        if (ValidatePacketSize(segment, kvp.Key))
-                        {
+                        if (ValidatePacketSize(segment, kvp.Key)) {
                             // send to transport
                             SendToTransport(segment, kvp.Key);
                             //UnityEngine.Debug.Log($"sending batch of {writer.Position} bytes for channel={kvp.Key} connId={connectionId}");
@@ -222,8 +205,7 @@ namespace Mirror
         public override string ToString() => $"connection({connectionId})";
 
         // TODO move to server's NetworkConnectionToClient?
-        internal void AddToObserving(NetworkIdentity netIdentity)
-        {
+        internal void AddToObserving(NetworkIdentity netIdentity) {
             observing.Add(netIdentity);
 
             // spawn identity for this conn
@@ -231,22 +213,18 @@ namespace Mirror
         }
 
         // TODO move to server's NetworkConnectionToClient?
-        internal void RemoveFromObserving(NetworkIdentity netIdentity, bool isDestroyed)
-        {
+        internal void RemoveFromObserving(NetworkIdentity netIdentity, bool isDestroyed) {
             observing.Remove(netIdentity);
 
-            if (!isDestroyed)
-            {
+            if (!isDestroyed) {
                 // hide identity for this conn
                 NetworkServer.HideForConnection(netIdentity, this);
             }
         }
 
         // TODO move to server's NetworkConnectionToClient?
-        internal void RemoveFromObservingsObservers()
-        {
-            foreach (NetworkIdentity netIdentity in observing)
-            {
+        internal void RemoveFromObservingsObservers() {
+            foreach (NetworkIdentity netIdentity in observing) {
                 netIdentity.RemoveObserverInternal(this);
             }
             observing.Clear();
@@ -255,24 +233,19 @@ namespace Mirror
         /// <summary>Check if we received a message within the last 'timeout' seconds.</summary>
         internal virtual bool IsAlive(float timeout) => Time.time - lastMessageTime < timeout;
 
-        internal void AddOwnedObject(NetworkIdentity obj)
-        {
+        internal void AddOwnedObject(NetworkIdentity obj) {
             clientOwnedObjects.Add(obj);
         }
 
-        internal void RemoveOwnedObject(NetworkIdentity obj)
-        {
+        internal void RemoveOwnedObject(NetworkIdentity obj) {
             clientOwnedObjects.Remove(obj);
         }
 
-        internal void DestroyOwnedObjects()
-        {
+        internal void DestroyOwnedObjects() {
             // create a copy because the list might be modified when destroying
             HashSet<NetworkIdentity> tmp = new HashSet<NetworkIdentity>(clientOwnedObjects);
-            foreach (NetworkIdentity netIdentity in tmp)
-            {
-                if (netIdentity != null)
-                {
+            foreach (NetworkIdentity netIdentity in tmp) {
+                if (netIdentity != null) {
                     NetworkServer.Destroy(netIdentity.gameObject);
                 }
             }

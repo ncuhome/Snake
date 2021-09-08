@@ -3,11 +3,9 @@
 // position, rotation, scale for compatibility for now.
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     // NetworkTransform Snapshot
-    public struct NTSnapshot : Snapshot
-    {
+    public struct NTSnapshot : Snapshot {
         // time or sequence are needed to throw away older snapshots.
         //
         // glenn fiedler starts with a 16 bit sequence number.
@@ -30,8 +28,7 @@ namespace Mirror
         public Quaternion rotation;
         public Vector3 scale;
 
-        public NTSnapshot(double remoteTimestamp, double localTimestamp, Vector3 position, Quaternion rotation, Vector3 scale)
-        {
+        public NTSnapshot(double remoteTimestamp, double localTimestamp, Vector3 position, Quaternion rotation, Vector3 scale) {
             this.remoteTimestamp = remoteTimestamp;
             this.localTimestamp = localTimestamp;
             this.position = position;
@@ -39,8 +36,7 @@ namespace Mirror
             this.scale = scale;
         }
 
-        public static NTSnapshot Interpolate(NTSnapshot from, NTSnapshot to, double t)
-        {
+        public static NTSnapshot Interpolate(NTSnapshot from, NTSnapshot to, double t) {
             // NOTE:
             // Vector3 & Quaternion components are float anyway, so we can
             // keep using the functions with 't' as float instead of double.

@@ -1,16 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-public class JsonNetSample : MonoBehaviour
-{
+public class JsonNetSample : MonoBehaviour {
     public Text Output;
 
-    void Start()
-    {
+    void Start() {
         Output.text = "Start!\n\n";
 
         TestJson();
@@ -22,22 +20,18 @@ public class JsonNetSample : MonoBehaviour
         WriteLine("\nDone!");
     }
 
-    void WriteLine(string msg)
-    {
+    void WriteLine(string msg) {
         Output.text = Output.text + msg + "\n";
     }
 
-    public class Product
-    {
+    public class Product {
         public string Name;
         public DateTime ExpiryDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public decimal Price;
         public string[] Sizes;
 
-        public override bool Equals(object obj)
-        {
-            if (obj is Product)
-            {
+        public override bool Equals(object obj) {
+            if (obj is Product) {
                 Product p = (Product)obj;
 
                 return (p.Name == Name && p.ExpiryDate == ExpiryDate && p.Price == Price);
@@ -46,15 +40,13 @@ public class JsonNetSample : MonoBehaviour
             return base.Equals(obj);
         }
 
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() {
             return (Name ?? string.Empty).GetHashCode();
         }
     }
 
     [System.Serializable]
-    public class CharacterListItem
-    {
+    public class CharacterListItem {
         public int Id { get; set; }
         public string Name { get; set; }
         public int Level { get; set; }
@@ -62,16 +54,14 @@ public class JsonNetSample : MonoBehaviour
         public string Sex { get; set; }
     }
 
-    void TestJson()
-    {
+    void TestJson() {
         WriteLine("* TestJson");
         var json = "{\"Id\":51, \"Name\":\"padre\", \"Level\":0, \"Class\":\"Vampire\", \"Sex\":\"F\"}";
         var c = JsonConvert.DeserializeObject<CharacterListItem>(json);
         WriteLine(c.Id + " " + c.Name);
     }
 
-    void SerailizeJson()
-    {
+    void SerailizeJson() {
         WriteLine("* SerailizeJson");
 
         Product product = new Product();
@@ -83,8 +73,7 @@ public class JsonNetSample : MonoBehaviour
         WriteLine(json);
     }
 
-    public class Movie
-    {
+    public class Movie {
         public string Name { get; set; }
         public string Description { get; set; }
         public string Classification { get; set; }
@@ -93,8 +82,7 @@ public class JsonNetSample : MonoBehaviour
         public List<string> ReleaseCountries { get; set; }
     }
 
-    void DeserializeJson()
-    {
+    void DeserializeJson() {
         WriteLine("* DeserializeJson");
 
         string json = @"{
@@ -112,8 +100,7 @@ public class JsonNetSample : MonoBehaviour
         WriteLine(name);
     }
 
-    void LinqToJson()
-    {
+    void LinqToJson() {
         WriteLine("* LinqToJson");
 
         JArray array = new JArray();
@@ -127,8 +114,7 @@ public class JsonNetSample : MonoBehaviour
         WriteLine(json);
     }
 
-    private void JsonPath()
-    {
+    private void JsonPath() {
         WriteLine("* JsonPath");
 
         var o = JObject.Parse(@"{
@@ -166,8 +152,7 @@ public class JsonNetSample : MonoBehaviour
         WriteLine(acme.ToString());
 
         IEnumerable<JToken> pricyProducts = o.SelectTokens("$..Products[?(@.Price >= 50)].Name");
-        foreach (var item in pricyProducts)
-        {
+        foreach (var item in pricyProducts) {
             WriteLine(item.ToString());
         }
     }

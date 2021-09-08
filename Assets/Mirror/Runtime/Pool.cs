@@ -2,10 +2,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mirror
-{
-    public class Pool<T>
-    {
+namespace Mirror {
+    public class Pool<T> {
         // Mirror is single threaded, no need for concurrent collections
         readonly Stack<T> objects = new Stack<T>();
 
@@ -13,8 +11,7 @@ namespace Mirror
         // we use a Func<T> generator
         readonly Func<T> objectGenerator;
 
-        public Pool(Func<T> objectGenerator, int initialCapacity)
-        {
+        public Pool(Func<T> objectGenerator, int initialCapacity) {
             this.objectGenerator = objectGenerator;
 
             // allocate an initial pool so we have fewer (if any)

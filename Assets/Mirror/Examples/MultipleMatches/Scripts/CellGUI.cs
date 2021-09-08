@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace Mirror.Examples.MultipleMatch
-{
-    public class CellGUI : MonoBehaviour
-    {
+namespace Mirror.Examples.MultipleMatch {
+    public class CellGUI : MonoBehaviour {
         public MatchController matchController;
         public CellValue cellValue;
 
@@ -16,27 +14,21 @@ namespace Mirror.Examples.MultipleMatch
         public NetworkIdentity playerIdentity;
 
 
-        public void Awake()
-        {
+        public void Awake() {
             matchController.MatchCells.Add(cellValue, this);
         }
 
-        public void MakePlay()
-        {
+        public void MakePlay() {
             if (matchController.currentPlayer.isLocalPlayer)
                 matchController.CmdMakePlay(cellValue);
         }
 
-        public void SetPlayer(NetworkIdentity playerIdentity)
-        {
-            if (playerIdentity != null)
-            {
+        public void SetPlayer(NetworkIdentity playerIdentity) {
+            if (playerIdentity != null) {
                 this.playerIdentity = playerIdentity;
                 image.color = this.playerIdentity.isLocalPlayer ? Color.blue : Color.red;
                 button.interactable = false;
-            }
-            else
-            {
+            } else {
                 this.playerIdentity = null;
                 image.color = Color.white;
                 button.interactable = true;

@@ -1,16 +1,13 @@
 using System;
 
-namespace Mirror
-{
+namespace Mirror {
     /// <summary>Pooled NetworkWriter, automatically returned to pool when using 'using'</summary>
-    public sealed class PooledNetworkWriter : NetworkWriter, IDisposable
-    {
+    public sealed class PooledNetworkWriter : NetworkWriter, IDisposable {
         public void Dispose() => NetworkWriterPool.Recycle(this);
     }
 
     /// <summary>Pool of NetworkWriters to avoid allocations.</summary>
-    public static class NetworkWriterPool
-    {
+    public static class NetworkWriterPool {
         // reuse Pool<T>
         // we still wrap it in NetworkWriterPool.Get/Recycle so we can reset the
         // position before reusing.
@@ -24,8 +21,7 @@ namespace Mirror
         );
 
         /// <summary>Get a writer from the pool. Creates new one if pool is empty.</summary>
-        public static PooledNetworkWriter GetWriter()
-        {
+        public static PooledNetworkWriter GetWriter() {
             // grab from pool & reset position
             PooledNetworkWriter writer = Pool.Take();
             writer.Reset();
@@ -33,8 +29,7 @@ namespace Mirror
         }
 
         /// <summary>Return a writer to the pool.</summary>
-        public static void Recycle(PooledNetworkWriter writer)
-        {
+        public static void Recycle(PooledNetworkWriter writer) {
             Pool.Return(writer);
         }
     }

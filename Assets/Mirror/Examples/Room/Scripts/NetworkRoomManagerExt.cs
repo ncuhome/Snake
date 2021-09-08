@@ -1,10 +1,8 @@
 using UnityEngine;
 
-namespace Mirror.Examples.NetworkRoom
-{
+namespace Mirror.Examples.NetworkRoom {
     [AddComponentMenu("")]
-    public class NetworkRoomManagerExt : NetworkRoomManager
-    {
+    public class NetworkRoomManagerExt : NetworkRoomManager {
         [Header("Spawner Setup")]
         [Tooltip("Reward Prefab for the Spawner")]
         public GameObject rewardPrefab;
@@ -13,11 +11,9 @@ namespace Mirror.Examples.NetworkRoom
         /// This is called on the server when a networked scene finishes loading.
         /// </summary>
         /// <param name="sceneName">Name of the new scene.</param>
-        public override void OnRoomServerSceneChanged(string sceneName)
-        {
+        public override void OnRoomServerSceneChanged(string sceneName) {
             // spawn the initial batch of Rewards
-            if (sceneName == GameplayScene)
-            {
+            if (sceneName == GameplayScene) {
                 Spawner.InitialSpawn();
             }
         }
@@ -30,20 +26,17 @@ namespace Mirror.Examples.NetworkRoom
         /// <param name="roomPlayer"></param>
         /// <param name="gamePlayer"></param>
         /// <returns>true unless some code in here decides it needs to abort the replacement</returns>
-        public override bool OnRoomServerSceneLoadedForPlayer(NetworkConnection conn, GameObject roomPlayer, GameObject gamePlayer)
-        {
+        public override bool OnRoomServerSceneLoadedForPlayer(NetworkConnection conn, GameObject roomPlayer, GameObject gamePlayer) {
             PlayerScore playerScore = gamePlayer.GetComponent<PlayerScore>();
             playerScore.index = roomPlayer.GetComponent<NetworkRoomPlayer>().index;
             return true;
         }
 
-        public override void OnRoomStopClient()
-        {
+        public override void OnRoomStopClient() {
             base.OnRoomStopClient();
         }
 
-        public override void OnRoomStopServer()
-        {
+        public override void OnRoomStopServer() {
             base.OnRoomStopServer();
         }
 
@@ -58,8 +51,7 @@ namespace Mirror.Examples.NetworkRoom
 
         bool showStartButton;
 
-        public override void OnRoomServerPlayersReady()
-        {
+        public override void OnRoomServerPlayersReady() {
             // calling the base method calls ServerChangeScene as soon as all players are in Ready state.
 #if UNITY_SERVER
             base.OnRoomServerPlayersReady();
@@ -68,12 +60,10 @@ namespace Mirror.Examples.NetworkRoom
 #endif
         }
 
-        public override void OnGUI()
-        {
+        public override void OnGUI() {
             base.OnGUI();
 
-            if (allPlayersReady && showStartButton && GUI.Button(new Rect(150, 300, 120, 20), "START GAME"))
-            {
+            if (allPlayersReady && showStartButton && GUI.Button(new Rect(150, 300, 120, 20), "START GAME")) {
                 // set to false to hide it in the game scene
                 showStartButton = false;
 

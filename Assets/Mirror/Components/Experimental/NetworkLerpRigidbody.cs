@@ -1,11 +1,9 @@
 using UnityEngine;
 
-namespace Mirror.Experimental
-{
+namespace Mirror.Experimental {
     [AddComponentMenu("Network/Experimental/NetworkLerpRigidbody")]
     [HelpURL("https://mirror-networking.gitbook.io/docs/components/network-lerp-rigidbody")]
-    public class NetworkLerpRigidbody : NetworkBehaviour
-    {
+    public class NetworkLerpRigidbody : NetworkBehaviour {
         [Header("Settings")]
         [SerializeField] internal Rigidbody target = null;
         [Tooltip("How quickly current velocity approaches target velocity")]
@@ -33,53 +31,42 @@ namespace Mirror.Experimental
 
         bool ClientWithAuthority => clientAuthority && hasAuthority;
 
-        void OnValidate()
-        {
-            if (target == null)
-            {
+        void OnValidate() {
+            if (target == null) {
                 target = GetComponent<Rigidbody>();
             }
         }
 
-        void Update()
-        {
-            if (isServer)
-            {
+        void Update() {
+            if (isServer) {
                 SyncToClients();
-            }
-            else if (ClientWithAuthority)
-            {
+            } else if (ClientWithAuthority) {
                 SendToServer();
             }
         }
 
-        void SyncToClients()
-        {
+        void SyncToClients() {
             targetVelocity = target.velocity;
             targetPosition = target.position;
         }
 
-        void SendToServer()
-        {
+        void SendToServer() {
             float now = Time.time;
-            if (now > nextSyncTime)
-            {
+            if (now > nextSyncTime) {
                 nextSyncTime = now + syncInterval;
                 CmdSendState(target.velocity, target.position);
             }
         }
 
         [Command]
-        void CmdSendState(Vector3 velocity, Vector3 position)
-        {
+        void CmdSendState(Vector3 velocity, Vector3 position) {
             target.velocity = velocity;
             target.position = position;
             targetVelocity = velocity;
             targetPosition = position;
         }
 
-        void FixedUpdate()
-        {
+        void FixedUpdate() {
             if (IgnoreSync) { return; }
 
             target.velocity = Vector3.Lerp(target.velocity, targetVelocity, lerpVelocityAmount);

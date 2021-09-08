@@ -2,31 +2,25 @@
 using System.IO;
 using System.Net.Sockets;
 
-namespace Telepathy
-{
-    public static class NetworkStreamExtensions
-    {
+namespace Telepathy {
+    public static class NetworkStreamExtensions {
         // .Read returns '0' if remote closed the connection but throws an
         // IOException if we voluntarily closed our own connection.
         //
         // let's add a ReadSafely method that returns '0' in both cases so we don't
         // have to worry about exceptions, since a disconnect is a disconnect...
-        public static int ReadSafely(this NetworkStream stream, byte[] buffer, int offset, int size)
-        {
-            try
-            {
+        public static int ReadSafely(this NetworkStream stream, byte[] buffer, int offset, int size) {
+            try {
                 return stream.Read(buffer, offset, size);
             }
             // IOException happens if we voluntarily closed our own connection.
-            catch (IOException)
-            {
+            catch (IOException) {
                 return 0;
             }
             // ObjectDisposedException can be thrown if Client.Disconnect()
             // disposes the stream, while we are still trying to read here.
             // catching it fixes https://github.com/vis2k/Telepathy/pull/104
-            catch (ObjectDisposedException)
-            {
+            catch (ObjectDisposedException) {
                 return 0;
             }
         }
@@ -36,8 +30,7 @@ namespace Telepathy
         //    'n' bytes
         // -> this is blocking until 'n' bytes were received
         // -> immediately returns false in case of disconnects
-        public static bool ReadExactly(this NetworkStream stream, byte[] buffer, int amount)
-        {
+        public static bool ReadExactly(this NetworkStream stream, byte[] buffer, int amount) {
             // there might not be enough bytes in the TCP buffer for .Read to read
             // the whole amount at once, so we need to keep trying until we have all
             // the bytes (blocking)
@@ -48,8 +41,7 @@ namespace Telepathy
             //             return false;
             //     return true;
             int bytesRead = 0;
-            while (bytesRead < amount)
-            {
+            while (bytesRead < amount) {
                 // read up to 'remaining' bytes with the 'safe' read extension
                 int remaining = amount - bytesRead;
                 int result = stream.ReadSafely(buffer, bytesRead, remaining);

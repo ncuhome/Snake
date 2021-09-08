@@ -13,26 +13,20 @@ using System;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace Telepathy
-{
-    public static class ThreadFunctions
-    {
+namespace Telepathy {
+    public static class ThreadFunctions {
         // send message (via stream) with the <size,content> message structure
         // this function is blocking sometimes!
         // (e.g. if someone has high latency or wire was cut off)
         // -> payload is of multiple <<size, content, size, content, ...> parts
-        public static bool SendMessagesBlocking(NetworkStream stream, byte[] payload, int packetSize)
-        {
+        public static bool SendMessagesBlocking(NetworkStream stream, byte[] payload, int packetSize) {
             // stream.Write throws exceptions if client sends with high
             // frequency and the server stops
-            try
-            {
+            try {
                 // write the whole thing
                 stream.Write(payload, 0, packetSize);
                 return true;
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 // log as regular message because servers do shut down sometimes
                 Log.Info("Send: stream.Write exception: " + exception);
                 return false;
@@ -40,13 +34,11 @@ namespace Telepathy
         }
         // read message (via stream) blocking.
         // writes into byte[] and returns bytes written to avoid allocations.
-        public static bool ReadMessageBlocking(NetworkStream stream, int MaxMessageSize, byte[] headerBuffer, byte[] payloadBuffer, out int size)
-        {
+        public static bool ReadMessageBlocking(NetworkStream stream, int MaxMessageSize, byte[] headerBuffer, byte[] payloadBuffer, out int size) {
             size = 0;
 
             // buffer needs to be of Header + MaxMessageSize
-            if (payloadBuffer.Length != 4 + MaxMessageSize)
-            {
+            if (payloadBuffer.Length != 4 + MaxMessageSize) {
                 Log.Error($"ReadMessageBlocking: payloadBuffer needs to be of size 4 + MaxMessageSize = {4 + MaxMessageSize} instead of {payloadBuffer.Length}");
                 return false;
             }
@@ -63,8 +55,7 @@ namespace Telepathy
             // to allocate multiple 2GB byte arrays and run out of memory.
             //
             // also protect against size <= 0 which would cause issues
-            if (size > 0 && size <= MaxMessageSize)
-            {
+            if (size > 0 && size <= MaxMessageSize) {
                 // read exactly 'size' bytes for content (blocking)
                 return stream.ReadExactly(payloadBuffer, size);
             }
@@ -73,8 +64,7 @@ namespace Telepathy
         }
 
         // thread receive function is the same for client and server's clients
-        public static void ReceiveLoop(int connectionId, TcpClient client, int MaxMessageSize, MagnificentReceivePipe receivePipe, int QueueLimit)
-        {
+        public static void ReceiveLoop(int connectionId, TcpClient client, int MaxMessageSize, MagnificentReceivePipe receivePipe, int QueueLimit) {
             // get NetworkStream from client
             NetworkStream stream = client.GetStream();
 
@@ -94,8 +84,7 @@ namespace Telepathy
 
             // absolutely must wrap with try/catch, otherwise thread exceptions
             // are silent
-            try
-            {
+            try {
                 // add connected event to pipe
                 receivePipe.Enqueue(connectionId, EventType.Connected, default);
 
@@ -115,8 +104,7 @@ namespace Telepathy
                 //    + no resizing
                 //    + no extra allocations, just one for the content
                 //    + no crazy extraction logic
-                while (true)
-                {
+                while (true) {
                     // read the next message (blocking) or stop if stream closed
                     if (!ReadMessageBlocking(stream, MaxMessageSize, headerBuffer, receiveBuffer, out int size))
                         // break instead of return so stream close still happens!
@@ -136,8 +124,7 @@ namespace Telepathy
                     // -> disconnecting is great for load balancing. better to
                     //    disconnect one connection than risking every
                     //    connection / the whole server
-                    if (receivePipe.Count(connectionId) >= QueueLimit)
-                    {
+                    if (receivePipe.Count(connectionId) >= QueueLimit) {
                         // log the reason
                         Log.Warning($"receivePipe reached limit of {QueueLimit} for connectionId {connectionId}. This can happen if network messages come in way faster than we manage to process them. Disconnecting this connection for load balancing.");
 
@@ -149,16 +136,12 @@ namespace Telepathy
                         break;
                     }
                 }
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 // something went wrong. the thread was interrupted or the
                 // connection closed or we closed our own connection or ...
                 // -> either way we should stop gracefully
                 Log.Info("ReceiveLoop: finished receive function for connectionId=" + connectionId + " reason: " + exception);
-            }
-            finally
-            {
+            } finally {
                 // clean up no matter what
                 stream.Close();
                 client.Close();
@@ -174,8 +157,7 @@ namespace Telepathy
         // thread send function
         // note: we really do need one per connection, so that if one connection
         //       blocks, the rest will still continue to get sends
-        public static void SendLoop(int connectionId, TcpClient client, MagnificentSendPipe sendPipe, ManualResetEvent sendPending)
-        {
+        public static void SendLoop(int connectionId, TcpClient client, MagnificentSendPipe sendPipe, ManualResetEvent sendPending) {
             // get NetworkStream from client
             NetworkStream stream = client.GetStream();
 
@@ -186,8 +168,7 @@ namespace Telepathy
             //            on the server would use the same buffer simulatenously
             byte[] payload = null;
 
-            try
-            {
+            try {
                 while (client.Connected) // try this. client will get closed eventually.
                 {
                     // reset ManualResetEvent before we do anything else. this
@@ -201,8 +182,7 @@ namespace Telepathy
                     // dequeue & serialize all
                     // a locked{} TryDequeueAll is twice as fast as
                     // ConcurrentQueue, see SafeQueue.cs!
-                    if (sendPipe.DequeueAndSerializeAll(ref payload, out int packetSize))
-                    {
+                    if (sendPipe.DequeueAndSerializeAll(ref payload, out int packetSize)) {
                         // send messages (blocking) or stop if stream is closed
                         if (!SendMessagesBlocking(stream, payload, packetSize))
                             // break instead of return so stream close still happens!
@@ -212,24 +192,16 @@ namespace Telepathy
                     // don't choke up the CPU: wait until queue not empty anymore
                     sendPending.WaitOne();
                 }
-            }
-            catch (ThreadAbortException)
-            {
+            } catch (ThreadAbortException) {
                 // happens on stop. don't log anything.
-            }
-            catch (ThreadInterruptedException)
-            {
+            } catch (ThreadInterruptedException) {
                 // happens if receive thread interrupts send thread.
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 // something went wrong. the thread was interrupted or the
                 // connection closed or we closed our own connection or ...
                 // -> either way we should stop gracefully
                 Log.Info("SendLoop Exception: connectionId=" + connectionId + " reason: " + exception);
-            }
-            finally
-            {
+            } finally {
                 // clean up no matter what
                 // we might get SocketExceptions when sending if the 'host has
                 // failed to respond' - in which case we should close the connection

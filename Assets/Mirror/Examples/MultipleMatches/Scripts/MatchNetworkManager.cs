@@ -5,11 +5,9 @@
 	API Reference: https://mirror-networking.com/docs/api/Mirror.NetworkManager.html
 */
 
-namespace Mirror.Examples.MultipleMatch
-{
+namespace Mirror.Examples.MultipleMatch {
     [AddComponentMenu("")]
-    public class MatchNetworkManager : NetworkManager
-    {
+    public class MatchNetworkManager : NetworkManager {
         [Header("Match GUI")]
         public GameObject canvas;
         public CanvasController canvasController;
@@ -20,8 +18,7 @@ namespace Mirror.Examples.MultipleMatch
         /// Runs on both Server and Client
         /// Networking is NOT initialized when this fires
         /// </summary>
-        public override void Awake()
-        {
+        public override void Awake() {
             base.Awake();
             canvasController.InitializeData();
         }
@@ -35,8 +32,7 @@ namespace Mirror.Examples.MultipleMatch
         /// <para>The default implementation of this function calls NetworkServer.SetClientReady() to continue the network setup process.</para>
         /// </summary>
         /// <param name="conn">Connection from client.</param>
-        public override void OnServerReady(NetworkConnection conn)
-        {
+        public override void OnServerReady(NetworkConnection conn) {
             base.OnServerReady(conn);
             canvasController.OnServerReady(conn);
         }
@@ -46,8 +42,7 @@ namespace Mirror.Examples.MultipleMatch
         /// <para>This is called on the Server when a Client disconnects from the Server. Use an override to decide what should happen when a disconnection is detected.</para>
         /// </summary>
         /// <param name="conn">Connection from client.</param>
-        public override void OnServerDisconnect(NetworkConnection conn)
-        {
+        public override void OnServerDisconnect(NetworkConnection conn) {
             canvasController.OnServerDisconnect(conn);
             base.OnServerDisconnect(conn);
         }
@@ -61,8 +56,7 @@ namespace Mirror.Examples.MultipleMatch
         /// <para>The default implementation of this function sets the client as ready and adds a player. Override the function to dictate what happens when the client connects.</para>
         /// </summary>
         /// <param name="conn">Connection to the server.</param>
-        public override void OnClientConnect(NetworkConnection conn)
-        {
+        public override void OnClientConnect(NetworkConnection conn) {
             base.OnClientConnect(conn);
             canvasController.OnClientConnect(conn);
         }
@@ -72,8 +66,7 @@ namespace Mirror.Examples.MultipleMatch
         /// <para>This is called on the client when it disconnects from the server. Override this function to decide what happens when the client disconnects.</para>
         /// </summary>
         /// <param name="conn">Connection to the server.</param>
-        public override void OnClientDisconnect(NetworkConnection conn)
-        {
+        public override void OnClientDisconnect(NetworkConnection conn) {
             canvasController.OnClientDisconnect();
             base.OnClientDisconnect(conn);
         }
@@ -86,9 +79,8 @@ namespace Mirror.Examples.MultipleMatch
         /// This is invoked when a server is started - including when a host is started.
         /// <para>StartServer has multiple signatures, but they all cause this hook to be called.</para>
         /// </summary>
-        public override void OnStartServer()
-        {
-            if (mode == NetworkManagerMode.ServerOnly) 
+        public override void OnStartServer() {
+            if (mode == NetworkManagerMode.ServerOnly)
                 canvas.SetActive(true);
 
             canvasController.OnStartServer();
@@ -97,8 +89,7 @@ namespace Mirror.Examples.MultipleMatch
         /// <summary>
         /// This is invoked when the client is started.
         /// </summary>
-        public override void OnStartClient()
-        {
+        public override void OnStartClient() {
             canvas.SetActive(true);
             canvasController.OnStartClient();
         }
@@ -106,8 +97,7 @@ namespace Mirror.Examples.MultipleMatch
         /// <summary>
         /// This is called when a server is stopped - including when a host is stopped.
         /// </summary>
-        public override void OnStopServer()
-        {
+        public override void OnStopServer() {
             canvasController.OnStopServer();
             canvas.SetActive(false);
         }
@@ -115,8 +105,7 @@ namespace Mirror.Examples.MultipleMatch
         /// <summary>
         /// This is called when a client is stopped.
         /// </summary>
-        public override void OnStopClient()
-        {
+        public override void OnStopClient() {
             canvasController.OnStopClient();
         }
 

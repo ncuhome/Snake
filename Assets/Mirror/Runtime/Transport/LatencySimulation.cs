@@ -6,10 +6,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Mirror
-{
-    struct QueuedMessage
-    {
+namespace Mirror {
+    struct QueuedMessage {
         public int connectionId;
         public byte[] bytes;
         public float time;
@@ -17,8 +15,7 @@ namespace Mirror
 
     [HelpURL("https://mirror-networking.gitbook.io/docs/transports/latency-simulaton-transport")]
     [DisallowMultipleComponent]
-    public class LatencySimulation : Transport
-    {
+    public class LatencySimulation : Transport {
         public Transport wrap;
 
         [Header("Common")]
@@ -56,8 +53,7 @@ namespace Mirror
         // => NextDouble() is ALWAYS < 1 so loss=1 always drops!
         System.Random random = new System.Random();
 
-        public void Awake()
-        {
+        public void Awake() {
             if (wrap == null)
                 throw new Exception("PressureDrop requires an underlying transport to wrap around.");
         }
@@ -70,8 +66,7 @@ namespace Mirror
         protected virtual float Noise(float time) => Mathf.PerlinNoise(time, time);
 
         // helper function to simulate latency
-        float SimulateLatency(int channeldId)
-        {
+        float SimulateLatency(int channeldId) {
             // spike over perlin noise.
             // no spikes isn't realistic.
             // sin is too predictable / no realistic.
@@ -79,8 +74,7 @@ namespace Mirror
             float spike = Noise(Time.time * latencySpikeSpeedMultiplier) * latencySpikeMultiplier;
 
             // base latency
-            switch (channeldId)
-            {
+            switch (channeldId) {
                 case Channels.Reliable:
                     return reliableLatency + spike;
                 case Channels.Unreliable:
@@ -91,23 +85,20 @@ namespace Mirror
         }
 
         // helper function to simulate a send with latency/loss/scramble
-        void SimulateSend(int connectionId, ArraySegment<byte> segment, int channelId, float latency, List<QueuedMessage> reliableQueue, List<QueuedMessage> unreliableQueue)
-        {
+        void SimulateSend(int connectionId, ArraySegment<byte> segment, int channelId, float latency, List<QueuedMessage> reliableQueue, List<QueuedMessage> unreliableQueue) {
             // segment is only valid after returning. copy it.
             // (allocates for now. it's only for testing anyway.)
             byte[] bytes = new byte[segment.Count];
             Buffer.BlockCopy(segment.Array, segment.Offset, bytes, 0, segment.Count);
 
             // enqueue message. send after latency interval.
-            QueuedMessage message = new QueuedMessage
-            {
+            QueuedMessage message = new QueuedMessage {
                 connectionId = connectionId,
                 bytes = bytes,
                 time = Time.time + latency
             };
 
-            switch (channelId)
-            {
+            switch (channelId) {
                 case Channels.Reliable:
                     // simulate latency
                     reliableQueue.Add(message);
@@ -115,8 +106,7 @@ namespace Mirror
                 case Channels.Unreliable:
                     // simulate packet loss
                     bool drop = random.NextDouble() < unreliableLoss;
-                    if (!drop)
-                    {
+                    if (!drop) {
                         // simulate scramble (Random.Next is < max, so +1)
                         bool scramble = random.NextDouble() < unreliableScramble;
                         int last = unreliableQueue.Count;
@@ -134,8 +124,7 @@ namespace Mirror
 
         public override bool Available() => wrap.Available();
 
-        public override void ClientConnect(string address)
-        {
+        public override void ClientConnect(string address) {
             wrap.OnClientConnected = OnClientConnected;
             wrap.OnClientDataReceived = OnClientDataReceived;
             wrap.OnClientError = OnClientError;
@@ -143,8 +132,7 @@ namespace Mirror
             wrap.ClientConnect(address);
         }
 
-        public override void ClientConnect(Uri uri)
-        {
+        public override void ClientConnect(Uri uri) {
             wrap.OnClientConnected = OnClientConnected;
             wrap.OnClientDataReceived = OnClientDataReceived;
             wrap.OnClientError = OnClientError;
@@ -154,15 +142,13 @@ namespace Mirror
 
         public override bool ClientConnected() => wrap.ClientConnected();
 
-        public override void ClientDisconnect()
-        {
+        public override void ClientDisconnect() {
             wrap.ClientDisconnect();
             reliableClientToServer.Clear();
             unreliableClientToServer.Clear();
         }
 
-        public override void ClientSend(ArraySegment<byte> segment, int channelId)
-        {
+        public override void ClientSend(ArraySegment<byte> segment, int channelId) {
             float latency = SimulateLatency(channelId);
             SimulateSend(0, segment, channelId, latency, reliableClientToServer, unreliableClientToServer);
         }
@@ -175,14 +161,12 @@ namespace Mirror
 
         public override void ServerDisconnect(int connectionId) => wrap.ServerDisconnect(connectionId);
 
-        public override void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId)
-        {
+        public override void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId) {
             float latency = SimulateLatency(channelId);
             SimulateSend(connectionId, segment, channelId, latency, reliableServerToClient, unreliableServerToClient);
         }
 
-        public override void ServerStart()
-        {
+        public override void ServerStart() {
             wrap.OnServerConnected = OnServerConnected;
             wrap.OnServerDataReceived = OnServerDataReceived;
             wrap.OnServerError = OnServerError;
@@ -190,8 +174,7 @@ namespace Mirror
             wrap.ServerStart();
         }
 
-        public override void ServerStop()
-        {
+        public override void ServerStop() {
             wrap.ServerStop();
             reliableServerToClient.Clear();
             unreliableServerToClient.Clear();
@@ -199,15 +182,12 @@ namespace Mirror
 
         public override void ClientEarlyUpdate() => wrap.ClientEarlyUpdate();
         public override void ServerEarlyUpdate() => wrap.ServerEarlyUpdate();
-        public override void ClientLateUpdate()
-        {
+        public override void ClientLateUpdate() {
             // flush reliable messages after latency
-            while (reliableClientToServer.Count > 0)
-            {
+            while (reliableClientToServer.Count > 0) {
                 // check the first message time
                 QueuedMessage message = reliableClientToServer[0];
-                if (message.time <= Time.time)
-                {
+                if (message.time <= Time.time) {
                     // send and eat
                     wrap.ClientSend(new ArraySegment<byte>(message.bytes), Channels.Reliable);
                     reliableClientToServer.RemoveAt(0);
@@ -217,12 +197,10 @@ namespace Mirror
             }
 
             // flush unreliable messages after latency
-            while (unreliableClientToServer.Count > 0)
-            {
+            while (unreliableClientToServer.Count > 0) {
                 // check the first message time
                 QueuedMessage message = unreliableClientToServer[0];
-                if (message.time <= Time.time)
-                {
+                if (message.time <= Time.time) {
                     // send and eat
                     wrap.ClientSend(new ArraySegment<byte>(message.bytes), Channels.Unreliable);
                     unreliableClientToServer.RemoveAt(0);
@@ -234,15 +212,12 @@ namespace Mirror
             // update wrapped transport too
             wrap.ClientLateUpdate();
         }
-        public override void ServerLateUpdate()
-        {
+        public override void ServerLateUpdate() {
             // flush reliable messages after latency
-            while (reliableServerToClient.Count > 0)
-            {
+            while (reliableServerToClient.Count > 0) {
                 // check the first message time
                 QueuedMessage message = reliableServerToClient[0];
-                if (message.time <= Time.time)
-                {
+                if (message.time <= Time.time) {
                     // send and eat
                     wrap.ServerSend(message.connectionId, new ArraySegment<byte>(message.bytes), Channels.Reliable);
                     reliableServerToClient.RemoveAt(0);
@@ -252,12 +227,10 @@ namespace Mirror
             }
 
             // flush unreliable messages after latency
-            while (unreliableServerToClient.Count > 0)
-            {
+            while (unreliableServerToClient.Count > 0) {
                 // check the first message time
                 QueuedMessage message = unreliableServerToClient[0];
-                if (message.time <= Time.time)
-                {
+                if (message.time <= Time.time) {
                     // send and eat
                     wrap.ServerSend(message.connectionId, new ArraySegment<byte>(message.bytes), Channels.Unreliable);
                     unreliableServerToClient.RemoveAt(0);

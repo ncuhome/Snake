@@ -1,23 +1,20 @@
 using System;
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     /// <summary>
     /// Component that will display the clients ping in milliseconds
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Network/NetworkPingDisplay")]
     [HelpURL("https://mirror-networking.gitbook.io/docs/components/network-ping-display")]
-    public class NetworkPingDisplay : MonoBehaviour
-    {
+    public class NetworkPingDisplay : MonoBehaviour {
         public Color color = Color.white;
         public int padding = 2;
         int width = 150;
         int height = 25;
 
-        void OnGUI()
-        {
+        void OnGUI() {
             // only while client is active
             if (!NetworkClient.active) return;
 

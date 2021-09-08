@@ -12,25 +12,21 @@
 //
 // Note: normal Debug.Log messages can be shown by building in Debug/Development
 //       mode.
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
-namespace Mirror
-{
-    struct LogEntry
-    {
+namespace Mirror {
+    struct LogEntry {
         public string message;
         public LogType type;
 
-        public LogEntry(string message, LogType type)
-        {
+        public LogEntry(string message, LogType type) {
             this.message = message;
             this.type = type;
         }
     }
 
-    public class GUIConsole : MonoBehaviour
-    {
+    public class GUIConsole : MonoBehaviour {
         public int height = 150;
 
         // only keep the recent 'n' entries. otherwise memory would grow forever
@@ -49,16 +45,14 @@ namespace Mirror
         bool visible;
         Vector2 scroll = Vector2.zero;
 
-        void Awake()
-        {
+        void Awake() {
             Application.logMessageReceived += OnLog;
         }
 
         // OnLog logs everything, even Debug.Log messages in release builds
         // => this makes a lot of things easier. e.g. addon initialization logs.
         // => it's really better to have than not to have those
-        void OnLog(string message, string stackTrace, LogType type)
-        {
+        void OnLog(string message, string stackTrace, LogType type) {
             // is this important?
             bool isImportant = type == LogType.Error || type == LogType.Exception;
 
@@ -85,19 +79,16 @@ namespace Mirror
             scroll.y = float.MaxValue;
         }
 
-        void Update()
-        {
+        void Update() {
             if (Input.GetKeyDown(hotKey))
                 visible = !visible;
         }
 
-        void OnGUI()
-        {
+        void OnGUI() {
             if (!visible) return;
 
             scroll = GUILayout.BeginScrollView(scroll, "Box", GUILayout.Width(Screen.width), GUILayout.Height(height));
-            foreach (LogEntry entry in log)
-            {
+            foreach (LogEntry entry in log) {
                 if (entry.type == LogType.Error || entry.type == LogType.Exception)
                     GUI.color = Color.red;
                 else if (entry.type == LogType.Warning)

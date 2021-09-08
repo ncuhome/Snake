@@ -3,25 +3,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     [DisallowMultipleComponent]
-    public abstract class InterestManagement : MonoBehaviour
-    {
+    public abstract class InterestManagement : MonoBehaviour {
         // Awake configures InterestManagement in NetworkServer/Client
-        void Awake()
-        {
-            if (NetworkServer.aoi == null)
-            {
+        void Awake() {
+            if (NetworkServer.aoi == null) {
                 NetworkServer.aoi = this;
-            }
-            else Debug.LogError($"Only one InterestManagement component allowed. {NetworkServer.aoi.GetType()} has been set up already.");
+            } else Debug.LogError($"Only one InterestManagement component allowed. {NetworkServer.aoi.GetType()} has been set up already.");
 
-            if (NetworkClient.aoi == null)
-            {
+            if (NetworkClient.aoi == null) {
                 NetworkClient.aoi = this;
-            }
-            else Debug.LogError($"Only one InterestManagement component allowed. {NetworkClient.aoi.GetType()} has been set up already.");
+            } else Debug.LogError($"Only one InterestManagement component allowed. {NetworkClient.aoi.GetType()} has been set up already.");
         }
 
         // Callback used by the visibility system to determine if an observer
@@ -56,10 +49,8 @@ namespace Mirror
         // scene changes and so on.
         //
         // IMPORTANT: check if NetworkServer.active when using Update()!
-        protected void RebuildAll()
-        {
-            foreach (NetworkIdentity identity in NetworkIdentity.spawned.Values)
-            {
+        protected void RebuildAll() {
+            foreach (NetworkIdentity identity in NetworkIdentity.spawned.Values) {
                 NetworkServer.RebuildObservers(identity, false);
             }
         }
@@ -72,18 +63,17 @@ namespace Mirror
         // object. This is only called on local clients on a host.
         // => need the function in here and virtual so people can overwrite!
         // => not everyone wants to hide renderers!
-        public virtual void SetHostVisibility(NetworkIdentity identity, bool visible)
-        {
+        public virtual void SetHostVisibility(NetworkIdentity identity, bool visible) {
             foreach (Renderer rend in identity.GetComponentsInChildren<Renderer>())
                 rend.enabled = visible;
         }
 
         /// <summary>Called on the server when a new networked object is spawned.</summary>
         // (useful for 'only rebuild if changed' interest management algorithms)
-        public virtual void OnSpawned(NetworkIdentity identity) {}
+        public virtual void OnSpawned(NetworkIdentity identity) { }
 
         /// <summary>Called on the server when a networked object is destroyed.</summary>
         // (useful for 'only rebuild if changed' interest management algorithms)
-        public virtual void OnDestroyed(NetworkIdentity identity) {}
+        public virtual void OnDestroyed(NetworkIdentity identity) { }
     }
 }

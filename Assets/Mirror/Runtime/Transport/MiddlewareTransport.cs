@@ -1,14 +1,12 @@
 using System;
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     /// <summary>
     /// Allows Middleware to override some of the transport methods or let the inner transport handle them.
     /// </summary>
     [DisallowMultipleComponent]
-    public abstract class MiddlewareTransport : Transport
-    {
+    public abstract class MiddlewareTransport : Transport {
         /// <summary>
         /// Transport to call to after middleware
         /// </summary>
@@ -19,8 +17,7 @@ namespace Mirror
         public override void Shutdown() => inner.Shutdown();
 
         #region Client
-        public override void ClientConnect(string address)
-        {
+        public override void ClientConnect(string address) {
             inner.OnClientConnected = OnClientConnected;
             inner.OnClientDataReceived = OnClientDataReceived;
             inner.OnClientDisconnected = OnClientDisconnected;
@@ -35,8 +32,7 @@ namespace Mirror
 
         #region Server
         public override bool ServerActive() => inner.ServerActive();
-        public override void ServerStart()
-        {
+        public override void ServerStart() {
             inner.OnServerConnected = OnServerConnected;
             inner.OnServerDataReceived = OnServerDataReceived;
             inner.OnServerDisconnected = OnServerDisconnected;

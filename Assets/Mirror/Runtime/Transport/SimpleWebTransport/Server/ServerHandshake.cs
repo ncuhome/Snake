@@ -3,14 +3,12 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Mirror.SimpleWeb
-{
+namespace Mirror.SimpleWeb {
     /// <summary>
     /// Handles Handshakes from new clients on the server
     /// <para>The server handshake has buffers to reduce allocations when clients connect</para>
     /// </summary>
-    internal class ServerHandshake
-    {
+    internal class ServerHandshake {
         const int GetSize = 3;
         const int ResponseLength = 129;
         const int KeyLength = 24;
@@ -22,30 +20,25 @@ namespace Mirror.SimpleWeb
         readonly SHA1 sha1 = SHA1.Create();
         readonly BufferPool bufferPool;
 
-        public ServerHandshake(BufferPool bufferPool, int handshakeMaxSize)
-        {
+        public ServerHandshake(BufferPool bufferPool, int handshakeMaxSize) {
             this.bufferPool = bufferPool;
             this.maxHttpHeaderSize = handshakeMaxSize;
         }
 
-        ~ServerHandshake()
-        {
+        ~ServerHandshake() {
             sha1.Dispose();
         }
 
-        public bool TryHandshake(Connection conn)
-        {
+        public bool TryHandshake(Connection conn) {
             Stream stream = conn.stream;
 
-            using (ArrayBuffer getHeader = bufferPool.Take(GetSize))
-            {
+            using (ArrayBuffer getHeader = bufferPool.Take(GetSize)) {
                 if (!ReadHelper.TryRead(stream, getHeader.array, 0, GetSize))
                     return false;
                 getHeader.count = GetSize;
 
 
-                if (!IsGet(getHeader.array))
-                {
+                if (!IsGet(getHeader.array)) {
                     Log.Warn($"First bytes from client was not 'GET' for handshake, instead was {Log.BufferToString(getHeader.array, 0, GetSize)}");
                     return false;
                 }
@@ -57,22 +50,17 @@ namespace Mirror.SimpleWeb
             if (string.IsNullOrEmpty(msg))
                 return false;
 
-            try
-            {
+            try {
                 AcceptHandshake(stream, msg);
                 return true;
-            }
-            catch (ArgumentException e)
-            {
+            } catch (ArgumentException e) {
                 Log.InfoException(e);
                 return false;
             }
         }
 
-        string ReadToEndForHandshake(Stream stream)
-        {
-            using (ArrayBuffer readBuffer = bufferPool.Take(maxHttpHeaderSize))
-            {
+        string ReadToEndForHandshake(Stream stream) {
+            using (ArrayBuffer readBuffer = bufferPool.Take(maxHttpHeaderSize)) {
                 int? readCountOrFail = ReadHelper.SafeReadTillMatch(stream, readBuffer.array, 0, maxHttpHeaderSize, Constants.endOfHandshake);
                 if (!readCountOrFail.HasValue)
                     return null;
@@ -86,20 +74,17 @@ namespace Mirror.SimpleWeb
             }
         }
 
-        static bool IsGet(byte[] getHeader)
-        {
+        static bool IsGet(byte[] getHeader) {
             // just check bytes here instead of using Encoding.ASCII
             return getHeader[0] == 71 && // G
                    getHeader[1] == 69 && // E
                    getHeader[2] == 84;   // T
         }
 
-        void AcceptHandshake(Stream stream, string msg)
-        {
+        void AcceptHandshake(Stream stream, string msg) {
             using (
                 ArrayBuffer keyBuffer = bufferPool.Take(KeyLength),
-                            responseBuffer = bufferPool.Take(ResponseLength))
-            {
+                            responseBuffer = bufferPool.Take(ResponseLength)) {
                 GetKey(msg, keyBuffer.array);
                 AppendGuid(keyBuffer.array);
                 byte[] keyHash = CreateHash(keyBuffer.array);
@@ -110,28 +95,24 @@ namespace Mirror.SimpleWeb
         }
 
 
-        static void GetKey(string msg, byte[] keyBuffer)
-        {
+        static void GetKey(string msg, byte[] keyBuffer) {
             int start = msg.IndexOf(KeyHeaderString) + KeyHeaderString.Length;
 
             Log.Verbose($"Handshake Key: {msg.Substring(start, KeyLength)}");
             Encoding.ASCII.GetBytes(msg, start, KeyLength, keyBuffer, 0);
         }
 
-        static void AppendGuid(byte[] keyBuffer)
-        {
+        static void AppendGuid(byte[] keyBuffer) {
             Buffer.BlockCopy(Constants.HandshakeGUIDBytes, 0, keyBuffer, KeyLength, Constants.HandshakeGUID.Length);
         }
 
-        byte[] CreateHash(byte[] keyBuffer)
-        {
+        byte[] CreateHash(byte[] keyBuffer) {
             Log.Verbose($"Handshake Hashing {Encoding.ASCII.GetString(keyBuffer, 0, MergedKeyLength)}");
 
             return sha1.ComputeHash(keyBuffer, 0, MergedKeyLength);
         }
 
-        static void CreateResponse(byte[] keyHash, byte[] responseBuffer)
-        {
+        static void CreateResponse(byte[] keyHash, byte[] responseBuffer) {
             string keyHashString = Convert.ToBase64String(keyHash);
 
             // compiler should merge these strings into 1 string before format

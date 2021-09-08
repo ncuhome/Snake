@@ -21,10 +21,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Mirror
-{
-    public abstract class NetworkTransformBase : NetworkBehaviour
-    {
+namespace Mirror {
+    public abstract class NetworkTransformBase : NetworkBehaviour {
         // TODO SyncDirection { CLIENT_TO_SERVER, SERVER_TO_CLIENT } is easier?
         [Header("Authority")]
         [Tooltip("Set to true if moves come from owner client, set to false if moves always come from server")]
@@ -106,8 +104,7 @@ namespace Mirror
         // snapshot functions //////////////////////////////////////////////////
         // construct a snapshot of the current state
         // => internal for testing
-        protected virtual NTSnapshot ConstructSnapshot()
-        {
+        protected virtual NTSnapshot ConstructSnapshot() {
             // NetworkTime.localTime for double precision until Unity has it too
             return new NTSnapshot(
                 // our local time is what the other end uses as remote time
@@ -130,8 +127,7 @@ namespace Mirror
         //
         // NOTE: stuck detection is unnecessary here.
         //       we always set transform.position anyway, we can't get stuck.
-        protected virtual void ApplySnapshot(NTSnapshot start, NTSnapshot goal, NTSnapshot interpolated)
-        {
+        protected virtual void ApplySnapshot(NTSnapshot start, NTSnapshot goal, NTSnapshot interpolated) {
             // local position/rotation for VR support
             //
             // if syncPosition/Rotation/Scale is disabled then we received nulls
@@ -156,8 +152,7 @@ namespace Mirror
             OnClientToServerSync(position, rotation, scale);
 
         // local authority client sends sync message to server for broadcasting
-        protected virtual void OnClientToServerSync(Vector3? position, Quaternion? rotation, Vector3? scale)
-        {
+        protected virtual void OnClientToServerSync(Vector3? position, Quaternion? rotation, Vector3? scale) {
             // only apply if in client authority mode
             if (!clientAuthority) return;
 
@@ -199,8 +194,7 @@ namespace Mirror
             OnServerToClientSync(position, rotation, scale);
 
         // server broadcasts sync message to all clients
-        protected virtual void OnServerToClientSync(Vector3? position, Quaternion? rotation, Vector3? scale)
-        {
+        protected virtual void OnServerToClientSync(Vector3? position, Quaternion? rotation, Vector3? scale) {
             // in host mode, the server sends rpcs to all clients.
             // the host client itself will receive them too.
             // -> host server is always the source of truth
@@ -246,8 +240,7 @@ namespace Mirror
         }
 
         // update //////////////////////////////////////////////////////////////
-        void UpdateServer()
-        {
+        void UpdateServer() {
             // broadcast to all clients each 'sendInterval'
             // (client with authority will drop the rpc)
             // NetworkTime.localTime for double precision until Unity has it too
@@ -269,15 +262,14 @@ namespace Mirror
             // DO NOT send nulls if not changed 'since last send' either. we
             // send unreliable and don't know which 'last send' the other end
             // received successfully.
-            if (NetworkTime.localTime >= lastServerSendTime + sendInterval)
-            {
+            if (NetworkTime.localTime >= lastServerSendTime + sendInterval) {
                 // send snapshot without timestamp.
                 // receiver gets it from batch timestamp to save bandwidth.
                 NTSnapshot snapshot = ConstructSnapshot();
                 RpcServerToClientSync(
                     // only sync what the user wants to sync
                     syncPosition ? snapshot.position : new Vector3?(),
-                    syncRotation? snapshot.rotation : new Quaternion?(),
+                    syncRotation ? snapshot.rotation : new Quaternion?(),
                     syncScale ? snapshot.scale : new Vector3?()
                 );
 
@@ -290,8 +282,7 @@ namespace Mirror
             // -> don't apply for host mode player objects either, even if in
             //    client authority mode. if it doesn't go over the network,
             //    then we don't need to do anything.
-            if (clientAuthority && !hasAuthority)
-            {
+            if (clientAuthority && !hasAuthority) {
                 // compute snapshot interpolation & apply if any was spit out
                 // TODO we don't have Time.deltaTime double yet. float is fine.
                 if (SnapshotInterpolation.Compute(
@@ -300,8 +291,7 @@ namespace Mirror
                     bufferTime, serverBuffer,
                     catchupThreshold, catchupMultiplier,
                     Interpolate,
-                    out NTSnapshot computed))
-                {
+                    out NTSnapshot computed)) {
                     NTSnapshot start = serverBuffer.Values[0];
                     NTSnapshot goal = serverBuffer.Values[1];
                     ApplySnapshot(start, goal, computed);
@@ -309,11 +299,9 @@ namespace Mirror
             }
         }
 
-        void UpdateClient()
-        {
+        void UpdateClient() {
             // client authority, and local player (= allowed to move myself)?
-            if (IsClientWithAuthority)
-            {
+            if (IsClientWithAuthority) {
                 // send to server each 'sendInterval'
                 // NetworkTime.localTime for double precision until Unity has it too
                 //
@@ -334,15 +322,14 @@ namespace Mirror
                 // DO NOT send nulls if not changed 'since last send' either. we
                 // send unreliable and don't know which 'last send' the other end
                 // received successfully.
-                if (NetworkTime.localTime >= lastClientSendTime + sendInterval)
-                {
+                if (NetworkTime.localTime >= lastClientSendTime + sendInterval) {
                     // send snapshot without timestamp.
                     // receiver gets it from batch timestamp to save bandwidth.
                     NTSnapshot snapshot = ConstructSnapshot();
                     CmdClientToServerSync(
                         // only sync what the user wants to sync
                         syncPosition ? snapshot.position : new Vector3?(),
-                        syncRotation? snapshot.rotation : new Quaternion?(),
+                        syncRotation ? snapshot.rotation : new Quaternion?(),
                         syncScale ? snapshot.scale : new Vector3?()
                     );
 
@@ -351,8 +338,7 @@ namespace Mirror
             }
             // for all other clients (and for local player if !authority),
             // we need to apply snapshots from the buffer
-            else
-            {
+            else {
                 // compute snapshot interpolation & apply if any was spit out
                 // TODO we don't have Time.deltaTime double yet. float is fine.
                 if (SnapshotInterpolation.Compute(
@@ -361,8 +347,7 @@ namespace Mirror
                     bufferTime, clientBuffer,
                     catchupThreshold, catchupMultiplier,
                     Interpolate,
-                    out NTSnapshot computed))
-                {
+                    out NTSnapshot computed)) {
                     NTSnapshot start = clientBuffer.Values[0];
                     NTSnapshot goal = clientBuffer.Values[1];
                     ApplySnapshot(start, goal, computed);
@@ -370,8 +355,7 @@ namespace Mirror
             }
         }
 
-        void Update()
-        {
+        void Update() {
             // if server then always sync to others.
             if (isServer) UpdateServer();
             // 'else if' because host mode shouldn't send anything to server.
@@ -380,8 +364,7 @@ namespace Mirror
         }
 
         // common Teleport code for client->server and server->client
-        protected virtual void OnTeleport(Vector3 destination)
-        {
+        protected virtual void OnTeleport(Vector3 destination) {
             // reset any in-progress interpolation & buffers
             Reset();
 
@@ -399,8 +382,7 @@ namespace Mirror
         // otherwise it would interpolate to a (far away) new position.
         // => manually calling Teleport is the only 100% reliable solution.
         [ClientRpc]
-        public void RpcTeleport(Vector3 destination)
-        {
+        public void RpcTeleport(Vector3 destination) {
             // NOTE: even in client authority mode, the server is always allowed
             //       to teleport the player. for example:
             //       * CmdEnterPortal() might teleport the player
@@ -415,8 +397,7 @@ namespace Mirror
         // otherwise it would interpolate to a (far away) new position.
         // => manually calling Teleport is the only 100% reliable solution.
         [Command]
-        public void CmdTeleport(Vector3 destination)
-        {
+        public void CmdTeleport(Vector3 destination) {
             // client can only teleport objects that it has authority over.
             if (!clientAuthority) return;
 
@@ -433,8 +414,7 @@ namespace Mirror
             RpcTeleport(destination);
         }
 
-        protected virtual void Reset()
-        {
+        protected virtual void Reset() {
             // disabled objects aren't updated anymore.
             // so let's clear the buffers.
             serverBuffer.Clear();
@@ -448,8 +428,7 @@ namespace Mirror
         protected virtual void OnDisable() => Reset();
         protected virtual void OnEnable() => Reset();
 
-        protected virtual void OnValidate()
-        {
+        protected virtual void OnValidate() {
             // make sure that catchup threshold is > buffer multiplier.
             // for a buffer multiplier of '3', we usually have at _least_ 3
             // buffered snapshots. often 4-5 even.
@@ -460,8 +439,7 @@ namespace Mirror
         }
 
         // debug ///////////////////////////////////////////////////////////////
-        protected virtual void OnGUI()
-        {
+        protected virtual void OnGUI() {
             if (!showOverlay) return;
 
             // show data next to player for easier debugging. this is very useful!
@@ -473,8 +451,7 @@ namespace Mirror
             Vector3 point = Camera.main.WorldToScreenPoint(targetComponent.position);
 
             // enough alpha, in front of camera and in screen?
-            if (point.z >= 0 && Utils.IsPointInScreen(point))
-            {
+            if (point.z >= 0 && Utils.IsPointInScreen(point)) {
                 // catchup is useful to show too
                 int serverBufferExcess = Mathf.Max(serverBuffer.Count - catchupThreshold, 0);
                 int clientBufferExcess = Mathf.Max(clientBuffer.Count - catchupThreshold, 0);
@@ -488,19 +465,18 @@ namespace Mirror
                 // obvious if we accidentally populate both.
                 GUILayout.Label($"Server Buffer:{serverBuffer.Count}");
                 if (serverCatchup > 0)
-                    GUILayout.Label($"Server Catchup:{serverCatchup*100:F2}%");
+                    GUILayout.Label($"Server Catchup:{serverCatchup * 100:F2}%");
 
                 GUILayout.Label($"Client Buffer:{clientBuffer.Count}");
                 if (clientCatchup > 0)
-                    GUILayout.Label($"Client Catchup:{clientCatchup*100:F2}%");
+                    GUILayout.Label($"Client Catchup:{clientCatchup * 100:F2}%");
 
                 GUILayout.EndArea();
                 GUI.color = Color.white;
             }
         }
 
-        protected virtual void DrawGizmos(SortedList<double, NTSnapshot> buffer)
-        {
+        protected virtual void DrawGizmos(SortedList<double, NTSnapshot> buffer) {
             // only draw if we have at least two entries
             if (buffer.Count < 2) return;
 
@@ -511,8 +487,7 @@ namespace Mirror
 
             // draw the whole buffer for easier debugging.
             // it's worth seeing how much we have buffered ahead already
-            for (int i = 0; i < buffer.Count; ++i)
-            {
+            for (int i = 0; i < buffer.Count; ++i) {
                 // color depends on if old enough or not
                 NTSnapshot entry = buffer.Values[i];
                 bool oldEnough = entry.localTimestamp <= threshold;
@@ -527,8 +502,7 @@ namespace Mirror
             Gizmos.DrawLine(targetComponent.position, buffer.Values[1].position);
         }
 
-        protected virtual void OnDrawGizmos()
-        {
+        protected virtual void OnDrawGizmos() {
             if (!showGizmos) return;
 
             if (isServer) DrawGizmos(serverBuffer);

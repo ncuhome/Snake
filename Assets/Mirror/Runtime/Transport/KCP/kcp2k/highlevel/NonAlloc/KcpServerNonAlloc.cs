@@ -5,23 +5,19 @@ using System.Net;
 using System.Net.Sockets;
 using WhereAllocation;
 
-namespace kcp2k
-{
-    public class KcpServerNonAlloc : KcpServer
-    {
+namespace kcp2k {
+    public class KcpServerNonAlloc : KcpServer {
         IPEndPointNonAlloc reusableClientEP;
 
         public KcpServerNonAlloc(Action<int> OnConnected, Action<int, ArraySegment<byte>> OnData, Action<int> OnDisconnected, bool DualMode, bool NoDelay, uint Interval, int FastResend = 0, bool CongestionWindow = true, uint SendWindowSize = Kcp.WND_SND, uint ReceiveWindowSize = Kcp.WND_RCV, int Timeout = KcpConnection.DEFAULT_TIMEOUT)
-            : base(OnConnected, OnData, OnDisconnected, DualMode, NoDelay, Interval, FastResend, CongestionWindow, SendWindowSize, ReceiveWindowSize, Timeout)
-        {
+            : base(OnConnected, OnData, OnDisconnected, DualMode, NoDelay, Interval, FastResend, CongestionWindow, SendWindowSize, ReceiveWindowSize, Timeout) {
             // create reusableClientEP either IPv4 or IPv6
             reusableClientEP = DualMode
                 ? new IPEndPointNonAlloc(IPAddress.IPv6Any, 0)
                 : new IPEndPointNonAlloc(IPAddress.Any, 0);
         }
 
-        protected override int ReceiveFrom(byte[] buffer, out int connectionHash)
-        {
+        protected override int ReceiveFrom(byte[] buffer, out int connectionHash) {
             // where-allocation nonalloc ReceiveFrom.
             int read = socket.ReceiveFrom_NonAlloc(buffer, 0, buffer.Length, SocketFlags.None, reusableClientEP);
             SocketAddress remoteAddress = reusableClientEP.temp;
@@ -31,8 +27,7 @@ namespace kcp2k
             return read;
         }
 
-        protected override KcpServerConnection CreateConnection()
-        {
+        protected override KcpServerConnection CreateConnection() {
             // IPEndPointNonAlloc is reused all the time.
             // we can't store that as the connection's endpoint.
             // we need a new copy!

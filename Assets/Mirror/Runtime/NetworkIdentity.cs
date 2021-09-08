@@ -5,25 +5,23 @@ using UnityEngine;
 using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
-    using UnityEditor;
+using UnityEditor;
 
-    #if UNITY_2021_2_OR_NEWER
+#if UNITY_2021_2_OR_NEWER
         using UnityEditor.SceneManagement;
-    #elif UNITY_2018_3_OR_NEWER
-        using UnityEditor.Experimental.SceneManagement;
-    #endif
+#elif UNITY_2018_3_OR_NEWER
+using UnityEditor.Experimental.SceneManagement;
+#endif
 #endif
 
-namespace Mirror
-{
+namespace Mirror {
     // Default = use interest management
     // ForceHidden = useful to hide monsters while they respawn etc.
     // ForceShown = useful to have score NetworkIdentities that always broadcast
     //              to everyone etc.
     public enum Visibility { Default, ForceHidden, ForceShown }
 
-    public struct NetworkIdentitySerialization
-    {
+    public struct NetworkIdentitySerialization {
         // IMPORTANT: int tick avoids floating point inaccuracy over days/weeks
         public int tick;
         public NetworkWriter ownerWriter;
@@ -37,8 +35,7 @@ namespace Mirror
     [DefaultExecutionOrder(-1)]
     [AddComponentMenu("Network/NetworkIdentity")]
     [HelpURL("https://mirror-networking.gitbook.io/docs/components/network-identity")]
-    public sealed class NetworkIdentity : MonoBehaviour
-    {
+    public sealed class NetworkIdentity : MonoBehaviour {
         /// <summary>Returns true if running as a client and this object was spawned by a server.</summary>
         //
         // IMPORTANT:
@@ -121,11 +118,9 @@ namespace Mirror
         public NetworkConnection connectionToServer { get; internal set; }
 
         /// <summary>Server's network connection to the client. This is only valid for client-owned objects (including the Player object) on the server.</summary>
-        public NetworkConnectionToClient connectionToClient
-        {
+        public NetworkConnectionToClient connectionToClient {
             get => _connectionToClient;
-            internal set
-            {
+            internal set {
                 _connectionToClient?.RemoveOwnedObject(this);
                 _connectionToClient = value;
                 _connectionToClient?.AddOwnedObject(this);
@@ -165,8 +160,7 @@ namespace Mirror
         // (timestamp is the same while inside Update)
         // => this way we don't need to pool thousands of writers either.
         // => way easier to store them per object
-        NetworkIdentitySerialization lastSerialization = new NetworkIdentitySerialization
-        {
+        NetworkIdentitySerialization lastSerialization = new NetworkIdentitySerialization {
             ownerWriter = new NetworkWriter(),
             observersWriter = new NetworkWriter()
         };
@@ -185,10 +179,8 @@ namespace Mirror
         //
         // => The solution is to serialize the string internally here and then
         //    use the real 'Guid' type for everything else via .assetId
-        public Guid assetId
-        {
-            get
-            {
+        public Guid assetId {
+            get {
 #if UNITY_EDITOR
                 // This is important because sometimes OnValidate does not run (like when adding view to prefab with no child links)
                 if (string.IsNullOrEmpty(m_AssetId))
@@ -198,27 +190,23 @@ namespace Mirror
                 // we would use 'new Guid("")'
                 return string.IsNullOrEmpty(m_AssetId) ? Guid.Empty : new Guid(m_AssetId);
             }
-            internal set
-            {
+            internal set {
                 string newAssetIdString = value == Guid.Empty ? string.Empty : value.ToString("N");
                 string oldAssetIdString = m_AssetId;
 
                 // they are the same, do nothing
-                if (oldAssetIdString == newAssetIdString)
-                {
+                if (oldAssetIdString == newAssetIdString) {
                     return;
                 }
 
                 // new is empty
-                if (string.IsNullOrEmpty(newAssetIdString))
-                {
+                if (string.IsNullOrEmpty(newAssetIdString)) {
                     Debug.LogError($"Can not set AssetId to empty guid on NetworkIdentity '{name}', old assetId '{oldAssetIdString}'");
                     return;
                 }
 
                 // old not empty
-                if (!string.IsNullOrEmpty(oldAssetIdString))
-                {
+                if (!string.IsNullOrEmpty(oldAssetIdString)) {
                     Debug.LogError($"Can not Set AssetId on NetworkIdentity '{name}' because it already had an assetId, current assetId '{oldAssetIdString}', attempted new assetId '{newAssetIdString}'");
                     return;
                 }
@@ -238,11 +226,9 @@ namespace Mirror
         public static NetworkIdentity GetSceneIdentity(ulong id) => sceneIds[id];
 
         // used when adding players
-        internal void SetClientOwner(NetworkConnection conn)
-        {
+        internal void SetClientOwner(NetworkConnection conn) {
             // do nothing if it already has an owner
-            if (connectionToClient != null && conn != connectionToClient)
-            {
+            if (connectionToClient != null && conn != connectionToClient) {
                 Debug.LogError($"Object {this} netId={netId} already has an owner. Use RemoveClientAuthority() first", this);
                 return;
             }
@@ -264,8 +250,7 @@ namespace Mirror
         public static event ClientAuthorityCallback clientAuthorityCallback;
 
         // this is used when a connection is destroyed, since the "observers" property is read-only
-        internal void RemoveObserverInternal(NetworkConnection conn)
-        {
+        internal void RemoveObserverInternal(NetworkConnection conn) {
             observers?.Remove(conn.connectionId);
         }
 
@@ -276,8 +261,7 @@ namespace Mirror
         // NetworkBehaviour components are initialized in Awake once.
         // Changing them at runtime would get client & server out of sync.
         // BUT internal so tests can add them after creating the NetworkIdentity
-        internal void InitializeNetworkBehaviours()
-        {
+        internal void InitializeNetworkBehaviours() {
             // Get all NetworkBehaviours
             // (never null. GetComponents returns [] if none found)
             NetworkBehaviours = GetComponents<NetworkBehaviour>();
@@ -285,8 +269,7 @@ namespace Mirror
                 Debug.LogError($"Only {byte.MaxValue} NetworkBehaviour components are allowed for NetworkIdentity: {name} because we send the index as byte.", this);
 
             // initialize each one
-            for (int i = 0; i < NetworkBehaviours.Length; ++i)
-            {
+            for (int i = 0; i < NetworkBehaviours.Length; ++i) {
                 NetworkBehaviour component = NetworkBehaviours[i];
                 component.netIdentity = this;
                 component.ComponentIndex = i;
@@ -295,8 +278,7 @@ namespace Mirror
 
         // Awake is only called in Play mode.
         // internal so we can call it during unit tests too.
-        internal void Awake()
-        {
+        internal void Awake() {
             // initialize NetworkBehaviour components.
             // Awake() is called immediately after initialization.
             // no one can overwrite it because NetworkIdentity is sealed.
@@ -308,8 +290,7 @@ namespace Mirror
             visibility = GetComponent<NetworkVisibility>();
 #pragma warning restore 618
 
-            if (hasSpawned)
-            {
+            if (hasSpawned) {
                 Debug.LogError($"{name} has already spawned. Don't call Instantiate for NetworkIdentities that were in the scene since the beginning (aka scene objects).  Otherwise the client won't know which object to use for a SpawnSceneObject message.");
                 SpawnedFromInstantiate = true;
                 Destroy(gameObject);
@@ -317,8 +298,7 @@ namespace Mirror
             hasSpawned = true;
         }
 
-        void OnValidate()
-        {
+        void OnValidate() {
             // OnValidate is not called when using Instantiate, so we can use
             // it to make sure that hasSpawned is false
             hasSpawned = false;
@@ -329,8 +309,7 @@ namespace Mirror
         }
 
 #if UNITY_EDITOR
-        void AssignAssetID(string path)
-        {
+        void AssignAssetID(string path) {
             // only set if not empty. fixes https://github.com/vis2k/Mirror/issues/2765
             if (!string.IsNullOrEmpty(path))
                 m_AssetId = AssetDatabase.AssetPathToGUID(path);
@@ -381,8 +360,7 @@ namespace Mirror
         // * sceneIds should never be generated temporarily for unopened scenes
         //   when building, otherwise editor and build get out of sync
         //   => BuildPipeline.isBuildingPlayer check solves that
-        void AssignSceneID()
-        {
+        void AssignSceneID() {
             // we only ever assign sceneIds at edit time, never at runtime.
             // by definition, only the original scene objects should get one.
             // -> if we assign at runtime then server and client would generate
@@ -392,8 +370,7 @@ namespace Mirror
 
             // no valid sceneId yet, or duplicate?
             bool duplicate = sceneIds.TryGetValue(sceneId, out NetworkIdentity existing) && existing != null && existing != this;
-            if (sceneId == 0 || duplicate)
-            {
+            if (sceneId == 0 || duplicate) {
                 // clear in any case, because it might have been a duplicate
                 sceneId = 0;
 
@@ -421,8 +398,7 @@ namespace Mirror
                 // only assign if not a duplicate of an existing scene id
                 // (small chance, but possible)
                 duplicate = sceneIds.TryGetValue(randomId, out existing) && existing != null && existing != this;
-                if (!duplicate)
-                {
+                if (!duplicate) {
                     sceneId = randomId;
                     //Debug.Log(name + " in scene=" + gameObject.scene.name + " sceneId assigned to: " + m_SceneId.ToString("X"));
                 }
@@ -445,8 +421,7 @@ namespace Mirror
         //    if no scene is in build settings then Editor and Build have
         //    different indices too (Editor=0, Build=-1)
         // => ONLY USE THIS FROM POSTPROCESSSCENE!
-        public void SetSceneIdSceneHashPartInternal()
-        {
+        public void SetSceneIdSceneHashPartInternal() {
             // Use `ToLower` to that because BuildPipeline.BuildPlayer is case insensitive but hash is case sensitive
             // If the scene in the project is `forest.unity` but `Forest.unity` is given to BuildPipeline then the
             // BuildPipeline will use `Forest.unity` for the build and create a different hash than the editor will.
@@ -468,11 +443,9 @@ namespace Mirror
             // Debug.Log(name + " in scene=" + gameObject.scene.name + " scene index hash(" + pathHash.ToString("X") + ") copied into sceneId: " + sceneId.ToString("X"));
         }
 
-        void SetupIDs()
-        {
+        void SetupIDs() {
             // is this a prefab?
-            if (Utils.IsPrefab(gameObject))
-            {
+            if (Utils.IsPrefab(gameObject)) {
                 // force 0 for prefabs
                 sceneId = 0;
                 AssignAssetID(gameObject);
@@ -485,8 +458,7 @@ namespace Mirror
             //    assign a sceneId and clear the assetId would still be
             //    triggered for prefabs. in other words: if we are in prefab
             //    stage, do not bother with anything else ever!
-            else if (PrefabStageUtility.GetCurrentPrefabStage() != null)
-            {
+            else if (PrefabStageUtility.GetCurrentPrefabStage() != null) {
                 // when modifying a prefab in prefab stage, Unity calls
                 // OnValidate for that prefab and for all scene objects based on
                 // that prefab.
@@ -495,8 +467,7 @@ namespace Mirror
                 // scene object based on the prefab?
                 //   * GetCurrentPrefabStage = 'are we editing ANY prefab?'
                 //   * GetPrefabStage(go) = 'are we editing THIS prefab?'
-                if (PrefabStageUtility.GetPrefabStage(gameObject) != null)
-                {
+                if (PrefabStageUtility.GetPrefabStage(gameObject) != null) {
                     // force 0 for prefabs
                     sceneId = 0;
                     //Debug.Log(name + " @ scene: " + gameObject.scene.name + " sceneid reset to 0 because CurrentPrefabStage=" + PrefabStageUtility.GetCurrentPrefabStage() + " PrefabStage=" + PrefabStageUtility.GetPrefabStage(gameObject));
@@ -512,13 +483,10 @@ namespace Mirror
                 }
             }
             // is this a scene object with prefab parent?
-            else if (Utils.IsSceneObjectWithPrefabParent(gameObject, out GameObject prefab))
-            {
+            else if (Utils.IsSceneObjectWithPrefabParent(gameObject, out GameObject prefab)) {
                 AssignSceneID();
                 AssignAssetID(prefab);
-            }
-            else
-            {
+            } else {
                 AssignSceneID();
 
                 // IMPORTANT: DO NOT clear assetId at runtime!
@@ -530,8 +498,7 @@ namespace Mirror
                 // => then we would clear the previously assigned assetId
                 // => and NetworkIdentity couldn't be spawned on other clients
                 //    anymore because assetId was cleared
-                if (!EditorApplication.isPlaying)
-                {
+                if (!EditorApplication.isPlaying) {
                     m_AssetId = "";
                 }
                 // don't log. would show a lot when pressing play in uMMORPG/uSurvival/etc.
@@ -546,8 +513,7 @@ namespace Mirror
         // Note: Unity will Destroy all networked objects on Scene Change, so we
         // have to handle that here silently. That means we cannot have any
         // warning or logging in this method.
-        void OnDestroy()
-        {
+        void OnDestroy() {
             // Objects spawned from Instantiate are not allowed so are destroyed right away
             // we don't want to call NetworkServer.Destroy if this is the case
             if (SpawnedFromInstantiate)
@@ -556,14 +522,12 @@ namespace Mirror
             // If false the object has already been unspawned
             // if it is still true, then we need to unspawn it
             // if destroy is already called don't call it again
-            if (isServer && !destroyCalled)
-            {
+            if (isServer && !destroyCalled) {
                 // Do not add logging to this (see above)
                 NetworkServer.Destroy(gameObject);
             }
 
-            if (isLocalPlayer)
-            {
+            if (isLocalPlayer) {
                 // previously there was a bug where isLocalPlayer was
                 // false in OnDestroy because it was dynamically defined as:
                 //   isLocalPlayer => NetworkClient.localPlayer == this
@@ -589,8 +553,7 @@ namespace Mirror
             }
         }
 
-        internal void OnStartServer()
-        {
+        internal void OnStartServer() {
             // do nothing if already spawned
             if (isServer)
                 return;
@@ -602,8 +565,7 @@ namespace Mirror
             // AFTER OnStartClient, in which case it would still be falsse here.
             // many projects will check isLocalPlayer in OnStartClient though.
             // TODO ideally set isLocalPlayer when NetworkClient.localPlayer is set?
-            if (NetworkClient.localPlayer == this)
-            {
+            if (NetworkClient.localPlayer == this) {
                 isLocalPlayer = true;
             }
 
@@ -612,8 +574,7 @@ namespace Mirror
             //       check already checks netId. BUT this case here checks only
             //       netId, so it would still check cases where isServer=false
             //       but netId!=0.
-            if (netId != 0)
-            {
+            if (netId != 0) {
                 // This object has already been spawned, this method might be called again
                 // if we try to respawn all objects.  This can happen when we add a scene
                 // in that case there is nothing else to do.
@@ -631,52 +592,41 @@ namespace Mirror
 
             // in host mode we set isClient true before calling OnStartServer,
             // otherwise isClient is false in OnStartServer.
-            if (NetworkClient.active)
-            {
+            if (NetworkClient.active) {
                 isClient = true;
             }
 
-            foreach (NetworkBehaviour comp in NetworkBehaviours)
-            {
+            foreach (NetworkBehaviour comp in NetworkBehaviours) {
                 // an exception in OnStartServer should be caught, so that one
                 // component's exception doesn't stop all other components from
                 // being initialized
                 // => this is what Unity does for Start() etc. too.
                 //    one exception doesn't stop all the other Start() calls!
-                try
-                {
+                try {
                     comp.OnStartServer();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Debug.LogException(e, comp);
                 }
             }
         }
 
-        internal void OnStopServer()
-        {
-            foreach (NetworkBehaviour comp in NetworkBehaviours)
-            {
+        internal void OnStopServer() {
+            foreach (NetworkBehaviour comp in NetworkBehaviours) {
                 // an exception in OnStartServer should be caught, so that one
                 // component's exception doesn't stop all other components from
                 // being initialized
                 // => this is what Unity does for Start() etc. too.
                 //    one exception doesn't stop all the other Start() calls!
-                try
-                {
+                try {
                     comp.OnStopServer();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Debug.LogException(e, comp);
                 }
             }
         }
 
         bool clientStarted;
-        internal void OnStartClient()
-        {
+        internal void OnStartClient() {
             if (clientStarted)
                 return;
             clientStarted = true;
@@ -687,46 +637,36 @@ namespace Mirror
             // AFTER OnStartClient, in which case it would still be falsse here.
             // many projects will check isLocalPlayer in OnStartClient though.
             // TODO ideally set isLocalPlayer when NetworkClient.localPlayer is set?
-            if (NetworkClient.localPlayer == this)
-            {
+            if (NetworkClient.localPlayer == this) {
                 isLocalPlayer = true;
             }
 
             // Debug.Log("OnStartClient " + gameObject + " netId:" + netId);
-            foreach (NetworkBehaviour comp in NetworkBehaviours)
-            {
+            foreach (NetworkBehaviour comp in NetworkBehaviours) {
                 // an exception in OnStartClient should be caught, so that one
                 // component's exception doesn't stop all other components from
                 // being initialized
                 // => this is what Unity does for Start() etc. too.
                 //    one exception doesn't stop all the other Start() calls!
-                try
-                {
+                try {
                     // user implemented startup
                     comp.OnStartClient();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Debug.LogException(e, comp);
                 }
             }
         }
 
-        internal void OnStopClient()
-        {
-            foreach (NetworkBehaviour comp in NetworkBehaviours)
-            {
+        internal void OnStopClient() {
+            foreach (NetworkBehaviour comp in NetworkBehaviours) {
                 // an exception in OnStopClient should be caught, so that
                 // one component's exception doesn't stop all other components
                 // from being initialized
                 // => this is what Unity does for Start() etc. too.
                 //    one exception doesn't stop all the other Start() calls!
-                try
-                {
+                try {
                     comp.OnStopClient();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Debug.LogException(e, comp);
                 }
             }
@@ -744,35 +684,29 @@ namespace Mirror
         // Without this static, the second time we get the spawn message we
         // would call OnStartLocalPlayer again on the same object
         static NetworkIdentity previousLocalPlayer = null;
-        internal void OnStartLocalPlayer()
-        {
+        internal void OnStartLocalPlayer() {
             if (previousLocalPlayer == this)
                 return;
             previousLocalPlayer = this;
 
             isLocalPlayer = true;
 
-            foreach (NetworkBehaviour comp in NetworkBehaviours)
-            {
+            foreach (NetworkBehaviour comp in NetworkBehaviours) {
                 // an exception in OnStartLocalPlayer should be caught, so that
                 // one component's exception doesn't stop all other components
                 // from being initialized
                 // => this is what Unity does for Start() etc. too.
                 //    one exception doesn't stop all the other Start() calls!
-                try
-                {
+                try {
                     comp.OnStartLocalPlayer();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Debug.LogException(e, comp);
                 }
             }
         }
 
         bool hadAuthority;
-        internal void NotifyAuthority()
-        {
+        internal void NotifyAuthority() {
             if (!hadAuthority && hasAuthority)
                 OnStartAuthority();
             if (hadAuthority && !hasAuthority)
@@ -780,41 +714,31 @@ namespace Mirror
             hadAuthority = hasAuthority;
         }
 
-        internal void OnStartAuthority()
-        {
-            foreach (NetworkBehaviour comp in NetworkBehaviours)
-            {
+        internal void OnStartAuthority() {
+            foreach (NetworkBehaviour comp in NetworkBehaviours) {
                 // an exception in OnStartAuthority should be caught, so that one
                 // component's exception doesn't stop all other components from
                 // being initialized
                 // => this is what Unity does for Start() etc. too.
                 //    one exception doesn't stop all the other Start() calls!
-                try
-                {
+                try {
                     comp.OnStartAuthority();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Debug.LogException(e, comp);
                 }
             }
         }
 
-        internal void OnStopAuthority()
-        {
-            foreach (NetworkBehaviour comp in NetworkBehaviours)
-            {
+        internal void OnStopAuthority() {
+            foreach (NetworkBehaviour comp in NetworkBehaviours) {
                 // an exception in OnStopAuthority should be caught, so that one
                 // component's exception doesn't stop all other components from
                 // being initialized
                 // => this is what Unity does for Start() etc. too.
                 //    one exception doesn't stop all the other Start() calls!
-                try
-                {
+                try {
                     comp.OnStopAuthority();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Debug.LogException(e, comp);
                 }
             }
@@ -832,8 +756,7 @@ namespace Mirror
         // -> OnDeserialize carefully extracts each data, then deserializes each component with separate readers
         //    -> it will be impossible to read too many or too few bytes in OnDeserialize
         //    -> we can properly track down errors
-        bool OnSerializeSafely(NetworkBehaviour comp, NetworkWriter writer, bool initialState)
-        {
+        bool OnSerializeSafely(NetworkBehaviour comp, NetworkWriter writer, bool initialState) {
             // write placeholder length bytes
             // (jumping back later is WAY faster than allocating a temporary
             //  writer for the payload, then writing payload.size, payload)
@@ -843,12 +766,9 @@ namespace Mirror
 
             // write payload
             bool result = false;
-            try
-            {
+            try {
                 result = comp.OnSerialize(writer, initialState);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 // show a detailed error and let the user know what went wrong
                 Debug.LogError("OnSerialize failed for: object=" + name + " component=" + comp.GetType() + " sceneId=" + sceneId.ToString("X") + "\n\n" + e);
             }
@@ -868,8 +788,7 @@ namespace Mirror
         // check ownerWritten/observersWritten to know if anything was written
         // We pass dirtyComponentsMask into this function so that we can check
         // if any Components are dirty before creating writers
-        internal void OnSerializeAllSafely(bool initialState, NetworkWriter ownerWriter, NetworkWriter observersWriter)
-        {
+        internal void OnSerializeAllSafely(bool initialState, NetworkWriter ownerWriter, NetworkWriter observersWriter) {
             // check if components are in byte.MaxRange just to be 100% sure
             // that we avoid overflows
             NetworkBehaviour[] components = NetworkBehaviours;
@@ -877,14 +796,12 @@ namespace Mirror
                 throw new IndexOutOfRangeException($"{name} has more than {byte.MaxValue} components. This is not supported.");
 
             // serialize all components
-            for (int i = 0; i < components.Length; ++i)
-            {
+            for (int i = 0; i < components.Length; ++i) {
                 // is this component dirty?
                 // -> always serialize if initialState so all components are included in spawn packet
                 // -> note: IsDirty() is false if the component isn't dirty or sendInterval isn't elapsed yet
                 NetworkBehaviour comp = components[i];
-                if (initialState || comp.IsDirty())
-                {
+                if (initialState || comp.IsDirty()) {
                     // Debug.Log("OnSerializeAllSafely: " + name + " -> " + comp.GetType() + " initial=" + initialState);
 
                     // remember start position in case we need to copy it into
@@ -907,8 +824,7 @@ namespace Mirror
                     //    with the user's OnSerialize timing code etc.
                     // => so we just copy the result without touching
                     //    OnSerialize again
-                    if (comp.syncMode == SyncMode.Observers)
-                    {
+                    if (comp.syncMode == SyncMode.Observers) {
                         ArraySegment<byte> segment = ownerWriter.ToArraySegment();
                         int length = ownerWriter.Position - startPosition;
                         observersWriter.WriteBytes(segment.Array, startPosition, length);
@@ -919,12 +835,10 @@ namespace Mirror
 
         // get cached serialization for this tick (or serialize if none yet)
         // IMPORTANT: int tick avoids floating point inaccuracy over days/weeks
-        internal NetworkIdentitySerialization GetSerializationAtTick(int tick)
-        {
+        internal NetworkIdentitySerialization GetSerializationAtTick(int tick) {
             // reserialize if tick is different than last changed.
             // NOTE: != instead of < because int.max+1 overflows at some point.
-            if (lastSerialization.tick != tick)
-            {
+            if (lastSerialization.tick != tick) {
                 // reset
                 lastSerialization.ownerWriter.Position = 0;
                 lastSerialization.observersWriter.Position = 0;
@@ -943,8 +857,7 @@ namespace Mirror
             return lastSerialization;
         }
 
-        void OnDeserializeSafely(NetworkBehaviour comp, NetworkReader reader, bool initialState)
-        {
+        void OnDeserializeSafely(NetworkBehaviour comp, NetworkReader reader, bool initialState) {
             // read header as 4 bytes and calculate this chunk's start+end
             int contentSize = reader.ReadInt();
             int chunkStart = reader.Position;
@@ -952,13 +865,10 @@ namespace Mirror
 
             // call OnDeserialize and wrap it in a try-catch block so there's no
             // way to mess up another component's deserialization
-            try
-            {
+            try {
                 // Debug.Log("OnDeserializeSafely: " + comp.name + " component=" + comp.GetType() + " sceneId=" + sceneId.ToString("X") + " length=" + contentSize);
                 comp.OnDeserialize(reader, initialState);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 // show a detailed error and let the user know what went wrong
                 Debug.LogError($"OnDeserialize failed Exception={e.GetType()} (see below) object={name} component={comp.GetType()} sceneId={sceneId:X} length={contentSize}. Possible Reasons:\n" +
                                $"  * Do {comp.GetType()}'s OnSerialize and OnDeserialize calls write the same amount of data({contentSize} bytes)? \n" +
@@ -970,8 +880,7 @@ namespace Mirror
 
             // now the reader should be EXACTLY at 'before + size'.
             // otherwise the component read too much / too less data.
-            if (reader.Position != chunkEnd)
-            {
+            if (reader.Position != chunkEnd) {
                 // warn the user
                 int bytesRead = reader.Position - chunkStart;
                 Debug.LogWarning("OnDeserialize was expected to read " + contentSize + " instead of " + bytesRead + " bytes for object:" + name + " component=" + comp.GetType() + " sceneId=" + sceneId.ToString("X") + ". Make sure that OnSerialize and OnDeserialize write/read the same amount of data in all cases.");
@@ -981,10 +890,8 @@ namespace Mirror
             }
         }
 
-        internal void OnDeserializeAllSafely(NetworkReader reader, bool initialState)
-        {
-            if (NetworkBehaviours == null)
-            {
+        internal void OnDeserializeAllSafely(NetworkReader reader, bool initialState) {
+            if (NetworkBehaviours == null) {
                 Debug.LogError($"NetworkBehaviours array is null on {gameObject.name}!\n" +
                     $"Typically this can happen when a networked object is a child of a " +
                     $"non-networked parent that's disabled, preventing Awake on the networked object " +
@@ -994,12 +901,10 @@ namespace Mirror
 
             // deserialize all components that were received
             NetworkBehaviour[] components = NetworkBehaviours;
-            while (reader.Remaining > 0)
-            {
+            while (reader.Remaining > 0) {
                 // read & check index [0..255]
                 byte index = reader.ReadByte();
-                if (index < components.Length)
-                {
+                if (index < components.Length) {
                     // deserialize this component
                     OnDeserializeSafely(components[index], reader, initialState);
                 }
@@ -1007,75 +912,60 @@ namespace Mirror
         }
 
         // Helper function to handle Command/Rpc
-        internal void HandleRemoteCall(int componentIndex, int functionHash, MirrorInvokeType invokeType, NetworkReader reader, NetworkConnectionToClient senderConnection = null)
-        {
+        internal void HandleRemoteCall(int componentIndex, int functionHash, MirrorInvokeType invokeType, NetworkReader reader, NetworkConnectionToClient senderConnection = null) {
             // check if unity object has been destroyed
-            if (this == null)
-            {
+            if (this == null) {
                 Debug.LogWarning($"{invokeType} [{functionHash}] received for deleted object [netId={netId}]");
                 return;
             }
 
             // find the right component to invoke the function on
-            if (componentIndex < 0 || componentIndex >= NetworkBehaviours.Length)
-            {
+            if (componentIndex < 0 || componentIndex >= NetworkBehaviours.Length) {
                 Debug.LogWarning($"Component [{componentIndex}] not found for [netId={netId}]");
                 return;
             }
 
             NetworkBehaviour invokeComponent = NetworkBehaviours[componentIndex];
-            if (!RemoteCallHelper.InvokeHandlerDelegate(functionHash, invokeType, reader, invokeComponent, senderConnection))
-            {
+            if (!RemoteCallHelper.InvokeHandlerDelegate(functionHash, invokeType, reader, invokeComponent, senderConnection)) {
                 Debug.LogError($"Found no receiver for incoming {invokeType} [{functionHash}] on {gameObject.name}, the server and client should have the same NetworkBehaviour instances [netId={netId}].");
             }
         }
 
         // Runs on server
-        internal CommandInfo GetCommandInfo(int componentIndex, int cmdHash)
-        {
+        internal CommandInfo GetCommandInfo(int componentIndex, int cmdHash) {
             // check if unity object has been destroyed
-            if (this == null)
-            {
+            if (this == null) {
                 // error can be logged later
                 return default;
             }
 
             // find the right component to invoke the function on
-            if (0 <= componentIndex && componentIndex < NetworkBehaviours.Length)
-            {
+            if (0 <= componentIndex && componentIndex < NetworkBehaviours.Length) {
                 NetworkBehaviour invokeComponent = NetworkBehaviours[componentIndex];
                 return RemoteCallHelper.GetCommandInfo(cmdHash, invokeComponent);
-            }
-            else
-            {
+            } else {
                 // error can be logged later
                 return default;
             }
         }
 
         // Called when NetworkIdentity is destroyed
-        internal void ClearObservers()
-        {
-            if (observers != null)
-            {
-                foreach (NetworkConnection conn in observers.Values)
-                {
+        internal void ClearObservers() {
+            if (observers != null) {
+                foreach (NetworkConnection conn in observers.Values) {
                     conn.RemoveFromObserving(this, true);
                 }
                 observers.Clear();
             }
         }
 
-        internal void AddObserver(NetworkConnection conn)
-        {
-            if (observers == null)
-            {
+        internal void AddObserver(NetworkConnection conn) {
+            if (observers == null) {
                 Debug.LogError("AddObserver for " + gameObject + " observer list is null");
                 return;
             }
 
-            if (observers.ContainsKey(conn.connectionId))
-            {
+            if (observers.ContainsKey(conn.connectionId)) {
                 // if we try to add a connectionId that was already added, then
                 // we may have generated one that was already in use.
                 return;
@@ -1096,22 +986,18 @@ namespace Mirror
         // Authority can be removed with RemoveClientAuthority. Only one client
         // can own an object at any time. This does not need to be called for
         // player objects, as their authority is setup automatically.
-        public bool AssignClientAuthority(NetworkConnection conn)
-        {
-            if (!isServer)
-            {
+        public bool AssignClientAuthority(NetworkConnection conn) {
+            if (!isServer) {
                 Debug.LogError("AssignClientAuthority can only be called on the server for spawned objects.");
                 return false;
             }
 
-            if (conn == null)
-            {
+            if (conn == null) {
                 Debug.LogError("AssignClientAuthority for " + gameObject + " owner cannot be null. Use RemoveClientAuthority() instead.");
                 return false;
             }
 
-            if (connectionToClient != null && conn != connectionToClient)
-            {
+            if (connectionToClient != null && conn != connectionToClient) {
                 Debug.LogError("AssignClientAuthority for " + gameObject + " already has an owner. Use RemoveClientAuthority() first.");
                 return false;
             }
@@ -1131,22 +1017,18 @@ namespace Mirror
         // Applies to objects that had authority set by AssignClientAuthority,
         // or NetworkServer.Spawn with a NetworkConnection parameter included.
         // Authority cannot be removed for player objects.
-        public void RemoveClientAuthority()
-        {
-            if (!isServer)
-            {
+        public void RemoveClientAuthority() {
+            if (!isServer) {
                 Debug.LogError("RemoveClientAuthority can only be called on the server for spawned objects.");
                 return;
             }
 
-            if (connectionToClient?.identity == this)
-            {
+            if (connectionToClient?.identity == this) {
                 Debug.LogError("RemoveClientAuthority cannot remove authority for a player object");
                 return;
             }
 
-            if (connectionToClient != null)
-            {
+            if (connectionToClient != null) {
                 clientAuthorityCallback?.Invoke(connectionToClient, this, false);
 
                 NetworkConnectionToClient previousOwner = connectionToClient;
@@ -1178,8 +1060,7 @@ namespace Mirror
         // the identity during destroy as people might want to be able to read
         // the members inside OnDestroy(), and we have no way of invoking reset
         // after OnDestroy is called.
-        internal void Reset()
-        {
+        internal void Reset() {
             // make sure to call this before networkBehavioursCache is cleared below
             ResetSyncObjects();
 
@@ -1197,8 +1078,7 @@ namespace Mirror
 
             // clear local player if it was the local player,
             // THEN reset isLocalPlayer AFTERWARDS
-            if (isLocalPlayer)
-            {
+            if (isLocalPlayer) {
                 // only clear NetworkClient.localPlayer IF IT POINTS TO US!
                 // see OnDestroy() comments. it does the same.
                 // (https://github.com/vis2k/Mirror/issues/2635)
@@ -1209,29 +1089,23 @@ namespace Mirror
         }
 
         // clear all component's dirty bits no matter what
-        internal void ClearAllComponentsDirtyBits()
-        {
-            foreach (NetworkBehaviour comp in NetworkBehaviours)
-            {
+        internal void ClearAllComponentsDirtyBits() {
+            foreach (NetworkBehaviour comp in NetworkBehaviours) {
                 comp.ClearAllDirtyBits();
             }
         }
 
         // Clear only dirty component's dirty bits. ignores components which
         // may be dirty but not ready to be synced yet (because of syncInterval)
-        internal void ClearDirtyComponentsDirtyBits()
-        {
-            foreach (NetworkBehaviour comp in NetworkBehaviours)
-            {
-                if (comp.IsDirty())
-                {
+        internal void ClearDirtyComponentsDirtyBits() {
+            foreach (NetworkBehaviour comp in NetworkBehaviours) {
+                if (comp.IsDirty()) {
                     comp.ClearAllDirtyBits();
                 }
             }
         }
 
-        void ResetSyncObjects()
-        {
+        void ResetSyncObjects() {
             // ResetSyncObjects is called by Reset, which is called by Unity.
             // AddComponent() calls Reset().
             // AddComponent() is called before Awake().
@@ -1239,8 +1113,7 @@ namespace Mirror
             if (NetworkBehaviours == null)
                 return;
 
-            foreach (NetworkBehaviour comp in NetworkBehaviours)
-            {
+            foreach (NetworkBehaviour comp in NetworkBehaviours) {
                 comp.ResetSyncObjects();
             }
         }

@@ -8,15 +8,12 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mirror
-{
-    public static class SnapshotInterpolation
-    {
+namespace Mirror {
+    public static class SnapshotInterpolation {
         // insert into snapshot buffer if newer than first entry
         // this should ALWAYS be used when inserting into a snapshot buffer!
         public static void InsertIfNewEnough<T>(T snapshot, SortedList<double, T> buffer)
-            where T : Snapshot
-        {
+            where T : Snapshot {
             // we need to drop any snapshot which is older ('<=')
             // the snapshots we are already working with.
             double timestamp = snapshot.remoteTimestamp;
@@ -63,8 +60,7 @@ namespace Mirror
         // in which case we should speed up to avoid ever growing delay.
         // -> everything after 'threshold' is multiplied by 'multiplier'
         public static double CalculateCatchup<T>(SortedList<double, T> buffer, int catchupThreshold, double catchupMultiplier)
-            where T : Snapshot
-        {
+            where T : Snapshot {
             // NOTE: we count ALL buffer entires > threshold as excess.
             //       not just the 'old enough' ones.
             //       if buffer keeps growing, we have to catch up no matter what.
@@ -76,8 +72,7 @@ namespace Mirror
         // helper function because we use this several times.
         // => assumes at least two entries in buffer.
         public static void GetFirstSecondAndDelta<T>(SortedList<double, T> buffer, out T first, out T second, out double delta)
-            where T : Snapshot
-        {
+            where T : Snapshot {
             // get first & second
             first = buffer.Values[0];
             second = buffer.Values[1];
@@ -140,8 +135,7 @@ namespace Mirror
             float catchupMultiplier,
             Func<T, T, double, T> Interpolate,
             out T computed)
-                where T : Snapshot
-        {
+                where T : Snapshot {
             // we buffer snapshots for 'bufferTime'
             // for example:
             //   * we buffer for 3 x sendInterval = 300ms
@@ -216,8 +210,7 @@ namespace Mirror
             //            and then in next compute() wait again because it
             //            wasn't old enough yet.
             while (interpolationTime >= delta &&
-                   HasAmountOlderThan(buffer, threshold, 3))
-            {
+                   HasAmountOlderThan(buffer, threshold, 3)) {
                 // subtract exactly delta from interpolation time
                 // instead of setting to '0', where we would lose the
                 // overshoot part and see jitter again.
@@ -284,8 +277,7 @@ namespace Mirror
             //   instantly instead of actually interpolating through them.
             //
             // in other words, if we DON'T have >= 3 old enough.
-            if (!HasAmountOlderThan(buffer, threshold, 3))
-            {
+            if (!HasAmountOlderThan(buffer, threshold, 3)) {
                 // interpolationTime is always from 0..delta.
                 // so we cap it at delta.
                 // DO NOT cap it at second.remoteTimestamp.
