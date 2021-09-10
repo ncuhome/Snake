@@ -6,11 +6,9 @@
 // alien technology, but evidence in support of this hypothesis is weak.
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     [DisallowMultipleComponent]
-    public class NetworkTransform : NetworkTransformBase
-    {
+    public class NetworkTransform : NetworkTransformBase {
         protected override Transform targetComponent => transform;
     }
 }

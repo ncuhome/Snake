@@ -4,11 +4,9 @@ using System.Security.Authentication;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace Mirror.SimpleWeb
-{
+namespace Mirror.SimpleWeb {
     [DisallowMultipleComponent]
-    public class SimpleWebTransport : Transport
-    {
+    public class SimpleWebTransport : Transport {
         public const string NormalScheme = "ws";
         public const string SecureScheme = "wss";
 
@@ -66,20 +64,16 @@ namespace Mirror.SimpleWeb
         /// <para>Gets _logLevels field</para>
         /// <para>Sets _logLevels and Log.level fields</para>
         /// </summary>
-        public Log.Levels LogLevels
-        {
+        public Log.Levels LogLevels {
             get => _logLevels;
-            set
-            {
+            set {
                 _logLevels = value;
                 Log.level = _logLevels;
             }
         }
 
-        void OnValidate()
-        {
-            if (maxMessageSize > ushort.MaxValue)
-            {
+        void OnValidate() {
+            if (maxMessageSize > ushort.MaxValue) {
                 Debug.LogWarning($"max supported value for maxMessageSize is {ushort.MaxValue}");
                 maxMessageSize = ushort.MaxValue;
             }
@@ -92,21 +86,17 @@ namespace Mirror.SimpleWeb
 
         TcpConfig TcpConfig => new TcpConfig(noDelay, sendTimeout, receiveTimeout);
 
-        public override bool Available()
-        {
+        public override bool Available() {
             return true;
         }
-        public override int GetMaxPacketSize(int channelId = 0)
-        {
+        public override int GetMaxPacketSize(int channelId = 0) {
             return maxMessageSize;
         }
 
-        void Awake()
-        {
+        void Awake() {
             Log.level = _logLevels;
         }
-        public override void Shutdown()
-        {
+        public override void Shutdown() {
             client?.Disconnect();
             client = null;
             server?.Stop();
@@ -116,23 +106,19 @@ namespace Mirror.SimpleWeb
         #region Client
         string GetClientScheme() => (sslEnabled || clientUseWss) ? SecureScheme : NormalScheme;
         string GetServerScheme() => sslEnabled ? SecureScheme : NormalScheme;
-        public override bool ClientConnected()
-        {
+        public override bool ClientConnected() {
             // not null and not NotConnected (we want to return true if connecting or disconnecting)
             return client != null && client.ConnectionState != ClientState.NotConnected;
         }
 
-        public override void ClientConnect(string hostname)
-        {
+        public override void ClientConnect(string hostname) {
             // connecting or connected
-            if (ClientConnected())
-            {
+            if (ClientConnected()) {
                 Debug.LogError("Already Connected");
                 return;
             }
 
-            UriBuilder builder = new UriBuilder
-            {
+            UriBuilder builder = new UriBuilder {
                 Scheme = GetClientScheme(),
                 Host = hostname,
                 Port = port
@@ -143,16 +129,14 @@ namespace Mirror.SimpleWeb
             if (client == null) { return; }
 
             client.onConnect += OnClientConnected.Invoke;
-            client.onDisconnect += () =>
-            {
+            client.onDisconnect += () => {
                 OnClientDisconnected.Invoke();
                 // clear client here after disconnect event has been sent
                 // there should be no more messages after disconnect
                 client = null;
             };
             client.onData += (ArraySegment<byte> data) => OnClientDataReceived.Invoke(data, Channels.Reliable);
-            client.onError += (Exception e) =>
-            {
+            client.onError += (Exception e) => {
                 OnClientError.Invoke(e);
                 ClientDisconnect();
             };
@@ -160,28 +144,23 @@ namespace Mirror.SimpleWeb
             client.Connect(builder.Uri);
         }
 
-        public override void ClientDisconnect()
-        {
+        public override void ClientDisconnect() {
             // don't set client null here of messages wont be processed
             client?.Disconnect();
         }
 
-        public override void ClientSend(ArraySegment<byte> segment, int channelId)
-        {
-            if (!ClientConnected())
-            {
+        public override void ClientSend(ArraySegment<byte> segment, int channelId) {
+            if (!ClientConnected()) {
                 Debug.LogError("Not Connected");
                 return;
             }
 
-            if (segment.Count > maxMessageSize)
-            {
+            if (segment.Count > maxMessageSize) {
                 Log.Error("Message greater than max size");
                 return;
             }
 
-            if (segment.Count == 0)
-            {
+            if (segment.Count == 0) {
                 Log.Error("Message count was zero");
                 return;
             }
@@ -190,22 +169,18 @@ namespace Mirror.SimpleWeb
         }
 
         // messages should always be processed in early update
-        public override void ClientEarlyUpdate()
-        {
+        public override void ClientEarlyUpdate() {
             client?.ProcessMessageQueue(this);
         }
         #endregion
 
         #region Server
-        public override bool ServerActive()
-        {
+        public override bool ServerActive() {
             return server != null && server.Active;
         }
 
-        public override void ServerStart()
-        {
-            if (ServerActive())
-            {
+        public override void ServerStart() {
+            if (ServerActive()) {
                 Debug.LogError("SimpleWebServer Already Started");
             }
 
@@ -223,10 +198,8 @@ namespace Mirror.SimpleWeb
             server.Start(port);
         }
 
-        public override void ServerStop()
-        {
-            if (!ServerActive())
-            {
+        public override void ServerStop() {
+            if (!ServerActive()) {
                 Debug.LogError("SimpleWebServer Not Active");
             }
 
@@ -234,32 +207,26 @@ namespace Mirror.SimpleWeb
             server = null;
         }
 
-        public override void ServerDisconnect(int connectionId)
-        {
-            if (!ServerActive())
-            {
+        public override void ServerDisconnect(int connectionId) {
+            if (!ServerActive()) {
                 Debug.LogError("SimpleWebServer Not Active");
             }
 
             server.KickClient(connectionId);
         }
 
-        public override void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId)
-        {
-            if (!ServerActive())
-            {
+        public override void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId) {
+            if (!ServerActive()) {
                 Debug.LogError("SimpleWebServer Not Active");
                 return;
             }
 
-            if (segment.Count > maxMessageSize)
-            {
+            if (segment.Count > maxMessageSize) {
                 Log.Error("Message greater than max size");
                 return;
             }
 
-            if (segment.Count == 0)
-            {
+            if (segment.Count == 0) {
                 Log.Error("Message count was zero");
                 return;
             }
@@ -267,15 +234,12 @@ namespace Mirror.SimpleWeb
             server.SendOne(connectionId, segment);
         }
 
-        public override string ServerGetClientAddress(int connectionId)
-        {
+        public override string ServerGetClientAddress(int connectionId) {
             return server.GetClientAddress(connectionId);
         }
 
-        public override Uri ServerUri()
-        {
-            UriBuilder builder = new UriBuilder
-            {
+        public override Uri ServerUri() {
+            UriBuilder builder = new UriBuilder {
                 Scheme = GetServerScheme(),
                 Host = Dns.GetHostName(),
                 Port = port
@@ -284,8 +248,7 @@ namespace Mirror.SimpleWeb
         }
 
         // messages should always be processed in early update
-        public override void ServerEarlyUpdate()
-        {
+        public override void ServerEarlyUpdate() {
             server?.ProcessMessageQueue(this);
         }
         #endregion

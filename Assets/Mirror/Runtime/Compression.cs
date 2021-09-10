@@ -2,19 +2,16 @@
 using System;
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     /// <summary>Functions to Compress Quaternions and Floats</summary>
-    public static class Compression
-    {
+    public static class Compression {
         // quaternion compression //////////////////////////////////////////////
         // smallest three: https://gafferongames.com/post/snapshot_compression/
         // compresses 16 bytes quaternion into 4 bytes
 
         // helper function to find largest absolute element
         // returns the index of the largest one
-        public static int LargestAbsoluteComponentIndex(Vector4 value, out float largestAbs, out Vector3 withoutLargest)
-        {
+        public static int LargestAbsoluteComponentIndex(Vector4 value, out float largestAbs, out Vector3 withoutLargest) {
             // convert to abs
             Vector4 abs = new Vector4(Mathf.Abs(value.x), Mathf.Abs(value.y), Mathf.Abs(value.z), Mathf.Abs(value.w));
 
@@ -27,20 +24,17 @@ namespace Mirror
             // performance for 100k calls
             //   for-loop:       25ms
             //   manual checks:  22ms
-            if (abs.y > largestAbs)
-            {
+            if (abs.y > largestAbs) {
                 largestIndex = 1;
                 largestAbs = abs.y;
                 withoutLargest = new Vector3(value.x, value.z, value.w);
             }
-            if (abs.z > largestAbs)
-            {
+            if (abs.z > largestAbs) {
                 largestIndex = 2;
                 largestAbs = abs.z;
                 withoutLargest = new Vector3(value.x, value.y, value.w);
             }
-            if (abs.w > largestAbs)
-            {
+            if (abs.w > largestAbs) {
                 largestIndex = 3;
                 largestAbs = abs.w;
                 withoutLargest = new Vector3(value.x, value.y, value.z);
@@ -51,8 +45,7 @@ namespace Mirror
 
         // scale a float within min/max range to an ushort between min/max range
         // note: can also use this for byte range from byte.MinValue to byte.MaxValue
-        public static ushort ScaleFloatToUShort(float value, float minValue, float maxValue, ushort minTarget, ushort maxTarget)
-        {
+        public static ushort ScaleFloatToUShort(float value, float minValue, float maxValue, ushort minTarget, ushort maxTarget) {
             // note: C# ushort - ushort => int, hence so many casts
             // max ushort - min ushort only fits into something bigger
             int targetRange = maxTarget - minTarget;
@@ -63,8 +56,7 @@ namespace Mirror
 
         // scale an ushort within min/max range to a float between min/max range
         // note: can also use this for byte range from byte.MinValue to byte.MaxValue
-        public static float ScaleUShortToFloat(ushort value, ushort minValue, ushort maxValue, float minTarget, float maxTarget)
-        {
+        public static float ScaleUShortToFloat(ushort value, ushort minValue, ushort maxValue, float minTarget, float maxTarget) {
             // note: C# ushort - ushort => int, hence so many casts
             float targetRange = maxTarget - minTarget;
             ushort valueRange = (ushort)(maxValue - minValue);
@@ -73,14 +65,12 @@ namespace Mirror
         }
 
         const float QuaternionMinRange = -0.707107f;
-        const float QuaternionMaxRange =  0.707107f;
+        const float QuaternionMaxRange = 0.707107f;
         const ushort TenBitsMax = 0x3FF;
 
         // helper function to access 'nth' component of quaternion
-        static float QuaternionElement(Quaternion q, int element)
-        {
-            switch (element)
-            {
+        static float QuaternionElement(Quaternion q, int element) {
+            switch (element) {
                 case 0: return q.x;
                 case 1: return q.y;
                 case 2: return q.z;
@@ -90,8 +80,7 @@ namespace Mirror
         }
 
         // note: assumes normalized quaternions
-        public static uint CompressQuaternion(Quaternion q)
-        {
+        public static uint CompressQuaternion(Quaternion q) {
             // note: assuming normalized quaternions is enough. no need to force
             //       normalize here. we already normalize when decompressing.
 
@@ -137,8 +126,7 @@ namespace Mirror
         // Quaternion normalizeSAFE from ECS math.normalizesafe()
         // => useful to produce valid quaternions even if client sends invalid
         //    data
-        static Quaternion QuaternionNormalizeSafe(Quaternion value)
-        {
+        static Quaternion QuaternionNormalizeSafe(Quaternion value) {
             // The smallest positive normal number representable in a float.
             const float FLT_MIN_NORMAL = 1.175494351e-38F;
 
@@ -150,8 +138,7 @@ namespace Mirror
         }
 
         // note: gives normalized quaternions
-        public static Quaternion DecompressQuaternion(uint data)
-        {
+        public static Quaternion DecompressQuaternion(uint data) {
             // get cScaled which is at 0..10 and ignore the rest
             ushort cScaled = (ushort)(data & TenBitsMax);
 
@@ -170,15 +157,14 @@ namespace Mirror
             float c = ScaleUShortToFloat(cScaled, 0, TenBitsMax, QuaternionMinRange, QuaternionMaxRange);
 
             // calculate the omitted component based on a²+b²+c²+d²=1
-            float d = Mathf.Sqrt(1 - a*a - b*b - c*c);
+            float d = Mathf.Sqrt(1 - a * a - b * b - c * c);
 
             // reconstruct based on largest index
             Vector4 value;
-            switch (largestIndex)
-            {
-                case 0:  value = new Vector4(d, a, b, c); break;
-                case 1:  value = new Vector4(a, d, b, c); break;
-                case 2:  value = new Vector4(a, b, d, c); break;
+            switch (largestIndex) {
+                case 0: value = new Vector4(d, a, b, c); break;
+                case 1: value = new Vector4(a, d, b, c); break;
+                case 2: value = new Vector4(a, b, d, c); break;
                 default: value = new Vector4(a, b, c, d); break;
             }
 
@@ -194,36 +180,30 @@ namespace Mirror
         // compress ulong varint.
         // same result for int, short and byte. only need one function.
         // NOT an extension. otherwise weaver might accidentally use it.
-        public static void CompressVarUInt(NetworkWriter writer, ulong value)
-        {
-            if (value <= 240)
-            {
+        public static void CompressVarUInt(NetworkWriter writer, ulong value) {
+            if (value <= 240) {
                 writer.Write((byte)value);
                 return;
             }
-            if (value <= 2287)
-            {
+            if (value <= 2287) {
                 writer.Write((byte)(((value - 240) >> 8) + 241));
                 writer.Write((byte)((value - 240) & 0xFF));
                 return;
             }
-            if (value <= 67823)
-            {
+            if (value <= 67823) {
                 writer.Write((byte)249);
                 writer.Write((byte)((value - 2288) >> 8));
                 writer.Write((byte)((value - 2288) & 0xFF));
                 return;
             }
-            if (value <= 16777215)
-            {
+            if (value <= 16777215) {
                 writer.Write((byte)250);
                 writer.Write((byte)(value & 0xFF));
                 writer.Write((byte)((value >> 8) & 0xFF));
                 writer.Write((byte)((value >> 16) & 0xFF));
                 return;
             }
-            if (value <= 4294967295)
-            {
+            if (value <= 4294967295) {
                 writer.Write((byte)251);
                 writer.Write((byte)(value & 0xFF));
                 writer.Write((byte)((value >> 8) & 0xFF));
@@ -231,8 +211,7 @@ namespace Mirror
                 writer.Write((byte)((value >> 24) & 0xFF));
                 return;
             }
-            if (value <= 1099511627775)
-            {
+            if (value <= 1099511627775) {
                 writer.Write((byte)252);
                 writer.Write((byte)(value & 0xFF));
                 writer.Write((byte)((value >> 8) & 0xFF));
@@ -241,8 +220,7 @@ namespace Mirror
                 writer.Write((byte)((value >> 32) & 0xFF));
                 return;
             }
-            if (value <= 281474976710655)
-            {
+            if (value <= 281474976710655) {
                 writer.Write((byte)253);
                 writer.Write((byte)(value & 0xFF));
                 writer.Write((byte)((value >> 8) & 0xFF));
@@ -252,8 +230,7 @@ namespace Mirror
                 writer.Write((byte)((value >> 40) & 0xFF));
                 return;
             }
-            if (value <= 72057594037927935)
-            {
+            if (value <= 72057594037927935) {
                 writer.Write((byte)254);
                 writer.Write((byte)(value & 0xFF));
                 writer.Write((byte)((value >> 8) & 0xFF));
@@ -281,75 +258,63 @@ namespace Mirror
 
 
         // zigzag encoding https://gist.github.com/mfuerstenau/ba870a29e16536fdbaba
-        public static void CompressVarInt(NetworkWriter writer, long i)
-        {
+        public static void CompressVarInt(NetworkWriter writer, long i) {
             ulong zigzagged = (ulong)((i >> 63) ^ (i << 1));
             CompressVarUInt(writer, zigzagged);
         }
 
         // NOT an extension. otherwise weaver might accidentally use it.
-        public static ulong DecompressVarUInt(NetworkReader reader)
-        {
+        public static ulong DecompressVarUInt(NetworkReader reader) {
             byte a0 = reader.ReadByte();
-            if (a0 < 241)
-            {
+            if (a0 < 241) {
                 return a0;
             }
 
             byte a1 = reader.ReadByte();
-            if (a0 >= 241 && a0 <= 248)
-            {
+            if (a0 >= 241 && a0 <= 248) {
                 return 240 + ((a0 - (ulong)241) << 8) + a1;
             }
 
             byte a2 = reader.ReadByte();
-            if (a0 == 249)
-            {
+            if (a0 == 249) {
                 return 2288 + ((ulong)a1 << 8) + a2;
             }
 
             byte a3 = reader.ReadByte();
-            if (a0 == 250)
-            {
+            if (a0 == 250) {
                 return a1 + (((ulong)a2) << 8) + (((ulong)a3) << 16);
             }
 
             byte a4 = reader.ReadByte();
-            if (a0 == 251)
-            {
+            if (a0 == 251) {
                 return a1 + (((ulong)a2) << 8) + (((ulong)a3) << 16) + (((ulong)a4) << 24);
             }
 
             byte a5 = reader.ReadByte();
-            if (a0 == 252)
-            {
+            if (a0 == 252) {
                 return a1 + (((ulong)a2) << 8) + (((ulong)a3) << 16) + (((ulong)a4) << 24) + (((ulong)a5) << 32);
             }
 
             byte a6 = reader.ReadByte();
-            if (a0 == 253)
-            {
+            if (a0 == 253) {
                 return a1 + (((ulong)a2) << 8) + (((ulong)a3) << 16) + (((ulong)a4) << 24) + (((ulong)a5) << 32) + (((ulong)a6) << 40);
             }
 
             byte a7 = reader.ReadByte();
-            if (a0 == 254)
-            {
+            if (a0 == 254) {
                 return a1 + (((ulong)a2) << 8) + (((ulong)a3) << 16) + (((ulong)a4) << 24) + (((ulong)a5) << 32) + (((ulong)a6) << 40) + (((ulong)a7) << 48);
             }
 
             byte a8 = reader.ReadByte();
-            if (a0 == 255)
-            {
-                return a1 + (((ulong)a2) << 8) + (((ulong)a3) << 16) + (((ulong)a4) << 24) + (((ulong)a5) << 32) + (((ulong)a6) << 40) + (((ulong)a7) << 48)  + (((ulong)a8) << 56);
+            if (a0 == 255) {
+                return a1 + (((ulong)a2) << 8) + (((ulong)a3) << 16) + (((ulong)a4) << 24) + (((ulong)a5) << 32) + (((ulong)a6) << 40) + (((ulong)a7) << 48) + (((ulong)a8) << 56);
             }
 
             throw new IndexOutOfRangeException("DecompressVarInt failure: " + a0);
         }
 
         // zigzag decoding https://gist.github.com/mfuerstenau/ba870a29e16536fdbaba
-        public static long DecompressVarInt(NetworkReader reader)
-        {
+        public static long DecompressVarInt(NetworkReader reader) {
             ulong data = DecompressVarUInt(reader);
             return ((long)(data >> 1)) ^ -((long)data & 1);
         }

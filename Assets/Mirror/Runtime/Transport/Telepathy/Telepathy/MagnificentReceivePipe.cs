@@ -9,20 +9,16 @@
 using System;
 using System.Collections.Generic;
 
-namespace Telepathy
-{
-    public class MagnificentReceivePipe
-    {
+namespace Telepathy {
+    public class MagnificentReceivePipe {
         // queue entry message. only used in here.
         // -> byte arrays are always of 4 + MaxMessageSize
         // -> ArraySegment indicates the actual message content
-        struct Entry
-        {
+        struct Entry {
             public int connectionId;
             public EventType eventType;
             public ArraySegment<byte> data;
-            public Entry(int connectionId, EventType eventType, ArraySegment<byte> data)
-            {
+            public Entry(int connectionId, EventType eventType, ArraySegment<byte> data) {
                 this.connectionId = connectionId;
                 this.eventType = eventType;
                 this.data = data;
@@ -52,8 +48,7 @@ namespace Telepathy
         Dictionary<int, int> queueCounter = new Dictionary<int, int>();
 
         // constructor
-        public MagnificentReceivePipe(int MaxMessageSize)
-        {
+        public MagnificentReceivePipe(int MaxMessageSize) {
             // initialize pool to create max message sized byte[]s each time
             pool = new Pool<byte[]>(() => new byte[MaxMessageSize]);
         }
@@ -61,10 +56,8 @@ namespace Telepathy
         // return amount of queued messages for this connectionId.
         // for statistics. don't call Count and assume that it's the same after
         // the call.
-        public int Count(int connectionId)
-        {
-            lock (this)
-            {
+        public int Count(int connectionId) {
+            lock (this) {
                 return queueCounter.TryGetValue(connectionId, out int count)
                        ? count
                        : 0;
@@ -72,14 +65,12 @@ namespace Telepathy
         }
 
         // total count
-        public int TotalCount
-        {
+        public int TotalCount {
             get { lock (this) { return queue.Count; } }
         }
 
         // pool count for testing
-        public int PoolCount
-        {
+        public int PoolCount {
             get { lock (this) { return pool.Count(); } }
         }
 
@@ -88,15 +79,12 @@ namespace Telepathy
         // -> parameters passed directly so it's more obvious that we don't just
         //    queue a passed 'Message', instead we copy the ArraySegment into
         //    a byte[] and store it internally, etc.)
-        public void Enqueue(int connectionId, EventType eventType, ArraySegment<byte> message)
-        {
+        public void Enqueue(int connectionId, EventType eventType, ArraySegment<byte> message) {
             // pool & queue usage always needs to be locked
-            lock (this)
-            {
+            lock (this) {
                 // does this message have a data array content?
                 ArraySegment<byte> segment = default;
-                if (message != default)
-                {
+                if (message != default) {
                     // ArraySegment is only valid until returning.
                     // copy it into a byte[] that we can store.
                     // ArraySegment array is only valid until returning, so copy
@@ -132,17 +120,14 @@ namespace Telepathy
         // => see TryDequeue comments!
         //
         // IMPORTANT: TryPeek & Dequeue need to be called from the SAME THREAD!
-        public bool TryPeek(out int connectionId, out EventType eventType, out ArraySegment<byte> data)
-        {
+        public bool TryPeek(out int connectionId, out EventType eventType, out ArraySegment<byte> data) {
             connectionId = 0;
             eventType = EventType.Disconnected;
             data = default;
 
             // pool & queue usage always needs to be locked
-            lock (this)
-            {
-                if (queue.Count > 0)
-                {
+            lock (this) {
+                if (queue.Count > 0) {
                     Entry entry = queue.Peek();
                     connectionId = entry.connectionId;
                     eventType = entry.eventType;
@@ -164,20 +149,16 @@ namespace Telepathy
         //    pipe pooling to avoid allocations!
         //
         // IMPORTANT: TryPeek & Dequeue need to be called from the SAME THREAD!
-        public bool TryDequeue()
-        {
+        public bool TryDequeue() {
             // pool & queue usage always needs to be locked
-            lock (this)
-            {
-                if (queue.Count > 0)
-                {
+            lock (this) {
+                if (queue.Count > 0) {
                     // dequeue from queue
                     Entry entry = queue.Dequeue();
 
                     // return byte[] to pool (if any).
                     // not all message types have byte[] contents.
-                    if (entry.data != default)
-                    {
+                    if (entry.data != default) {
                         pool.Return(entry.data.Array);
                     }
 
@@ -195,21 +176,17 @@ namespace Telepathy
             }
         }
 
-        public void Clear()
-        {
+        public void Clear() {
             // pool & queue usage always needs to be locked
-            lock (this)
-            {
+            lock (this) {
                 // clear queue, but via dequeue to return each byte[] to pool
-                while (queue.Count > 0)
-                {
+                while (queue.Count > 0) {
                     // dequeue
                     Entry entry = queue.Dequeue();
 
                     // return byte[] to pool (if any).
                     // not all message types have byte[] contents.
-                    if (entry.data != default)
-                    {
+                    if (entry.data != default) {
                         pool.Return(entry.data.Array);
                     }
                 }

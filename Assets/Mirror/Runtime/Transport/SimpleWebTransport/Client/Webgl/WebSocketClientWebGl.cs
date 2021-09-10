@@ -1,11 +1,9 @@
+using AOT;
 using System;
 using System.Collections.Generic;
-using AOT;
 
-namespace Mirror.SimpleWeb
-{
-    public class WebSocketClientWebGl : SimpleWebClient
-    {
+namespace Mirror.SimpleWeb {
+    public class WebSocketClientWebGl : SimpleWebClient {
         static readonly Dictionary<int, WebSocketClientWebGl> instances = new Dictionary<int, WebSocketClientWebGl>();
 
         /// <summary>
@@ -13,8 +11,7 @@ namespace Mirror.SimpleWeb
         /// </summary>
         int index;
 
-        internal WebSocketClientWebGl(int maxMessageSize, int maxMessagesPerTick) : base(maxMessageSize, maxMessagesPerTick)
-        {
+        internal WebSocketClientWebGl(int maxMessageSize, int maxMessagesPerTick) : base(maxMessageSize, maxMessagesPerTick) {
 #if !UNITY_WEBGL || UNITY_EDITOR
             throw new NotSupportedException();
 #endif
@@ -22,24 +19,20 @@ namespace Mirror.SimpleWeb
 
         public bool CheckJsConnected() => SimpleWebJSLib.IsConnected(index);
 
-        public override void Connect(Uri serverAddress)
-        {
+        public override void Connect(Uri serverAddress) {
             index = SimpleWebJSLib.Connect(serverAddress.ToString(), OpenCallback, CloseCallBack, MessageCallback, ErrorCallback);
             instances.Add(index, this);
             state = ClientState.Connecting;
         }
 
-        public override void Disconnect()
-        {
+        public override void Disconnect() {
             state = ClientState.Disconnecting;
             // disconnect should cause closeCallback and OnDisconnect to be called
             SimpleWebJSLib.Disconnect(index);
         }
 
-        public override void Send(ArraySegment<byte> segment)
-        {
-            if (segment.Count > maxMessageSize)
-            {
+        public override void Send(ArraySegment<byte> segment) {
+            if (segment.Count > maxMessageSize) {
                 Log.Error($"Cant send message with length {segment.Count} because it is over the max size of {maxMessageSize}");
                 return;
             }
@@ -47,14 +40,12 @@ namespace Mirror.SimpleWeb
             SimpleWebJSLib.Send(index, segment.Array, 0, segment.Count);
         }
 
-        void onOpen()
-        {
+        void onOpen() {
             receiveQueue.Enqueue(new Message(EventType.Connected));
             state = ClientState.Connected;
         }
 
-        void onClose()
-        {
+        void onClose() {
             // this code should be last in this class
 
             receiveQueue.Enqueue(new Message(EventType.Disconnected));
@@ -62,24 +53,19 @@ namespace Mirror.SimpleWeb
             instances.Remove(index);
         }
 
-        void onMessage(IntPtr bufferPtr, int count)
-        {
-            try
-            {
+        void onMessage(IntPtr bufferPtr, int count) {
+            try {
                 ArrayBuffer buffer = bufferPool.Take(count);
                 buffer.CopyFrom(bufferPtr, count);
 
                 receiveQueue.Enqueue(new Message(buffer));
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Log.Error($"onData {e.GetType()}: {e.Message}\n{e.StackTrace}");
                 receiveQueue.Enqueue(new Message(e));
             }
         }
 
-        void onErr()
-        {
+        void onErr() {
             receiveQueue.Enqueue(new Message(new Exception("Javascript Websocket error")));
             Disconnect();
         }

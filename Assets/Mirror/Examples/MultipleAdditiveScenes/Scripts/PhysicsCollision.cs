@@ -1,31 +1,25 @@
 using UnityEngine;
 
-namespace Mirror.Examples.MultipleAdditiveScenes
-{
+namespace Mirror.Examples.MultipleAdditiveScenes {
     [RequireComponent(typeof(Rigidbody))]
-    public class PhysicsCollision : NetworkBehaviour
-    {
+    public class PhysicsCollision : NetworkBehaviour {
         [Tooltip("how forcefully to push this object")]
         public float force = 12;
 
         public Rigidbody rigidbody3D;
 
-        void OnValidate()
-        {
+        void OnValidate() {
             if (rigidbody3D == null)
                 rigidbody3D = GetComponent<Rigidbody>();
         }
 
-        void Start()
-        {
+        void Start() {
             rigidbody3D.isKinematic = !isServer;
         }
 
         [ServerCallback]
-        void OnCollisionStay(Collision other)
-        {
-            if (other.gameObject.CompareTag("Player"))
-            {
+        void OnCollisionStay(Collision other) {
+            if (other.gameObject.CompareTag("Player")) {
                 // get direction from which player is contacting object
                 Vector3 direction = other.contacts[0].normal;
 

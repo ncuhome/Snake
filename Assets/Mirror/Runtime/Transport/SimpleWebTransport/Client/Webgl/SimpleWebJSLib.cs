@@ -3,10 +3,8 @@ using System;
 using System.Runtime.InteropServices;
 #endif
 
-namespace Mirror.SimpleWeb
-{
-    internal static class SimpleWebJSLib
-    {
+namespace Mirror.SimpleWeb {
+    internal static class SimpleWebJSLib {
 #if UNITY_WEBGL
         [DllImport("__Internal")]
         internal static extern bool IsConnected(int index);

@@ -1,10 +1,8 @@
 using System.IO;
 
-namespace kcp2k
-{
+namespace kcp2k {
     // KCP Segment Definition
-    internal class Segment
-    {
+    internal class Segment {
         internal uint conv;     // conversation
         internal uint cmd;      // command, e.g. Kcp.CMD_ACK etc.
         internal uint frg;      // fragment
@@ -25,8 +23,7 @@ namespace kcp2k
 
         // ikcp_encode_seg
         // encode a segment into buffer
-        internal int Encode(byte[] ptr, int offset)
-        {
+        internal int Encode(byte[] ptr, int offset) {
             int offset_ = offset;
             offset += Utils.Encode32U(ptr, offset, conv);
             offset += Utils.Encode8u(ptr, offset, (byte)cmd);
@@ -41,8 +38,7 @@ namespace kcp2k
         }
 
         // reset to return a fresh segment to the pool
-        internal void Reset()
-        {
+        internal void Reset() {
             conv = 0;
             cmd = 0;
             frg = 0;

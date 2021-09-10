@@ -2,10 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using UnityEngine;
 
-namespace Mirror.SimpleWeb
-{
-    public enum ClientState
-    {
+namespace Mirror.SimpleWeb {
+    public enum ClientState {
         NotConnected = 0,
         Connecting = 1,
         Connected = 2,
@@ -15,10 +13,8 @@ namespace Mirror.SimpleWeb
     /// Client used to control websockets
     /// <para>Base class used by WebSocketClientWebGl and WebSocketClientStandAlone</para>
     /// </summary>
-    public abstract class SimpleWebClient
-    {
-        public static SimpleWebClient Create(int maxMessageSize, int maxMessagesPerTick, TcpConfig tcpConfig)
-        {
+    public abstract class SimpleWebClient {
+        public static SimpleWebClient Create(int maxMessageSize, int maxMessagesPerTick, TcpConfig tcpConfig) {
 #if UNITY_WEBGL && !UNITY_EDITOR
             return new WebSocketClientWebGl(maxMessageSize, maxMessagesPerTick);
 #else
@@ -33,8 +29,7 @@ namespace Mirror.SimpleWeb
 
         protected ClientState state;
 
-        protected SimpleWebClient(int maxMessageSize, int maxMessagesPerTick)
-        {
+        protected SimpleWebClient(int maxMessageSize, int maxMessagesPerTick) {
             this.maxMessageSize = maxMessageSize;
             this.maxMessagesPerTick = maxMessagesPerTick;
             bufferPool = new BufferPool(5, 20, maxMessageSize);
@@ -47,8 +42,7 @@ namespace Mirror.SimpleWeb
         public event Action<ArraySegment<byte>> onData;
         public event Action<Exception> onError;
 
-        public void ProcessMessageQueue(MonoBehaviour behaviour)
-        {
+        public void ProcessMessageQueue(MonoBehaviour behaviour) {
             int processedCount = 0;
             // check enabled every time in case behaviour was disabled after data
             while (
@@ -56,12 +50,10 @@ namespace Mirror.SimpleWeb
                 processedCount < maxMessagesPerTick &&
                 // Dequeue last
                 receiveQueue.TryDequeue(out Message next)
-                )
-            {
+                ) {
                 processedCount++;
 
-                switch (next.type)
-                {
+                switch (next.type) {
                     case EventType.Connected:
                         onConnect?.Invoke();
                         break;

@@ -25,11 +25,9 @@
 using System;
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     /// <summary>Abstract transport layer component</summary>
-    public abstract class Transport : MonoBehaviour
-    {
+    public abstract class Transport : MonoBehaviour {
         /// <summary>The current transport used by Mirror.</summary>
         public static Transport activeTransport;
 
@@ -55,8 +53,7 @@ namespace Mirror
         public abstract void ClientConnect(string address);
 
         /// <summary>Connects the client to the server at the Uri.</summary>
-        public virtual void ClientConnect(Uri uri)
-        {
+        public virtual void ClientConnect(Uri uri) {
             // By default, to keep backwards compatibility, just connect to the host
             // in the uri
             ClientConnect(uri.Host);
@@ -67,9 +64,8 @@ namespace Mirror
         // TODO make second version abstract after removing the obsolete version
         // Deprecated 2021-05-17
         [Obsolete("Use ClientSend(segment, channelId) instead. channelId is now the last parameter.")]
-        public virtual void ClientSend(int channelId, ArraySegment<byte> segment) {}
-        public virtual void ClientSend(ArraySegment<byte> segment, int channelId)
-        {
+        public virtual void ClientSend(int channelId, ArraySegment<byte> segment) { }
+        public virtual void ClientSend(ArraySegment<byte> segment, int channelId) {
             // defaults to obsolete version to not force break transports.
 #pragma warning disable 618
             ClientSend(channelId, segment);
@@ -106,9 +102,8 @@ namespace Mirror
         // TODO make second version abstract after removing the obsolete version
         // Deprecated 2021-05-17
         [Obsolete("Use ServerSend(connectionId, segment, channelId) instead. channelId is now the last parameter.")]
-        public virtual void ServerSend(int connectionId, int channelId, ArraySegment<byte> segment) {}
-        public virtual void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId)
-        {
+        public virtual void ServerSend(int connectionId, int channelId, ArraySegment<byte> segment) { }
+        public virtual void ServerSend(int connectionId, ArraySegment<byte> segment, int channelId) {
             // defaults to obsolete version to not force break transports.
 #pragma warning disable 618
             ServerSend(connectionId, channelId, segment);
@@ -138,8 +133,7 @@ namespace Mirror
         // Some transports like kcp support large max packet sizes which should
         // not be used for batching all the time because they end up being too
         // slow (head of line blocking etc.).
-        public virtual int GetBatchThreshold(int channelId)
-        {
+        public virtual int GetBatchThreshold(int channelId) {
             // change to GetMaxPacketSize by default after removing obsolete
 #pragma warning disable 618
             return GetMaxBatchSize(channelId);
@@ -164,8 +158,8 @@ namespace Mirror
         //
         // => see NetworkLoop.cs for detailed explanations!
 #pragma warning disable UNT0001 // Empty Unity message
-        public void Update() {}
-        public void LateUpdate() {}
+        public void Update() { }
+        public void LateUpdate() { }
 #pragma warning restore UNT0001 // Empty Unity message
 
         /// <summary>
@@ -180,17 +174,16 @@ namespace Mirror
         //    them from NetworkClient/Server
         // => VIRTUAL for now so we can take our time to convert transports
         //    without breaking anything.
-        public virtual void ClientEarlyUpdate() {}
-        public virtual void ServerEarlyUpdate() {}
-        public virtual void ClientLateUpdate() {}
-        public virtual void ServerLateUpdate() {}
+        public virtual void ClientEarlyUpdate() { }
+        public virtual void ServerEarlyUpdate() { }
+        public virtual void ClientLateUpdate() { }
+        public virtual void ServerLateUpdate() { }
 
         /// <summary>Shut down the transport, both as client and server</summary>
         public abstract void Shutdown();
 
         /// <summary>Called by Unity when quitting. Inheriting Transports should call base for proper Shutdown.</summary>
-        public virtual void OnApplicationQuit()
-        {
+        public virtual void OnApplicationQuit() {
             // stop transport (e.g. to shut down threads)
             // (when pressing Stop in the Editor, Unity keeps threads alive
             //  until we press Start again. so if Transports use threads, we

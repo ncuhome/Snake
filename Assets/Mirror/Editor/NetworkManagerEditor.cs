@@ -2,24 +2,19 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     [CustomEditor(typeof(NetworkManager), true)]
     [CanEditMultipleObjects]
-    public class NetworkManagerEditor : Editor
-    {
+    public class NetworkManagerEditor : Editor {
         SerializedProperty spawnListProperty;
         ReorderableList spawnList;
         protected NetworkManager networkManager;
 
-        protected void Init()
-        {
-            if (spawnList == null)
-            {
+        protected void Init() {
+            if (spawnList == null) {
                 networkManager = target as NetworkManager;
                 spawnListProperty = serializedObject.FindProperty("spawnPrefabs");
-                spawnList = new ReorderableList(serializedObject, spawnListProperty)
-                {
+                spawnList = new ReorderableList(serializedObject, spawnListProperty) {
                     drawHeaderCallback = DrawHeader,
                     drawElementCallback = DrawChild,
                     onReorderCallback = Changed,
@@ -32,45 +27,36 @@ namespace Mirror
             }
         }
 
-        public override void OnInspectorGUI()
-        {
+        public override void OnInspectorGUI() {
             Init();
             DrawDefaultInspector();
             EditorGUI.BeginChangeCheck();
             spawnList.DoLayoutList();
-            if (EditorGUI.EndChangeCheck())
-            {
+            if (EditorGUI.EndChangeCheck()) {
                 serializedObject.ApplyModifiedProperties();
             }
         }
 
-        static void DrawHeader(Rect headerRect)
-        {
+        static void DrawHeader(Rect headerRect) {
             GUI.Label(headerRect, "Registered Spawnable Prefabs:");
         }
 
-        internal void DrawChild(Rect r, int index, bool isActive, bool isFocused)
-        {
+        internal void DrawChild(Rect r, int index, bool isActive, bool isFocused) {
             SerializedProperty prefab = spawnListProperty.GetArrayElementAtIndex(index);
             GameObject go = (GameObject)prefab.objectReferenceValue;
 
             GUIContent label;
-            if (go == null)
-            {
+            if (go == null) {
                 label = new GUIContent("Empty", "Drag a prefab with a NetworkIdentity here");
-            }
-            else
-            {
+            } else {
                 NetworkIdentity identity = go.GetComponent<NetworkIdentity>();
                 label = new GUIContent(go.name, identity != null ? "AssetId: [" + identity.assetId + "]" : "No Network Identity");
             }
 
             GameObject newGameObject = (GameObject)EditorGUI.ObjectField(r, label, go, typeof(GameObject), false);
 
-            if (newGameObject != go)
-            {
-                if (newGameObject != null && !newGameObject.GetComponent<NetworkIdentity>())
-                {
+            if (newGameObject != go) {
+                if (newGameObject != null && !newGameObject.GetComponent<NetworkIdentity>()) {
                     Debug.LogError("Prefab " + newGameObject + " cannot be added as spawnable as it doesn't have a NetworkIdentity.");
                     return;
                 }
@@ -78,13 +64,11 @@ namespace Mirror
             }
         }
 
-        internal void Changed(ReorderableList list)
-        {
+        internal void Changed(ReorderableList list) {
             EditorUtility.SetDirty(target);
         }
 
-        internal void AddButton(ReorderableList list)
-        {
+        internal void AddButton(ReorderableList list) {
             spawnListProperty.arraySize += 1;
             list.index = spawnListProperty.arraySize - 1;
 
@@ -96,11 +80,9 @@ namespace Mirror
             Changed(list);
         }
 
-        internal void RemoveButton(ReorderableList list)
-        {
+        internal void RemoveButton(ReorderableList list) {
             spawnListProperty.DeleteArrayElementAtIndex(spawnList.index);
-            if (list.index >= spawnListProperty.arraySize)
-            {
+            if (list.index >= spawnListProperty.arraySize) {
                 list.index = spawnListProperty.arraySize - 1;
             }
         }

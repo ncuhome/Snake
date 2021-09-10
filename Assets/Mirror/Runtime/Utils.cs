@@ -3,8 +3,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     // Handles network messages on client and server
     public delegate void NetworkMessageDelegate(NetworkConnection conn, NetworkReader reader, int channelId);
 
@@ -17,16 +16,14 @@ namespace Mirror
     public delegate void UnSpawnDelegate(GameObject spawned);
 
     // invoke type for Cmd/Rpc
-    public enum MirrorInvokeType
-    {
+    public enum MirrorInvokeType {
         Command,
         ClientRpc
     }
 
     // Deprecated 2021-03-15
     [Obsolete("Version has never been used, neither by UNET nor by Mirror.")]
-    public enum Version
-    {
+    public enum Version {
         Current = 1
     }
 
@@ -37,8 +34,7 @@ namespace Mirror
     // will only require reliable for handshake, and unreliable for the rest.
     // so eventually we can change this to an Enum and transports shouldn't
     // add custom channels anymore.
-    public static class Channels
-    {
+    public static class Channels {
         public const int Reliable = 0;      // ordered
         public const int Unreliable = 1;    // unordered
 
@@ -53,8 +49,7 @@ namespace Mirror
 
     // -- helpers for float conversion without allocations --
     [StructLayout(LayoutKind.Explicit)]
-    internal struct UIntFloat
-    {
+    internal struct UIntFloat {
         [FieldOffset(0)]
         public float floatValue;
 
@@ -63,8 +58,7 @@ namespace Mirror
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    internal struct UIntDouble
-    {
+    internal struct UIntDouble {
         [FieldOffset(0)]
         public double doubleValue;
 
@@ -73,8 +67,7 @@ namespace Mirror
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    internal struct UIntDecimal
-    {
+    internal struct UIntDecimal {
         [FieldOffset(0)]
         public ulong longValue1;
 
@@ -85,21 +78,17 @@ namespace Mirror
         public decimal decimalValue;
     }
 
-    public static class Utils
-    {
-        public static uint GetTrueRandomUInt()
-        {
+    public static class Utils {
+        public static uint GetTrueRandomUInt() {
             // use Crypto RNG to avoid having time based duplicates
-            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
-            {
+            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider()) {
                 byte[] bytes = new byte[4];
                 rng.GetBytes(bytes);
                 return BitConverter.ToUInt32(bytes, 0);
             }
         }
 
-        public static bool IsPrefab(GameObject obj)
-        {
+        public static bool IsPrefab(GameObject obj) {
 #if UNITY_EDITOR
             return UnityEditor.PrefabUtility.IsPartOfPrefabAsset(obj);
 #else
@@ -107,20 +96,17 @@ namespace Mirror
 #endif
         }
 
-        public static bool IsSceneObjectWithPrefabParent(GameObject gameObject, out GameObject prefab)
-        {
+        public static bool IsSceneObjectWithPrefabParent(GameObject gameObject, out GameObject prefab) {
             prefab = null;
 
 #if UNITY_EDITOR
-            if (!UnityEditor.PrefabUtility.IsPartOfPrefabInstance(gameObject))
-            {
+            if (!UnityEditor.PrefabUtility.IsPartOfPrefabInstance(gameObject)) {
                 return false;
             }
             prefab = UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(gameObject);
 #endif
 
-            if (prefab == null)
-            {
+            if (prefab == null) {
                 Debug.LogError("Failed to find prefab parent for scene object [name:" + gameObject.name + "]");
                 return false;
             }

@@ -1,4 +1,3 @@
-namespace Mirror
-{
-    public interface NetworkMessage {}
+namespace Mirror {
+    public interface NetworkMessage { }
 }

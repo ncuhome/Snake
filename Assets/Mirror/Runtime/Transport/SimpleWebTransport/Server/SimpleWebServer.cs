@@ -2,17 +2,14 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Mirror.SimpleWeb
-{
-    public class SimpleWebServer
-    {
+namespace Mirror.SimpleWeb {
+    public class SimpleWebServer {
         readonly int maxMessagesPerTick;
 
         readonly WebSocketServer server;
         readonly BufferPool bufferPool;
 
-        public SimpleWebServer(int maxMessagesPerTick, TcpConfig tcpConfig, int maxMessageSize, int handshakeMaxSize, SslConfig sslConfig)
-        {
+        public SimpleWebServer(int maxMessagesPerTick, TcpConfig tcpConfig, int maxMessageSize, int handshakeMaxSize, SslConfig sslConfig) {
             this.maxMessagesPerTick = maxMessagesPerTick;
             // use max because bufferpool is used for both messages and handshake
             int max = Math.Max(maxMessageSize, handshakeMaxSize);
@@ -28,50 +25,42 @@ namespace Mirror.SimpleWeb
         public event Action<int, ArraySegment<byte>> onData;
         public event Action<int, Exception> onError;
 
-        public void Start(ushort port)
-        {
+        public void Start(ushort port) {
             server.Listen(port);
             Active = true;
         }
 
-        public void Stop()
-        {
+        public void Stop() {
             server.Stop();
             Active = false;
         }
 
-        public void SendAll(List<int> connectionIds, ArraySegment<byte> source)
-        {
+        public void SendAll(List<int> connectionIds, ArraySegment<byte> source) {
             ArrayBuffer buffer = bufferPool.Take(source.Count);
             buffer.CopyFrom(source);
             buffer.SetReleasesRequired(connectionIds.Count);
 
             // make copy of array before for each, data sent to each client is the same
-            foreach (int id in connectionIds)
-            {
+            foreach (int id in connectionIds) {
                 server.Send(id, buffer);
             }
         }
-        public void SendOne(int connectionId, ArraySegment<byte> source)
-        {
+        public void SendOne(int connectionId, ArraySegment<byte> source) {
             ArrayBuffer buffer = bufferPool.Take(source.Count);
             buffer.CopyFrom(source);
 
             server.Send(connectionId, buffer);
         }
 
-        public bool KickClient(int connectionId)
-        {
+        public bool KickClient(int connectionId) {
             return server.CloseConnection(connectionId);
         }
 
-        public string GetClientAddress(int connectionId)
-        {
+        public string GetClientAddress(int connectionId) {
             return server.GetClientAddress(connectionId);
         }
 
-        public void ProcessMessageQueue(MonoBehaviour behaviour)
-        {
+        public void ProcessMessageQueue(MonoBehaviour behaviour) {
             int processedCount = 0;
             // check enabled every time in case behaviour was disabled after data
             while (
@@ -79,12 +68,10 @@ namespace Mirror.SimpleWeb
                 processedCount < maxMessagesPerTick &&
                 // Dequeue last
                 server.receiveQueue.TryDequeue(out Message next)
-                )
-            {
+                ) {
                 processedCount++;
 
-                switch (next.type)
-                {
+                switch (next.type) {
                     case EventType.Connected:
                         onConnect?.Invoke(next.connId);
                         break;

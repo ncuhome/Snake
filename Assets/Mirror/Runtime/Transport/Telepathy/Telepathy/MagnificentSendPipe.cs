@@ -10,10 +10,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace Telepathy
-{
-    public class MagnificentSendPipe
-    {
+namespace Telepathy {
+    public class MagnificentSendPipe {
         // message queue
         // ConcurrentQueue allocates. lock{} instead.
         // -> byte arrays are always of MaxMessageSize
@@ -31,33 +29,28 @@ namespace Telepathy
         Pool<byte[]> pool;
 
         // constructor
-        public MagnificentSendPipe(int MaxMessageSize)
-        {
+        public MagnificentSendPipe(int MaxMessageSize) {
             // initialize pool to create max message sized byte[]s each time
             pool = new Pool<byte[]>(() => new byte[MaxMessageSize]);
         }
 
         // for statistics. don't call Count and assume that it's the same after
         // the call.
-        public int Count
-        {
+        public int Count {
             get { lock (this) { return queue.Count; } }
         }
 
         // pool count for testing
-        public int PoolCount
-        {
+        public int PoolCount {
             get { lock (this) { return pool.Count(); } }
         }
 
         // enqueue a message
         // arraysegment for allocation free sends later.
         // -> the segment's array is only used until Enqueue() returns!
-        public void Enqueue(ArraySegment<byte> message)
-        {
+        public void Enqueue(ArraySegment<byte> message) {
             // pool & queue usage always needs to be locked
-            lock (this)
-            {
+            lock (this) {
                 // ArraySegment array is only valid until returning, so copy
                 // it into a byte[] that we can queue safely.
 
@@ -98,11 +91,9 @@ namespace Telepathy
         // IMPORTANT: serializing in here will allow us to return the byte[]
         //            entries back to a pool later to completely avoid
         //            allocations!
-        public bool DequeueAndSerializeAll(ref byte[] payload, out int packetSize)
-        {
+        public bool DequeueAndSerializeAll(ref byte[] payload, out int packetSize) {
             // pool & queue usage always needs to be locked
-            lock (this)
-            {
+            lock (this) {
                 // do nothing if empty
                 packetSize = 0;
                 if (queue.Count == 0)
@@ -127,8 +118,7 @@ namespace Telepathy
 
                 // dequeue all byte[] messages and serialize into the packet
                 int position = 0;
-                while (queue.Count > 0)
-                {
+                while (queue.Count > 0) {
                     // dequeue
                     ArraySegment<byte> message = queue.Dequeue();
 
@@ -149,14 +139,11 @@ namespace Telepathy
             }
         }
 
-        public void Clear()
-        {
+        public void Clear() {
             // pool & queue usage always needs to be locked
-            lock (this)
-            {
+            lock (this) {
                 // clear queue, but via dequeue to return each byte[] to pool
-                while (queue.Count > 0)
-                {
+                while (queue.Count > 0) {
                     pool.Return(queue.Dequeue().Array);
                 }
             }

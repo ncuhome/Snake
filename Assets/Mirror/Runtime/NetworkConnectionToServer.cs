@@ -1,9 +1,7 @@
 using System;
 
-namespace Mirror
-{
-    public class NetworkConnectionToServer : NetworkConnection
-    {
+namespace Mirror {
+    public class NetworkConnectionToServer : NetworkConnection {
         public override string address => "";
 
         // Send stage three: hand off to transport
@@ -11,8 +9,7 @@ namespace Mirror
             Transport.activeTransport.ClientSend(segment, channelId);
 
         /// <summary>Disconnects this connection.</summary>
-        public override void Disconnect()
-        {
+        public override void Disconnect() {
             // set not ready and handle clientscene disconnect in any case
             // (might be client or host mode here)
             // TODO remove redundant state. have one source of truth for .ready!

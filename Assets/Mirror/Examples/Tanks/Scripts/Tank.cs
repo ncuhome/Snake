@@ -1,10 +1,8 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace Mirror.Examples.Tanks
-{
-    public class Tank : NetworkBehaviour
-    {
+namespace Mirror.Examples.Tanks {
+    public class Tank : NetworkBehaviour {
         [Header("Components")]
         public NavMeshAgent agent;
         public Animator animator;
@@ -17,8 +15,7 @@ namespace Mirror.Examples.Tanks
         public GameObject projectilePrefab;
         public Transform projectileMount;
 
-        void Update()
-        {
+        void Update() {
             // movement for local player
             if (!isLocalPlayer) return;
 
@@ -33,16 +30,14 @@ namespace Mirror.Examples.Tanks
             animator.SetBool("Moving", agent.velocity != Vector3.zero);
 
             // shoot
-            if (Input.GetKeyDown(shootKey))
-            {
+            if (Input.GetKeyDown(shootKey)) {
                 CmdFire();
             }
         }
 
         // this is called on the server
         [Command]
-        void CmdFire()
-        {
+        void CmdFire() {
             GameObject projectile = Instantiate(projectilePrefab, projectileMount.position, transform.rotation);
             NetworkServer.Spawn(projectile);
             RpcOnFire();
@@ -50,8 +45,7 @@ namespace Mirror.Examples.Tanks
 
         // this is called on the tank that fired for all observers
         [ClientRpc]
-        void RpcOnFire()
-        {
+        void RpcOnFire() {
             animator.SetTrigger("Shoot");
         }
     }

@@ -1,10 +1,8 @@
-using System;
 using Mono.CecilX;
+using System;
 
-namespace Mirror.Weaver
-{
-    public static class WeaverTypes
-    {
+namespace Mirror.Weaver {
+    public static class WeaverTypes {
         public static MethodReference ScriptableObjectCreateInstanceMethod;
 
         public static MethodReference NetworkBehaviourDirtyBitsReference;
@@ -56,8 +54,7 @@ namespace Mirror.Weaver
 
         public static TypeReference Import(Type t) => currentAssembly.MainModule.ImportReference(t);
 
-        public static void SetupTargetTypes(AssemblyDefinition currentAssembly)
-        {
+        public static void SetupTargetTypes(AssemblyDefinition currentAssembly) {
             // system types
             WeaverTypes.currentAssembly = currentAssembly;
 
@@ -111,14 +108,12 @@ namespace Mirror.Weaver
 
             TypeReference unityDebug = Import(typeof(UnityEngine.Debug));
             // these have multiple methods with same name, so need to check parameters too
-            logErrorReference = Resolvers.ResolveMethod(unityDebug, currentAssembly, (md) =>
-            {
+            logErrorReference = Resolvers.ResolveMethod(unityDebug, currentAssembly, (md) => {
                 return md.Name == "LogError" &&
                     md.Parameters.Count == 1 &&
                     md.Parameters[0].ParameterType.FullName == typeof(object).FullName;
             });
-            logWarningReference = Resolvers.ResolveMethod(unityDebug, currentAssembly, (md) =>
-            {
+            logWarningReference = Resolvers.ResolveMethod(unityDebug, currentAssembly, (md) => {
                 return md.Name == "LogWarning" &&
                     md.Parameters.Count == 1 &&
                     md.Parameters[0].ParameterType.FullName == typeof(object).FullName;
@@ -134,8 +129,7 @@ namespace Mirror.Weaver
             InitSyncObjectReference = Resolvers.ResolveMethod(NetworkBehaviourType, currentAssembly, "InitSyncObject");
 
             TypeReference readerExtensions = Import(typeof(NetworkReaderExtensions));
-            readNetworkBehaviourGeneric = Resolvers.ResolveMethod(readerExtensions, currentAssembly, (md =>
-            {
+            readNetworkBehaviourGeneric = Resolvers.ResolveMethod(readerExtensions, currentAssembly, (md => {
                 return md.Name == nameof(NetworkReaderExtensions.ReadNetworkBehaviour) &&
                     md.HasGenericParameters;
             }));

@@ -2,18 +2,15 @@ using System;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace Mirror.SimpleWeb
-{
-    public class WebSocketClientStandAlone : SimpleWebClient
-    {
+namespace Mirror.SimpleWeb {
+    public class WebSocketClientStandAlone : SimpleWebClient {
         readonly ClientSslHelper sslHelper;
         readonly ClientHandshake handshake;
         readonly TcpConfig tcpConfig;
         Connection conn;
 
 
-        internal WebSocketClientStandAlone(int maxMessageSize, int maxMessagesPerTick, TcpConfig tcpConfig) : base(maxMessageSize, maxMessagesPerTick)
-        {
+        internal WebSocketClientStandAlone(int maxMessageSize, int maxMessagesPerTick, TcpConfig tcpConfig) : base(maxMessageSize, maxMessagesPerTick) {
 #if UNITY_WEBGL && !UNITY_EDITOR
             throw new NotSupportedException();
 #else
@@ -23,18 +20,15 @@ namespace Mirror.SimpleWeb
 #endif
         }
 
-        public override void Connect(Uri serverAddress)
-        {
+        public override void Connect(Uri serverAddress) {
             state = ClientState.Connecting;
             Thread receiveThread = new Thread(() => ConnectAndReceiveLoop(serverAddress));
             receiveThread.IsBackground = true;
             receiveThread.Start();
         }
 
-        void ConnectAndReceiveLoop(Uri serverAddress)
-        {
-            try
-            {
+        void ConnectAndReceiveLoop(Uri serverAddress) {
+            try {
                 TcpClient client = new TcpClient();
                 tcpConfig.ApplyTo(client);
 
@@ -42,28 +36,23 @@ namespace Mirror.SimpleWeb
                 conn = new Connection(client, AfterConnectionDisposed);
                 conn.receiveThread = Thread.CurrentThread;
 
-                try
-                {
+                try {
                     client.Connect(serverAddress.Host, serverAddress.Port);
-                }
-                catch (SocketException)
-                {
+                } catch (SocketException) {
                     client.Dispose();
                     throw;
                 }
 
 
                 bool success = sslHelper.TryCreateStream(conn, serverAddress);
-                if (!success)
-                {
+                if (!success) {
                     Log.Warn("Failed to create Stream");
                     conn.Dispose();
                     return;
                 }
 
                 success = handshake.TryHandshake(conn, serverAddress);
-                if (!success)
-                {
+                if (!success) {
                     Log.Warn("Failed Handshake");
                     conn.Dispose();
                     return;
@@ -75,8 +64,7 @@ namespace Mirror.SimpleWeb
 
                 receiveQueue.Enqueue(new Message(EventType.Connected));
 
-                Thread sendThread = new Thread(() =>
-                {
+                Thread sendThread = new Thread(() => {
                     SendLoop.Config sendConfig = new SendLoop.Config(
                         conn,
                         bufferSize: Constants.HeaderSize + Constants.MaskSize + maxMessageSize,
@@ -95,40 +83,29 @@ namespace Mirror.SimpleWeb
                     receiveQueue,
                     bufferPool);
                 ReceiveLoop.Loop(config);
-            }
-            catch (ThreadInterruptedException e) { Log.InfoException(e); }
-            catch (ThreadAbortException e) { Log.InfoException(e); }
-            catch (Exception e) { Log.Exception(e); }
-            finally
-            {
+            } catch (ThreadInterruptedException e) { Log.InfoException(e); } catch (ThreadAbortException e) { Log.InfoException(e); } catch (Exception e) { Log.Exception(e); } finally {
                 // close here in case connect fails
                 conn?.Dispose();
             }
         }
 
-        void AfterConnectionDisposed(Connection conn)
-        {
+        void AfterConnectionDisposed(Connection conn) {
             state = ClientState.NotConnected;
             // make sure Disconnected event is only called once
             receiveQueue.Enqueue(new Message(EventType.Disconnected));
         }
 
-        public override void Disconnect()
-        {
+        public override void Disconnect() {
             state = ClientState.Disconnecting;
             Log.Info("Disconnect Called");
-            if (conn == null)
-            {
+            if (conn == null) {
                 state = ClientState.NotConnected;
-            }
-            else
-            {
+            } else {
                 conn?.Dispose();
             }
         }
 
-        public override void Send(ArraySegment<byte> segment)
-        {
+        public override void Send(ArraySegment<byte> segment) {
             ArrayBuffer buffer = bufferPool.Take(segment.Count);
             buffer.CopyFrom(segment);
 

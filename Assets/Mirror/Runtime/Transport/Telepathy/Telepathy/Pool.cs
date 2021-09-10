@@ -2,10 +2,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace Telepathy
-{
-    public class Pool<T>
-    {
+namespace Telepathy {
+    public class Pool<T> {
         // objects
         readonly Stack<T> objects = new Stack<T>();
 
@@ -14,8 +12,7 @@ namespace Telepathy
         readonly Func<T> objectGenerator;
 
         // constructor
-        public Pool(Func<T> objectGenerator)
-        {
+        public Pool(Func<T> objectGenerator) {
             this.objectGenerator = objectGenerator;
         }
 

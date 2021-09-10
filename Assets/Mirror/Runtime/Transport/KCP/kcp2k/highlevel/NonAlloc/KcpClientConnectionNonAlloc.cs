@@ -3,14 +3,11 @@
 using System.Net;
 using WhereAllocation;
 
-namespace kcp2k
-{
-    public class KcpClientConnectionNonAlloc : KcpClientConnection
-    {
+namespace kcp2k {
+    public class KcpClientConnectionNonAlloc : KcpClientConnection {
         IPEndPointNonAlloc reusableEP;
 
-        protected override void CreateRemoteEndPoint(IPAddress[] addresses, ushort port)
-        {
+        protected override void CreateRemoteEndPoint(IPAddress[] addresses, ushort port) {
             // create reusableEP with same address family as remoteEndPoint.
             // otherwise ReceiveFrom_NonAlloc couldn't use it.
             reusableEP = new IPEndPointNonAlloc(addresses[0], port);

@@ -4,29 +4,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using Guid = System.Guid;
 
-namespace Mirror
-{
+namespace Mirror {
     // Deprecated 2021-03-07
     [Obsolete("Use NetworkClient instead")]
-    public static class ClientScene
-    {
+    public static class ClientScene {
         [Obsolete("ClientScene.localPlayer was moved to NetworkClient.localPlayer")]
-        public static NetworkIdentity localPlayer
-        {
+        public static NetworkIdentity localPlayer {
             get { return NetworkClient.localPlayer; }
             set { NetworkClient.localPlayer = value; }
         }
 
         [Obsolete("ClientScene.ready was moved to NetworkClient.ready")]
-        public static bool ready
-        {
+        public static bool ready {
             get { return NetworkClient.ready; }
             set { NetworkClient.ready = value; }
         }
 
         [Obsolete("ClientScene.readyConnection was moved to NetworkClient.readyConnection")]
-        public static NetworkConnection readyConnection
-        {
+        public static NetworkConnection readyConnection {
             get { return NetworkClient.readyConnection; }
             set { NetworkClient.connection = value; }
         }

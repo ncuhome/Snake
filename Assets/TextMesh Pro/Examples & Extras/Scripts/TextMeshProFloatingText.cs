@@ -1,12 +1,10 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 
-namespace TMPro.Examples
-{
+namespace TMPro.Examples {
 
-    public class TextMeshProFloatingText : MonoBehaviour
-    {
+    public class TextMeshProFloatingText : MonoBehaviour {
         public Font TheFont;
 
         private GameObject m_floatingText;
@@ -34,8 +32,7 @@ namespace TMPro.Examples
             new WaitForSeconds(0.8f), new WaitForSeconds(0.85f), new WaitForSeconds(0.9f), new WaitForSeconds(0.95f), new WaitForSeconds(1.0f),
         };
 
-        void Awake()
-        {
+        void Awake() {
             m_transform = transform;
             m_floatingText = new GameObject(this.name + " floating text");
 
@@ -46,10 +43,8 @@ namespace TMPro.Examples
             m_cameraTransform = Camera.main.transform;
         }
 
-        void Start()
-        {
-            if (SpawnType == 0)
-            {
+        void Start() {
+            if (SpawnType == 0) {
                 // TextMesh Pro Implementation
                 m_textMeshPro = m_floatingText.AddComponent<TextMeshPro>();
                 m_textMeshPro.rectTransform.sizeDelta = new Vector2(3, 3);
@@ -70,9 +65,7 @@ namespace TMPro.Examples
                 m_textMeshPro.isTextObjectScaleStatic = IsTextObjectScaleStatic;
 
                 StartCoroutine(DisplayTextMeshProFloatingText());
-            }
-            else if (SpawnType == 1)
-            {
+            } else if (SpawnType == 1) {
                 //Debug.Log("Spawning TextMesh Objects.");
 
                 m_floatingText_Transform = m_floatingText.transform;
@@ -86,9 +79,7 @@ namespace TMPro.Examples
                 m_textMesh.fontSize = 24;
 
                 StartCoroutine(DisplayTextMeshFloatingText());
-            }
-            else if (SpawnType == 2)
-            {
+            } else if (SpawnType == 2) {
 
             }
 
@@ -110,8 +101,7 @@ namespace TMPro.Examples
         //}
 
 
-        public IEnumerator DisplayTextMeshProFloatingText()
-        {
+        public IEnumerator DisplayTextMeshProFloatingText() {
             float CountDuration = 2.0f; // How long is the countdown alive.
             float starting_Count = Random.Range(5f, 20f); // At what number is the counter starting at.
             float current_Count = starting_Count;
@@ -124,12 +114,10 @@ namespace TMPro.Examples
 
             float fadeDuration = 3 / starting_Count * CountDuration;
 
-            while (current_Count > 0)
-            {
+            while (current_Count > 0) {
                 current_Count -= (Time.deltaTime / CountDuration) * starting_Count;
 
-                if (current_Count <= 3)
-                {
+                if (current_Count <= 3) {
                     //Debug.Log("Fading Counter ... " + current_Count.ToString("f2"));
                     alpha = Mathf.Clamp(alpha - (Time.deltaTime / fadeDuration) * 255, 0, 255);
                 }
@@ -144,8 +132,7 @@ namespace TMPro.Examples
                 m_floatingText_Transform.position += new Vector3(0, starting_Count * Time.deltaTime, 0);
 
                 // Align floating text perpendicular to Camera.
-                if (!lastPOS.Compare(m_cameraTransform.position, 1000) || !lastRotation.Compare(m_cameraTransform.rotation, 1000))
-                {
+                if (!lastPOS.Compare(m_cameraTransform.position, 1000) || !lastRotation.Compare(m_cameraTransform.rotation, 1000)) {
                     lastPOS = m_cameraTransform.position;
                     lastRotation = m_cameraTransform.rotation;
                     m_floatingText_Transform.rotation = lastRotation;
@@ -166,8 +153,7 @@ namespace TMPro.Examples
         }
 
 
-        public IEnumerator DisplayTextMeshFloatingText()
-        {
+        public IEnumerator DisplayTextMeshFloatingText() {
             float CountDuration = 2.0f; // How long is the countdown alive.
             float starting_Count = Random.Range(5f, 20f); // At what number is the counter starting at.
             float current_Count = starting_Count;
@@ -179,12 +165,10 @@ namespace TMPro.Examples
 
             float fadeDuration = 3 / starting_Count * CountDuration;
 
-            while (current_Count > 0)
-            {
+            while (current_Count > 0) {
                 current_Count -= (Time.deltaTime / CountDuration) * starting_Count;
 
-                if (current_Count <= 3)
-                {
+                if (current_Count <= 3) {
                     //Debug.Log("Fading Counter ... " + current_Count.ToString("f2"));
                     alpha = Mathf.Clamp(alpha - (Time.deltaTime / fadeDuration) * 255, 0, 255);
                 }
@@ -199,8 +183,7 @@ namespace TMPro.Examples
                 m_floatingText_Transform.position += new Vector3(0, starting_Count * Time.deltaTime, 0);
 
                 // Align floating text perpendicular to Camera.
-                if (!lastPOS.Compare(m_cameraTransform.position, 1000) || !lastRotation.Compare(m_cameraTransform.rotation, 1000))
-                {
+                if (!lastPOS.Compare(m_cameraTransform.position, 1000) || !lastRotation.Compare(m_cameraTransform.rotation, 1000)) {
                     lastPOS = m_cameraTransform.position;
                     lastRotation = m_cameraTransform.rotation;
                     m_floatingText_Transform.rotation = lastRotation;

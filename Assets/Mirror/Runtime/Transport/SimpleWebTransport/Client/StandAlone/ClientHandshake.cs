@@ -3,23 +3,18 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Mirror.SimpleWeb
-{
+namespace Mirror.SimpleWeb {
     /// <summary>
     /// Handles Handshake to the server when it first connects
     /// <para>The client handshake does not need buffers to reduce allocations since it only happens once</para>
     /// </summary>
-    internal class ClientHandshake
-    {
-        public bool TryHandshake(Connection conn, Uri uri)
-        {
-            try
-            {
+    internal class ClientHandshake {
+        public bool TryHandshake(Connection conn, Uri uri) {
+            try {
                 Stream stream = conn.stream;
 
                 byte[] keyBuffer = new byte[16];
-                using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
-                {
+                using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider()) {
                     rng.GetBytes(keyBuffer);
                 }
 
@@ -46,8 +41,7 @@ namespace Mirror.SimpleWeb
 
                 int? lengthOrNull = ReadHelper.SafeReadTillMatch(stream, responseBuffer, 0, responseBuffer.Length, Constants.endOfHandshake);
 
-                if (!lengthOrNull.HasValue)
-                {
+                if (!lengthOrNull.HasValue) {
                     Log.Error("Connected closed before handshake");
                     return false;
                 }
@@ -59,16 +53,13 @@ namespace Mirror.SimpleWeb
                 int endIndex = responseString.IndexOf("\r\n", startIndex);
                 string responseKey = responseString.Substring(startIndex, endIndex - startIndex);
 
-                if (responseKey != expectedResponse)
-                {
+                if (responseKey != expectedResponse) {
                     Log.Error($"Response key incorrect, Response:{responseKey} Expected:{expectedResponse}");
                     return false;
                 }
 
                 return true;
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Log.Exception(e);
                 return false;
             }

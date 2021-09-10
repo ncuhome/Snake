@@ -1,13 +1,10 @@
 ﻿using UnityEngine;
 
-namespace Mirror.Examples.Benchmark
-{
-    public class PlayerMovement : NetworkBehaviour
-    {
+namespace Mirror.Examples.Benchmark {
+    public class PlayerMovement : NetworkBehaviour {
         public float speed = 5;
 
-        void Update()
-        {
+        void Update() {
             if (!isLocalPlayer) return;
 
             float h = Input.GetAxis("Horizontal");

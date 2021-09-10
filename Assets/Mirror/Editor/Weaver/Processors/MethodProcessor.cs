@@ -1,10 +1,8 @@
 using Mono.CecilX;
 using Mono.CecilX.Cil;
 
-namespace Mirror.Weaver
-{
-    public static class MethodProcessor
-    {
+namespace Mirror.Weaver {
+    public static class MethodProcessor {
         const string RpcPrefix = "UserCode_";
 
         // creates a method substitute
@@ -30,8 +28,7 @@ namespace Mirror.Weaver
         //
         //  the original method definition loses all code
         //  this returns the newly created method with all the user provided code
-        public static MethodDefinition SubstituteMethod(TypeDefinition td, MethodDefinition md)
-        {
+        public static MethodDefinition SubstituteMethod(TypeDefinition td, MethodDefinition md) {
             string newName = RpcPrefix + md.Name;
             MethodDefinition cmd = new MethodDefinition(newName, md.Attributes, md.ReturnType);
 
@@ -45,8 +42,7 @@ namespace Mirror.Weaver
             cmd.IsFamily = true;
 
             // add parameters
-            foreach (ParameterDefinition pd in md.Parameters)
-            {
+            foreach (ParameterDefinition pd in md.Parameters) {
                 cmd.Parameters.Add(new ParameterDefinition(pd.Name, ParameterAttributes.None, pd.ParameterType));
             }
 
@@ -76,8 +72,7 @@ namespace Mirror.Weaver
         /// </summary>
         /// <param name="type"></param>
         /// <param name="method"></param>
-        public static void FixRemoteCallToBaseMethod(TypeDefinition type, MethodDefinition method)
-        {
+        public static void FixRemoteCallToBaseMethod(TypeDefinition type, MethodDefinition method) {
             string callName = method.Name;
 
             // Cmd/rpc start with Weaver.RpcPrefix
@@ -88,23 +83,19 @@ namespace Mirror.Weaver
             // e.g. CmdDoSomething
             string baseRemoteCallName = method.Name.Substring(RpcPrefix.Length);
 
-            foreach (Instruction instruction in method.Body.Instructions)
-            {
+            foreach (Instruction instruction in method.Body.Instructions) {
                 // if call to base.CmdDoSomething within this.CallCmdDoSomething
                 if (IsCallToMethod(instruction, out MethodDefinition calledMethod) &&
-                    calledMethod.Name == baseRemoteCallName)
-                {
+                    calledMethod.Name == baseRemoteCallName) {
                     TypeDefinition baseType = type.BaseType.Resolve();
                     MethodDefinition baseMethod = baseType.GetMethodInBaseType(callName);
 
-                    if (baseMethod == null)
-                    {
+                    if (baseMethod == null) {
                         Weaver.Error($"Could not find base method for {callName}", method);
                         return;
                     }
 
-                    if (!baseMethod.IsVirtual)
-                    {
+                    if (!baseMethod.IsVirtual) {
                         Weaver.Error($"Could not find base method that was virutal {callName}", method);
                         return;
                     }
@@ -116,16 +107,12 @@ namespace Mirror.Weaver
             }
         }
 
-        static bool IsCallToMethod(Instruction instruction, out MethodDefinition calledMethod)
-        {
+        static bool IsCallToMethod(Instruction instruction, out MethodDefinition calledMethod) {
             if (instruction.OpCode == OpCodes.Call &&
-                instruction.Operand is MethodDefinition method)
-            {
+                instruction.Operand is MethodDefinition method) {
                 calledMethod = method;
                 return true;
-            }
-            else
-            {
+            } else {
                 calledMethod = null;
                 return false;
             }
