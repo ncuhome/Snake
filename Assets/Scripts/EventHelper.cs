@@ -1,12 +1,11 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class EventHelper : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IUpdateSelectedHandler
 {
   private bool buttonPressed;
-  public float waitTime = 0.4f;
+  public float waitTime = 0.8f;
   private bool moved;
 
   public void OnUpdateSelected(BaseEventData data)

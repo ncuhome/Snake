@@ -65,8 +65,6 @@ public class Snake : MonoBehaviour
   }
   void Start()
   {
-    Input.simulateMouseWithTouches = true;
-    Input.multiTouchEnabled = true;
   }
 
 
@@ -151,7 +149,6 @@ public class Snake : MonoBehaviour
   }
   #region 
   //虚拟按键控制,放在这方便控制方向变量
-  //但是挂载函数放在了globalManager
   public void onClickLeft()
   {
     if (canMove(-Vector2.right) && (dir != Vector2.right) && bodyIsHead)
@@ -206,7 +203,6 @@ public class Snake : MonoBehaviour
         transform.eulerAngles = faceInVec3[iface];
       }
     }
-    ///*
     if (bodyIsHead)
     {
       if (bodyIsTail)
@@ -242,7 +238,6 @@ public class Snake : MonoBehaviour
     {
       if (spriteRenderer.sprite != Tail) spriteRenderer.sprite = Tail;
     }
-    //*/
   }
 
   private bool isEatFood()
