@@ -48,7 +48,7 @@ public class SpawnMap : MonoBehaviour {
     // Start is called before the first frame update
 
     public void LoadMap(string filename) {
-        FallBack.FallBackManager.Instace.resetState();
+        FallBack.FallBackManager.Instance.resetState();
         var file = Resources.Load<TextAsset>(filename);
         using (StringReader sr = new StringReader(file.text)) {
             string line;

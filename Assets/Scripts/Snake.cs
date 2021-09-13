@@ -17,6 +17,8 @@ public class Snake : MonoBehaviour
   private BodyFace bodyFace;
   public SpriteRenderer spriteRenderer;
   public Sprite Head;
+
+  public Sprite snake;
   public Sprite Body1;
   public Sprite Body2;
   public Sprite Body3;
@@ -26,8 +28,6 @@ public class Snake : MonoBehaviour
   public Vector2 dir;
   static Vector2[] faceInVec2 = { Vector2.up, Vector2.right, Vector2.down, Vector2.left };
   static Vector3[] faceInVec3 = { new Vector3(0, 0, 0), new Vector3(0, 0, 270), new Vector3(0, 0, 180), new Vector3(0, 0, 90) };
-  private bool canFallBack = false;
-  public bool CanFallBack { get => canFallBack; }
 
   //运行时间，以1为起始,用于时间加速
   // private float runningTime = 1f;
@@ -209,6 +209,11 @@ public class Snake : MonoBehaviour
     ///*
     if (bodyIsHead)
     {
+      if (bodyIsTail)
+      {
+        if (this.spriteRenderer.sprite != snake) spriteRenderer.sprite = snake;
+        return;
+      }
       if (spriteRenderer.sprite != Head) spriteRenderer.sprite = Head;
       return;
     }
@@ -294,7 +299,7 @@ public class Snake : MonoBehaviour
         isEat = snakePtr.Move(isEat);
         snakePtr = snakePtr.bodyInBack;
       }
-      FallBackManager.Instace.addState(saver);
+      FallBackManager.Instance.addState(saver);
       snakePtr = saver.body;
       while (snakePtr != null)
       {

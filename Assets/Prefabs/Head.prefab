@@ -75,7 +75,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 4
-  m_Sprite: {fileID: 21300000, guid: 471b6a1624ccf5349a8c2940cf1a1f0c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: c5e7ca7227b37c048bbc1dc5218e80f1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -149,6 +149,7 @@ MonoBehaviour:
   bodyInBack: {fileID: 0}
   spriteRenderer: {fileID: 8961652656336806554}
   Head: {fileID: 21300000, guid: 471b6a1624ccf5349a8c2940cf1a1f0c, type: 3}
+  snake: {fileID: 21300000, guid: c5e7ca7227b37c048bbc1dc5218e80f1, type: 3}
   Body1: {fileID: 21300000, guid: c875ad3a06eb0724587daf413ea852be, type: 3}
   Body2: {fileID: 21300000, guid: 3c01776030badf74b9ce63d5389dfd16, type: 3}
   Body3: {fileID: 21300000, guid: 5a01efae04c7c014bb917f77550b5113, type: 3}

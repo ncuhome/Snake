@@ -77,7 +77,7 @@ public class GlobalManager : MonoBehaviour
     // joyStick.Find("right").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickRight);
     // joyStick.Find("up").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickUp);
     // joyStick.Find("down").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickDown);
-    fallBackButton.GetComponent<Button>().onClick.AddListener(FallBack.FallBackManager.Instace.FallBack);
+    fallBackButton.GetComponent<Button>().onClick.AddListener(FallBack.FallBackManager.Instance.FallBack);
     if (haveJoyStick == 1)
     {
       isJoyStick = false;
@@ -279,6 +279,14 @@ public class GlobalManager : MonoBehaviour
     if (GameObject.FindWithTag("food") == null)
     {
       win();
+    }
+    if (FallBack.FallBackManager.CanFallBack)
+    {
+      fallBackButton.GetComponent<Button>().interactable = true;
+    }
+    else
+    {
+      fallBackButton.GetComponent<Button>().interactable = false;
     }
     DateTime now = DateTime.Now;
     TimeSpan interval = now - standard;
