@@ -225,8 +225,8 @@ public class GlobalManager : MonoBehaviour
   }
   public void restart()
   {
-    SceneManager.UnloadSceneAsync("MainScene");
-    SceneManager.LoadScene("MainScene");
+    Scene scene = SceneManager.GetActiveScene();
+    SceneManager.LoadScene(scene.name);
     // Time.timeScale = 1;
   }
   public void win()

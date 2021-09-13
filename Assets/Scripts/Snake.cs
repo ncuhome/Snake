@@ -45,8 +45,6 @@ public class Snake : MonoBehaviour
   private float minDistance = Screen.width * 0.1f;
   // private Vector2 tailEndPos;
 
-  private Vector2 lastDir;
-
   // private bool lastAte;
 
   private bool moved;
@@ -82,25 +80,21 @@ public class Snake : MonoBehaviour
       //桌面端输入控制
       if (Input.GetKeyDown(KeyCode.RightArrow) && (dir != -Vector2.right) && canMove(Vector2.right))
       {
-        lastDir = dir;
         dir = Vector2.right;
         Move();
       }
       else if (Input.GetKeyDown(KeyCode.DownArrow) && (dir != Vector2.up) && canMove(-Vector2.up))
       {
-        lastDir = dir;
         dir = -Vector2.up;
         Move();
       }
       else if (Input.GetKeyDown(KeyCode.LeftArrow) && (dir != Vector2.right) && canMove(-Vector2.right))
       {
-        lastDir = dir;
         dir = -Vector2.right;
         Move();
       }
       else if (Input.GetKeyDown(KeyCode.UpArrow) && (dir != -Vector2.up) && canMove(Vector2.up))
       {
-        lastDir = dir;
         dir = Vector2.up;
         Move();
       }
@@ -119,13 +113,11 @@ public class Snake : MonoBehaviour
             {
               if (deltaDir.x > 0 && (dir != -Vector2.right) && canMove(Vector2.right))
               {
-                lastDir = dir;
                 dir = Vector2.right;
                 Move();
               }
               if (deltaDir.x < 0 && (dir != Vector2.right) && canMove(-Vector2.right))
               {
-                lastDir = dir;
                 dir = -Vector2.right;
                 Move();
               }
@@ -134,13 +126,11 @@ public class Snake : MonoBehaviour
             {
               if (deltaDir.y > 0 && (dir != -Vector2.up) && canMove(Vector2.up))
               {
-                lastDir = dir;
                 dir = Vector2.up;
                 Move();
               }
               if (deltaDir.y < 0 && (dir != Vector2.up) && canMove(-Vector2.up))
               {
-                lastDir = dir;
                 dir = -Vector2.up;
                 Move();
               }
@@ -166,7 +156,6 @@ public class Snake : MonoBehaviour
   {
     if (canMove(-Vector2.right) && (dir != Vector2.right) && bodyIsHead)
     {
-      lastDir = dir;
       dir = -Vector2.right;
       Move();
     }
@@ -175,7 +164,6 @@ public class Snake : MonoBehaviour
   {
     if (canMove(Vector2.right) && (dir != -Vector2.right) && bodyIsHead)
     {
-      lastDir = dir;
       dir = Vector2.right;
       Move();
     }
@@ -184,7 +172,6 @@ public class Snake : MonoBehaviour
   {
     if (canMove(Vector2.up) && (dir != -Vector2.up) && bodyIsHead)
     {
-      lastDir = dir;
       dir = Vector2.up;
       Move();
     }
@@ -193,7 +180,6 @@ public class Snake : MonoBehaviour
   {
     if (canMove(-Vector2.up) && (dir != Vector2.up) && bodyIsHead)
     {
-      lastDir = dir;
       dir = -Vector2.up;
       Move();
     }
