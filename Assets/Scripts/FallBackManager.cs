@@ -23,12 +23,13 @@ namespace FallBack {
             stack.Push(saver);
         }
         public void FallBack() {
-            //Debug.Log("Start FallBack");
+          //每次弹出的都是尾巴
             if (stack.Count == 0) return;
             StateSave saver = stack.Pop();
             Snake snakePtr = saver.body;
             if (saver.ate) {
                 snakePtr = saver.body.bodyInFront;
+                //这里需要更新成尾巴在move之后的dir，不然是zero
                 saver.dir = -saver.body.dir;
                 GameObject.Destroy(saver.body.gameObject);
                 snakePtr.bodyInBack = null;

@@ -8,6 +8,8 @@ TagManager:
   - wall
   - selected
   - food
+  - GlobalCamera
+  - Head
   layers:
   - Default
   - TransparentFX
