@@ -267,7 +267,6 @@ public class Snake : MonoBehaviour
 
   bool Move(bool isEat = false)
   {
-    //
     bool SpecialEat = false;
     if (bodyIsHead && isEatFood())
     {

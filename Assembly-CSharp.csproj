@@ -82,6 +82,7 @@
      <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
      <Compile Include="Assets\Scripts\SpawnMap.cs" />
      <Compile Include="Assets\Scripts\FollowCam.cs" />
+     <Compile Include="Assets\Scripts\EventHelper.cs" />
      <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
      <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
      <None Include="Assets\Resources\Levels\3.txt" />

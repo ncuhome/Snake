@@ -73,12 +73,12 @@ public class GlobalManager : MonoBehaviour
     int haveJoyStick = PlayerPrefs.GetInt("joyStickToggle");
     //挂载函数
     pauseMenu.transform.Find("JoyStickToggle").GetComponent<Toggle>().onValueChanged.AddListener(OnTogglejoyStick);
-    joyStick.Find("left").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickLeft);
-    joyStick.Find("right").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickRight);
-    joyStick.Find("up").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickUp);
-    joyStick.Find("down").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickDown);
+    // joyStick.Find("left").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickLeft);
+    // joyStick.Find("right").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickRight);
+    // joyStick.Find("up").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickUp);
+    // joyStick.Find("down").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickDown);
     fallBackButton.GetComponent<Button>().onClick.AddListener(FallBack.FallBackManager.Instace.FallBack);
-    if (haveJoyStick == 0)
+    if (haveJoyStick == 1)
     {
       isJoyStick = false;
       JoyStickToggle.GetComponent<Toggle>().isOn = false;
@@ -98,7 +98,7 @@ public class GlobalManager : MonoBehaviour
   void OnTogglejoyStick(bool isOn)
   {
     Debug.Log(isOn);
-    PlayerPrefs.SetInt("joyStickToggle", Convert.ToInt32(isOn));
+    PlayerPrefs.SetInt("joyStickToggle", Convert.ToInt32(!isOn));
     PlayerPrefs.Save();
     gui.transform.Find("JoyStick").gameObject.SetActive(isOn);
     isJoyStick = isOn;
