@@ -76,22 +76,22 @@ public class Snake : MonoBehaviour
 
       #region
       //桌面端输入控制
-      if (Input.GetKeyDown(KeyCode.RightArrow) && (dir != -Vector2.right) && canMove(Vector2.right))
+      if (Input.GetKeyDown(KeyCode.RightArrow) && (dir != -Vector2.right || bodyIsTail) && canMove(Vector2.right))
       {
         dir = Vector2.right;
         Move();
       }
-      else if (Input.GetKeyDown(KeyCode.DownArrow) && (dir != Vector2.up) && canMove(-Vector2.up))
+      else if (Input.GetKeyDown(KeyCode.DownArrow) && (dir != Vector2.up || bodyIsTail) && canMove(-Vector2.up))
       {
         dir = -Vector2.up;
         Move();
       }
-      else if (Input.GetKeyDown(KeyCode.LeftArrow) && (dir != Vector2.right) && canMove(-Vector2.right))
+      else if (Input.GetKeyDown(KeyCode.LeftArrow) && (dir != Vector2.right || bodyIsTail) && canMove(-Vector2.right))
       {
         dir = -Vector2.right;
         Move();
       }
-      else if (Input.GetKeyDown(KeyCode.UpArrow) && (dir != -Vector2.up) && canMove(Vector2.up))
+      else if (Input.GetKeyDown(KeyCode.UpArrow) && (dir != -Vector2.up || bodyIsTail) && canMove(Vector2.up))
       {
         dir = Vector2.up;
         Move();
@@ -109,12 +109,12 @@ public class Snake : MonoBehaviour
             Vector2 deltaDir = Input.GetTouch(0).deltaPosition;
             if (Mathf.Abs(deltaDir.x) > Mathf.Abs(deltaDir.y))
             {
-              if (deltaDir.x > 0 && (dir != -Vector2.right) && canMove(Vector2.right))
+              if (deltaDir.x > 0 && (dir != -Vector2.right || bodyIsTail) && canMove(Vector2.right))
               {
                 dir = Vector2.right;
                 Move();
               }
-              if (deltaDir.x < 0 && (dir != Vector2.right) && canMove(-Vector2.right))
+              if (deltaDir.x < 0 && (dir != Vector2.right || bodyIsTail) && canMove(-Vector2.right))
               {
                 dir = -Vector2.right;
                 Move();
@@ -122,12 +122,12 @@ public class Snake : MonoBehaviour
             }
             if (Mathf.Abs(deltaDir.y) > Mathf.Abs(deltaDir.x))
             {
-              if (deltaDir.y > 0 && (dir != -Vector2.up) && canMove(Vector2.up))
+              if (deltaDir.y > 0 && (dir != -Vector2.up || bodyIsTail) && canMove(Vector2.up))
               {
                 dir = Vector2.up;
                 Move();
               }
-              if (deltaDir.y < 0 && (dir != Vector2.up) && canMove(-Vector2.up))
+              if (deltaDir.y < 0 && (dir != Vector2.up || bodyIsTail) && canMove(-Vector2.up))
               {
                 dir = -Vector2.up;
                 Move();
@@ -151,7 +151,7 @@ public class Snake : MonoBehaviour
   //虚拟按键控制,放在这方便控制方向变量
   public void onClickLeft()
   {
-    if (canMove(-Vector2.right) && (dir != Vector2.right) && bodyIsHead)
+    if (canMove(-Vector2.right) && (dir != Vector2.right || bodyIsTail) && bodyIsHead)
     {
       dir = -Vector2.right;
       Move();
@@ -159,7 +159,7 @@ public class Snake : MonoBehaviour
   }
   public void onClickRight()
   {
-    if (canMove(Vector2.right) && (dir != -Vector2.right) && bodyIsHead)
+    if (canMove(Vector2.right) && (dir != -Vector2.right || bodyIsTail) && bodyIsHead)
     {
       dir = Vector2.right;
       Move();
@@ -167,7 +167,7 @@ public class Snake : MonoBehaviour
   }
   public void onClickUp()
   {
-    if (canMove(Vector2.up) && (dir != -Vector2.up) && bodyIsHead)
+    if (canMove(Vector2.up) && (dir != -Vector2.up || bodyIsTail) && bodyIsHead)
     {
       dir = Vector2.up;
       Move();
@@ -175,7 +175,7 @@ public class Snake : MonoBehaviour
   }
   public void onClickDown()
   {
-    if (canMove(-Vector2.up) && (dir != Vector2.up) && bodyIsHead)
+    if (canMove(-Vector2.up) && (dir != Vector2.up || bodyIsTail) && bodyIsHead)
     {
       dir = -Vector2.up;
       Move();
