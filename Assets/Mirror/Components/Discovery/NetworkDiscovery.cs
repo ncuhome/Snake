@@ -3,15 +3,13 @@ using System.Net;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Mirror.Discovery
-{
+namespace Mirror.Discovery {
     [Serializable]
-    public class ServerFoundUnityEvent : UnityEvent<ServerResponse> {};
+    public class ServerFoundUnityEvent : UnityEvent<ServerResponse> { };
 
     [DisallowMultipleComponent]
     [AddComponentMenu("Network/NetworkDiscovery")]
-    public class NetworkDiscovery : NetworkDiscoveryBase<ServerRequest, ServerResponse>
-    {
+    public class NetworkDiscovery : NetworkDiscoveryBase<ServerRequest, ServerResponse> {
         #region Server
 
         public long ServerId { get; private set; }
@@ -22,8 +20,7 @@ namespace Mirror.Discovery
         [Tooltip("Invoked when a server is found")]
         public ServerFoundUnityEvent OnServerFound;
 
-        public override void Start()
-        {
+        public override void Start() {
             ServerId = RandomLong();
 
             // active transport gets initialized in awake
@@ -45,25 +42,20 @@ namespace Mirror.Discovery
         /// <param name="request">Request coming from client</param>
         /// <param name="endpoint">Address of the client that sent the request</param>
         /// <returns>The message to be sent back to the client or null</returns>
-        protected override ServerResponse ProcessRequest(ServerRequest request, IPEndPoint endpoint)
-        {
+        protected override ServerResponse ProcessRequest(ServerRequest request, IPEndPoint endpoint) {
             // In this case we don't do anything with the request
             // but other discovery implementations might want to use the data
             // in there,  This way the client can ask for
             // specific game mode or something
 
-            try
-            {
+            try {
                 // this is an example reply message,  return your own
                 // to include whatever is relevant for your game
-                return new ServerResponse
-                {
+                return new ServerResponse {
                     serverId = ServerId,
                     uri = transport.ServerUri()
                 };
-            }
-            catch (NotImplementedException)
-            {
+            } catch (NotImplementedException) {
                 Debug.LogError($"Transport {transport} does not support network discovery");
                 throw;
             }
@@ -91,8 +83,7 @@ namespace Mirror.Discovery
         /// </remarks>
         /// <param name="response">Response that came from the server</param>
         /// <param name="endpoint">Address of the server that replied</param>
-        protected override void ProcessResponse(ServerResponse response, IPEndPoint endpoint)
-        {
+        protected override void ProcessResponse(ServerResponse response, IPEndPoint endpoint) {
             // we received a message from the remote endpoint
             response.EndPoint = endpoint;
 
@@ -100,8 +91,7 @@ namespace Mirror.Discovery
             // the provided host
             // However we know the real ip address of the server because we just
             // received a packet from it,  so use that as host.
-            UriBuilder realUri = new UriBuilder(response.uri)
-            {
+            UriBuilder realUri = new UriBuilder(response.uri) {
                 Host = response.EndPoint.Address.ToString()
             };
             response.uri = realUri.Uri;

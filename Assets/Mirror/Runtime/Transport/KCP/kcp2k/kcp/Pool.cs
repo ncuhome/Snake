@@ -2,10 +2,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace kcp2k
-{
-    public class Pool<T>
-    {
+namespace kcp2k {
+    public class Pool<T> {
         // Mirror is single threaded, no need for concurrent collections
         readonly Stack<T> objects = new Stack<T>();
 
@@ -16,8 +14,7 @@ namespace kcp2k
         // some types might need additional cleanup for returned objects
         readonly Action<T> objectResetter;
 
-        public Pool(Func<T> objectGenerator, Action<T> objectResetter, int initialCapacity)
-        {
+        public Pool(Func<T> objectGenerator, Action<T> objectResetter, int initialCapacity) {
             this.objectGenerator = objectGenerator;
             this.objectResetter = objectResetter;
 
@@ -31,8 +28,7 @@ namespace kcp2k
         public T Take() => objects.Count > 0 ? objects.Pop() : objectGenerator();
 
         // return an element to the pool
-        public void Return(T item)
-        {
+        public void Return(T item) {
             objectResetter(item);
             objects.Push(item);
         }

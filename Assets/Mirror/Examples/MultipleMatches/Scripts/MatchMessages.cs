@@ -1,12 +1,10 @@
 ﻿using System;
 
-namespace Mirror.Examples.MultipleMatch
-{
+namespace Mirror.Examples.MultipleMatch {
     /// <summary>
     /// Match message to be sent to the server
     /// </summary>
-    public struct ServerMatchMessage : NetworkMessage
-    {
+    public struct ServerMatchMessage : NetworkMessage {
         public ServerMatchOperation serverMatchOperation;
         public Guid matchId;
     }
@@ -14,8 +12,7 @@ namespace Mirror.Examples.MultipleMatch
     /// <summary>
     /// Match message to be sent to the client
     /// </summary>
-    public struct ClientMatchMessage : NetworkMessage
-    {
+    public struct ClientMatchMessage : NetworkMessage {
         public ClientMatchOperation clientMatchOperation;
         public Guid matchId;
         public MatchInfo[] matchInfos;
@@ -26,8 +23,7 @@ namespace Mirror.Examples.MultipleMatch
     /// Information about a match
     /// </summary>
     [Serializable]
-    public struct MatchInfo
-    {
+    public struct MatchInfo {
         public Guid matchId;
         public byte players;
         public byte maxPlayers;
@@ -37,16 +33,14 @@ namespace Mirror.Examples.MultipleMatch
     /// Information about a player
     /// </summary>
     [Serializable]
-    public struct PlayerInfo
-    {
+    public struct PlayerInfo {
         public int playerIndex;
         public bool ready;
         public Guid matchId;
     }
 
     [Serializable]
-    public struct MatchPlayerData
-    {
+    public struct MatchPlayerData {
         public int playerIndex;
         public int wins;
         public CellValue currentScore;
@@ -55,8 +49,7 @@ namespace Mirror.Examples.MultipleMatch
     /// <summary>
     /// Match operation to execute on the server
     /// </summary>
-    public enum ServerMatchOperation : byte
-    {
+    public enum ServerMatchOperation : byte {
         None,
         Create,
         Cancel,
@@ -69,8 +62,7 @@ namespace Mirror.Examples.MultipleMatch
     /// <summary>
     /// Match operation to execute on the client
     /// </summary>
-    public enum ClientMatchOperation : byte
-    {
+    public enum ClientMatchOperation : byte {
         None,
         List,
         Created,
@@ -89,8 +81,7 @@ namespace Mirror.Examples.MultipleMatch
     //     A3 | B3 | C3
 
     [Flags]
-    public enum CellValue : ushort
-    {
+    public enum CellValue : ushort {
         None,
         A1 = 1 << 0,
         B1 = 1 << 1,

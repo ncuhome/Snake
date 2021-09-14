@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace Mirror.Examples.MultipleMatch
-{
-    public class RoomGUI : MonoBehaviour
-    {
+namespace Mirror.Examples.MultipleMatch {
+    public class RoomGUI : MonoBehaviour {
         public GameObject playerList;
         public GameObject playerPrefab;
         public GameObject cancelButton;
@@ -12,25 +10,21 @@ namespace Mirror.Examples.MultipleMatch
         public Button startButton;
         public bool owner;
 
-        public void RefreshRoomPlayers(PlayerInfo[] playerInfos)
-        {
+        public void RefreshRoomPlayers(PlayerInfo[] playerInfos) {
             // Debug.Log($"RefreshRoomPlayers: {playerInfos.Length} playerInfos");
 
-            foreach (Transform child in playerList.transform)
-            {
+            foreach (Transform child in playerList.transform) {
                 Destroy(child.gameObject);
             }
 
             startButton.interactable = false;
             bool everyoneReady = true;
 
-            foreach (PlayerInfo playerInfo in playerInfos)
-            {
+            foreach (PlayerInfo playerInfo in playerInfos) {
                 GameObject newPlayer = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
                 newPlayer.transform.SetParent(playerList.transform, false);
                 newPlayer.GetComponent<PlayerGUI>().SetPlayerInfo(playerInfo);
-                if (!playerInfo.ready)
-                {
+                if (!playerInfo.ready) {
                     everyoneReady = false;
                 }
             }
@@ -38,8 +32,7 @@ namespace Mirror.Examples.MultipleMatch
             startButton.interactable = everyoneReady && owner && (playerInfos.Length > 1);
         }
 
-        public void SetOwner(bool owner)
-        {
+        public void SetOwner(bool owner) {
             this.owner = owner;
             cancelButton.SetActive(owner);
             leaveButton.SetActive(!owner);

@@ -1,34 +1,27 @@
 using UnityEngine;
 
-namespace Mirror.Examples.NetworkRoom
-{
+namespace Mirror.Examples.NetworkRoom {
     [RequireComponent(typeof(RandomColor))]
-    public class Reward : NetworkBehaviour
-    {
+    public class Reward : NetworkBehaviour {
         public bool available = true;
         public RandomColor randomColor;
 
-        void OnValidate()
-        {
+        void OnValidate() {
             if (randomColor == null)
                 randomColor = GetComponent<RandomColor>();
         }
 
         [ServerCallback]
-        void OnTriggerEnter(Collider other)
-        {
-            if (other.gameObject.CompareTag("Player"))
-            {
+        void OnTriggerEnter(Collider other) {
+            if (other.gameObject.CompareTag("Player")) {
                 ClaimPrize(other.gameObject);
             }
         }
 
         // This is called from PlayerController.CmdClaimPrize which is invoked by PlayerController.OnControllerColliderHit
         // This only runs on the server
-        public void ClaimPrize(GameObject player)
-        {
-            if (available)
-            {
+        public void ClaimPrize(GameObject player) {
+            if (available) {
                 // This is a fast switch to prevent two players claiming the prize in a bang-bang close contest for it.
                 // First hit turns it off, pending the object being destroyed a few frames later.
                 available = false;

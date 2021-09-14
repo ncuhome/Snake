@@ -5,10 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace Telepathy
-{
-    public class Server : Common
-    {
+namespace Telepathy {
+    public class Server : Common {
         // events to hook into
         // => OnData uses ArraySegment for allocation free receives later
         public Action<int> OnConnected;
@@ -49,8 +47,7 @@ namespace Telepathy
         // public next id function in case someone needs to reserve an id
         // (e.g. if hostMode should always have 0 connection and external
         //  connections should start at 1, etc.)
-        public int NextConnectionId()
-        {
+        public int NextConnectionId() {
             int id = Interlocked.Increment(ref counter);
 
             // it's very unlikely that we reach the uint limit of 2 billion.
@@ -59,8 +56,7 @@ namespace Telepathy
             //    the caller probably should stop accepting clients.
             // -> it's hardly worth using 'bool Next(out id)' for that case
             //    because it's just so unlikely.
-            if (id == int.MaxValue)
-            {
+            if (id == int.MaxValue) {
                 throw new Exception("connection id limit reached: " + id);
             }
 
@@ -71,17 +67,15 @@ namespace Telepathy
         public bool Active => listenerThread != null && listenerThread.IsAlive;
 
         // constructor
-        public Server(int MaxMessageSize) : base(MaxMessageSize) {}
+        public Server(int MaxMessageSize) : base(MaxMessageSize) { }
 
         // the listener thread's listen function
         // note: no maxConnections parameter. high level API should handle that.
         //       (Transport can't send a 'too full' message anyway)
-        void Listen(int port)
-        {
+        void Listen(int port) {
             // absolutely must wrap with try/catch, otherwise thread
             // exceptions are silent
-            try
-            {
+            try {
                 // start listener on all IPv4 and IPv6 address via .Create
                 listener = TcpListener.Create(port);
                 listener.Server.NoDelay = NoDelay;
@@ -98,8 +92,7 @@ namespace Telepathy
                 Log.Info("Server: listening port=" + port);
 
                 // keep accepting new clients
-                while (true)
-                {
+                while (true) {
                     // wait and accept new client
                     // note: 'using' sucks here because it will try to
                     // dispose after thread was started but we still need it
@@ -119,25 +112,19 @@ namespace Telepathy
                     clients[connectionId] = connection;
 
                     // spawn a send thread for each client
-                    Thread sendThread = new Thread(() =>
-                    {
+                    Thread sendThread = new Thread(() => {
                         // wrap in try-catch, otherwise Thread exceptions
                         // are silent
-                        try
-                        {
+                        try {
                             // run the send loop
                             // IMPORTANT: DO NOT SHARE STATE ACROSS MULTIPLE THREADS!
                             ThreadFunctions.SendLoop(connectionId, client, connection.sendPipe, connection.sendPending);
-                        }
-                        catch (ThreadAbortException)
-                        {
+                        } catch (ThreadAbortException) {
                             // happens on stop. don't log anything.
                             // (we catch it in SendLoop too, but it still gets
                             //  through to here when aborting. don't show an
                             //  error.)
-                        }
-                        catch (Exception exception)
-                        {
+                        } catch (Exception exception) {
                             Log.Error("Server send thread exception: " + exception);
                         }
                     });
@@ -145,12 +132,10 @@ namespace Telepathy
                     sendThread.Start();
 
                     // spawn a receive thread for each client
-                    Thread receiveThread = new Thread(() =>
-                    {
+                    Thread receiveThread = new Thread(() => {
                         // wrap in try-catch, otherwise Thread exceptions
                         // are silent
-                        try
-                        {
+                        try {
                             // run the receive loop
                             // (receive pipe is shared across all loops)
                             ThreadFunctions.ReceiveLoop(connectionId, client, MaxMessageSize, receivePipe, ReceiveQueueLimit);
@@ -169,30 +154,22 @@ namespace Telepathy
                             // actually sending data while the connection is
                             // closed.
                             sendThread.Interrupt();
-                        }
-                        catch (Exception exception)
-                        {
+                        } catch (Exception exception) {
                             Log.Error("Server client thread exception: " + exception);
                         }
                     });
                     receiveThread.IsBackground = true;
                     receiveThread.Start();
                 }
-            }
-            catch (ThreadAbortException exception)
-            {
+            } catch (ThreadAbortException exception) {
                 // UnityEditor causes AbortException if thread is still
                 // running when we press Play again next time. that's okay.
                 Log.Info("Server thread aborted. That's okay. " + exception);
-            }
-            catch (SocketException exception)
-            {
+            } catch (SocketException exception) {
                 // calling StopServer will interrupt this thread with a
                 // 'SocketException: interrupted'. that's okay.
                 Log.Info("Server Thread stopped. That's okay. " + exception);
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 // something went wrong. probably important.
                 Log.Error("Server Exception: " + exception);
             }
@@ -200,8 +177,7 @@ namespace Telepathy
 
         // start listening for new connections in a background thread and spawn
         // a new thread for each one.
-        public bool Start(int port)
-        {
+        public bool Start(int port) {
             // not if already started
             if (Active) return false;
 
@@ -223,8 +199,7 @@ namespace Telepathy
             return true;
         }
 
-        public void Stop()
-        {
+        public void Stop() {
             // only if started
             if (!Active) return;
 
@@ -243,12 +218,11 @@ namespace Telepathy
             listenerThread = null;
 
             // close all client connections
-            foreach (KeyValuePair<int, ConnectionState> kvp in clients)
-            {
+            foreach (KeyValuePair<int, ConnectionState> kvp in clients) {
                 TcpClient client = kvp.Value.client;
                 // close the stream if not closed yet. it may have been closed
                 // by a disconnect already, so use try/catch
-                try { client.GetStream().Close(); } catch {}
+                try { client.GetStream().Close(); } catch { }
                 client.Close();
             }
 
@@ -263,17 +237,13 @@ namespace Telepathy
         // send message to client using socket connection.
         // arraysegment for allocation free sends later.
         // -> the segment's array is only used until Send() returns!
-        public bool Send(int connectionId, ArraySegment<byte> message)
-        {
+        public bool Send(int connectionId, ArraySegment<byte> message) {
             // respect max message size to avoid allocation attacks.
-            if (message.Count <= MaxMessageSize)
-            {
+            if (message.Count <= MaxMessageSize) {
                 // find the connection
-                if (clients.TryGetValue(connectionId, out ConnectionState connection))
-                {
+                if (clients.TryGetValue(connectionId, out ConnectionState connection)) {
                     // check send pipe limit
-                    if (connection.sendPipe.Count < SendQueueLimit)
-                    {
+                    if (connection.sendPipe.Count < SendQueueLimit) {
                         // add to thread safe send pipe and return immediately.
                         // calling Send here would be blocking (sometimes for long
                         // times if other side lags or wire was disconnected)
@@ -292,8 +262,7 @@ namespace Telepathy
                     //       immediately, it's still possible that the sending
                     //       blocks for so long that the send queue just gets
                     //       way too big. have a limit - better safe than sorry.
-                    else
-                    {
+                    else {
                         // log the reason
                         Log.Warning($"Server.Send: sendPipe for connection {connectionId} reached limit of {SendQueueLimit}. This can happen if we call send faster than the network can process messages. Disconnecting this connection for load balancing.");
 
@@ -316,22 +285,18 @@ namespace Telepathy
         }
 
         // client's ip is sometimes needed by the server, e.g. for bans
-        public string GetClientAddress(int connectionId)
-        {
+        public string GetClientAddress(int connectionId) {
             // find the connection
-            if (clients.TryGetValue(connectionId, out ConnectionState connection))
-            {
+            if (clients.TryGetValue(connectionId, out ConnectionState connection)) {
                 return ((IPEndPoint)connection.client.Client.RemoteEndPoint).Address.ToString();
             }
             return "";
         }
 
         // disconnect (kick) a client
-        public bool Disconnect(int connectionId)
-        {
+        public bool Disconnect(int connectionId) {
             // find the connection
-            if (clients.TryGetValue(connectionId, out ConnectionState connection))
-            {
+            if (clients.TryGetValue(connectionId, out ConnectionState connection)) {
                 // just close it. send thread will take care of the rest.
                 connection.client.Close();
                 Log.Info("Server.Disconnect connectionId:" + connectionId);
@@ -353,25 +318,21 @@ namespace Telepathy
         // can't process any other messages during a scene change.
         // (could be useful for others too)
         // => make sure to allocate the lambda only once in transports
-        public int Tick(int processLimit, Func<bool> checkEnabled = null)
-        {
+        public int Tick(int processLimit, Func<bool> checkEnabled = null) {
             // only if pipe was created yet (after start())
             if (receivePipe == null)
                 return 0;
 
             // process up to 'processLimit' messages for this connection
-            for (int i = 0; i < processLimit; ++i)
-            {
+            for (int i = 0; i < processLimit; ++i) {
                 // check enabled in case a Mirror scene message arrived
                 if (checkEnabled != null && !checkEnabled())
                     break;
 
                 // peek first. allows us to process the first queued entry while
                 // still keeping the pooled byte[] alive by not removing anything.
-                if (receivePipe.TryPeek(out int connectionId, out EventType eventType, out ArraySegment<byte> message))
-                {
-                    switch (eventType)
-                    {
+                if (receivePipe.TryPeek(out int connectionId, out EventType eventType, out ArraySegment<byte> message)) {
+                    switch (eventType) {
                         case EventType.Connected:
                             OnConnected?.Invoke(connectionId);
                             break;

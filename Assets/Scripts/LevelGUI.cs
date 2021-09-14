@@ -1,8 +1,9 @@
-using UnityEngine.SceneManagement;
-using UnityEngine;
 using System.Collections;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
+using System;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class LevelGUI : MonoBehaviour
 {
@@ -40,6 +41,7 @@ public class LevelGUI : MonoBehaviour
     float split = (width - buttonWidth * 5) / 6.0f;
     float x = split + buttonWidth / 2;
     int num = 0;
+    Array.Sort(files, (a, b) => Convert.ToInt32(a.name) - Convert.ToInt32(b.name));
     foreach (var file in files)
     {
       GameObject button = Instantiate(levelButtonPrefab, content.transform);

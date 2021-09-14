@@ -1,12 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 
-namespace TMPro.Examples
-{
-    
-    public class TMP_UiFrameRateCounter : MonoBehaviour
-    {
+namespace TMPro.Examples {
+
+    public class TMP_UiFrameRateCounter : MonoBehaviour {
         public float UpdateInterval = 5.0f;
         private float m_LastInterval = 0;
         private int m_Frames = 0;
@@ -23,8 +20,7 @@ namespace TMPro.Examples
 
         private FpsCounterAnchorPositions last_AnchorPosition;
 
-        void Awake()
-        {
+        void Awake() {
             if (!enabled)
                 return;
 
@@ -49,15 +45,13 @@ namespace TMPro.Examples
         }
 
 
-        void Start()
-        {
+        void Start() {
             m_LastInterval = Time.realtimeSinceStartup;
             m_Frames = 0;
         }
 
 
-        void Update()
-        {
+        void Update() {
             if (AnchorPosition != last_AnchorPosition)
                 Set_FrameCounter_Position(AnchorPosition);
 
@@ -66,8 +60,7 @@ namespace TMPro.Examples
             m_Frames += 1;
             float timeNow = Time.realtimeSinceStartup;
 
-            if (timeNow > m_LastInterval + UpdateInterval)
-            {
+            if (timeNow > m_LastInterval + UpdateInterval) {
                 // display two fractional digits (f2 format)
                 float fps = m_Frames / (timeNow - m_LastInterval);
                 float ms = 1000.0f / Mathf.Max(fps, 0.00001f);
@@ -87,10 +80,8 @@ namespace TMPro.Examples
         }
 
 
-        void Set_FrameCounter_Position(FpsCounterAnchorPositions anchor_position)
-        {
-            switch (anchor_position)
-            {
+        void Set_FrameCounter_Position(FpsCounterAnchorPositions anchor_position) {
+            switch (anchor_position) {
                 case FpsCounterAnchorPositions.TopLeft:
                     m_TextMeshPro.alignment = TextAlignmentOptions.TopLeft;
                     m_frameCounter_transform.pivot = new Vector2(0, 1);

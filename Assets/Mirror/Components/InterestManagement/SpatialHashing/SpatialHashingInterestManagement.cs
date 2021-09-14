@@ -4,10 +4,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Mirror
-{
-    public class SpatialHashingInterestManagement : InterestManagement
-    {
+namespace Mirror {
+    public class SpatialHashingInterestManagement : InterestManagement {
         [Tooltip("The maximum range that objects will be visible at.")]
         public int visRange = 30;
 
@@ -18,8 +16,7 @@ namespace Mirror
         public float rebuildInterval = 1;
         double lastRebuildTime;
 
-        public enum CheckMethod
-        {
+        public enum CheckMethod {
             XZ_FOR_3D,
             XY_FOR_2D
         }
@@ -38,8 +35,7 @@ namespace Mirror
             ? Vector2Int.RoundToInt(new Vector2(position.x, position.z) / resolution)
             : Vector2Int.RoundToInt(new Vector2(position.x, position.y) / resolution);
 
-        public override bool OnCheckObserver(NetworkIdentity identity, NetworkConnection newObserver)
-        {
+        public override bool OnCheckObserver(NetworkIdentity identity, NetworkConnection newObserver) {
             // calculate projected positions
             Vector2Int projected = ProjectToGrid(identity.transform.position);
             Vector2Int observerProjected = ProjectToGrid(newObserver.identity.transform.position);
@@ -51,8 +47,7 @@ namespace Mirror
             return (projected - observerProjected).sqrMagnitude <= 2;
         }
 
-        public override void OnRebuildObservers(NetworkIdentity identity, HashSet<NetworkConnection> newObservers, bool initialize)
-        {
+        public override void OnRebuildObservers(NetworkIdentity identity, HashSet<NetworkConnection> newObservers, bool initialize) {
             // add everyone in 9 neighbour grid
             // -> pass observers to GetWithNeighbours directly to avoid allocations
             //    and expensive .UnionWith computations.
@@ -62,8 +57,7 @@ namespace Mirror
 
         // update everyone's position in the grid
         // (internal so we can update from tests)
-        internal void Update()
-        {
+        internal void Update() {
             // only on server
             if (!NetworkServer.active) return;
 
@@ -90,11 +84,9 @@ namespace Mirror
 
             // put every connection into the grid at it's main player's position
             // NOTE: player sees in a radius around him. NOT around his pet too.
-            foreach (NetworkConnectionToClient connection in NetworkServer.connections.Values)
-            {
+            foreach (NetworkConnectionToClient connection in NetworkServer.connections.Values) {
                 // authenticated and joined world with a player?
-                if (connection.isAuthenticated && connection.identity != null)
-                {
+                if (connection.isAuthenticated && connection.identity != null) {
                     // calculate current grid position
                     Vector2Int position = ProjectToGrid(connection.identity.transform.position);
 
@@ -106,8 +98,7 @@ namespace Mirror
             // rebuild all spawned entities' observers every 'interval'
             // this will call OnRebuildObservers which then returns the
             // observers at grid[position] for each entity.
-            if (NetworkTime.localTime >= lastRebuildTime + rebuildInterval)
-            {
+            if (NetworkTime.localTime >= lastRebuildTime + rebuildInterval) {
                 RebuildAll();
                 lastRebuildTime = NetworkTime.localTime;
             }
@@ -115,8 +106,7 @@ namespace Mirror
 
         // slider from dotsnet. it's nice to play around with in the benchmark
         // demo.
-        void OnGUI()
-        {
+        void OnGUI() {
             if (!showSlider) return;
 
             // only show while server is running. not on client, etc.

@@ -1,14 +1,11 @@
 using UnityEngine;
 
-namespace Mirror.Examples.Pong
-{
-    public class Ball : NetworkBehaviour
-    {
+namespace Mirror.Examples.Pong {
+    public class Ball : NetworkBehaviour {
         public float speed = 30;
         public Rigidbody2D rigidbody2d;
 
-        public override void OnStartServer()
-        {
+        public override void OnStartServer() {
             base.OnStartServer();
 
             // only simulate ball physics on server
@@ -18,8 +15,7 @@ namespace Mirror.Examples.Pong
             rigidbody2d.velocity = Vector2.right * speed;
         }
 
-        float HitFactor(Vector2 ballPos, Vector2 racketPos, float racketHeight)
-        {
+        float HitFactor(Vector2 ballPos, Vector2 racketPos, float racketHeight) {
             // ascii art:
             // ||  1 <- at the top of the racket
             // ||
@@ -31,8 +27,7 @@ namespace Mirror.Examples.Pong
 
         // only call this on server
         [ServerCallback]
-        void OnCollisionEnter2D(Collision2D col)
-        {
+        void OnCollisionEnter2D(Collision2D col) {
             // Note: 'col' holds the collision information. If the
             // Ball collided with a racket, then:
             //   col.gameObject is the racket
@@ -40,8 +35,7 @@ namespace Mirror.Examples.Pong
             //   col.collider is the racket's collider
 
             // did we hit a racket? then we need to calculate the hit factor
-            if (col.transform.GetComponent<Player>())
-            {
+            if (col.transform.GetComponent<Player>()) {
                 // Calculate y direction via hit Factor
                 float y = HitFactor(transform.position,
                                     col.transform.position,

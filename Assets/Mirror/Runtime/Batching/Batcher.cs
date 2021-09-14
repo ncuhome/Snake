@@ -11,10 +11,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mirror
-{
-    public class Batcher
-    {
+namespace Mirror {
+    public class Batcher {
         // batching threshold instead of max size.
         // -> small messages are fit into threshold sized batches
         // -> messages larger than threshold are single batches
@@ -37,16 +35,14 @@ namespace Mirror
         //            queueing NetworkMessage would box and allocate!
         Queue<PooledNetworkWriter> messages = new Queue<PooledNetworkWriter>();
 
-        public Batcher(int threshold)
-        {
+        public Batcher(int threshold) {
             this.threshold = threshold;
         }
 
         // add a message for batching
         // we allow any sized messages.
         // caller needs to make sure they are within max packet size.
-        public void AddMessage(ArraySegment<byte> message)
-        {
+        public void AddMessage(ArraySegment<byte> message) {
             // put into a (pooled) writer
             // -> WriteBytes instead of WriteSegment because the latter
             //    would add a size header. we want to write directly.
@@ -59,8 +55,7 @@ namespace Mirror
 
         // batch as many messages as possible into writer
         // returns true if any batch was made.
-        public bool MakeNextBatch(NetworkWriter writer, double timeStamp)
-        {
+        public bool MakeNextBatch(NetworkWriter writer, double timeStamp) {
             // if we have no messages then there's nothing to do
             if (messages.Count == 0)
                 return false;
@@ -74,8 +69,7 @@ namespace Mirror
             writer.WriteDouble(timeStamp);
 
             // do start no matter what
-            do
-            {
+            do {
                 // add next message no matter what. even if > threshold.
                 // (we do allow > threshold sized messages as single batch)
                 PooledNetworkWriter message = messages.Dequeue();

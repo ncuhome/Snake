@@ -5,10 +5,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 
-namespace kcp2k
-{
-    public class KcpServer
-    {
+namespace kcp2k {
+    public class KcpServer {
         // events
         public Action<int> OnConnected;
         public Action<int, ArraySegment<byte>> OnData;
@@ -66,8 +64,7 @@ namespace kcp2k
                          bool CongestionWindow = true,
                          uint SendWindowSize = Kcp.WND_SND,
                          uint ReceiveWindowSize = Kcp.WND_RCV,
-                         int Timeout = KcpConnection.DEFAULT_TIMEOUT)
-        {
+                         int Timeout = KcpConnection.DEFAULT_TIMEOUT) {
             this.OnConnected = OnConnected;
             this.OnData = OnData;
             this.OnDisconnected = OnDisconnected;
@@ -88,50 +85,39 @@ namespace kcp2k
 
         public bool IsActive() => socket != null;
 
-        public void Start(ushort port)
-        {
+        public void Start(ushort port) {
             // only start once
-            if (socket != null)
-            {
+            if (socket != null) {
                 Log.Warning("KCP: server already started!");
             }
 
             // listen
-            if (DualMode)
-            {
+            if (DualMode) {
                 // IPv6 socket with DualMode
                 socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
                 socket.DualMode = true;
                 socket.Bind(new IPEndPoint(IPAddress.IPv6Any, port));
-            }
-            else
-            {
+            } else {
                 // IPv4 socket
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 socket.Bind(new IPEndPoint(IPAddress.Any, port));
             }
         }
 
-        public void Send(int connectionId, ArraySegment<byte> segment, KcpChannel channel)
-        {
-            if (connections.TryGetValue(connectionId, out KcpServerConnection connection))
-            {
+        public void Send(int connectionId, ArraySegment<byte> segment, KcpChannel channel) {
+            if (connections.TryGetValue(connectionId, out KcpServerConnection connection)) {
                 connection.SendData(segment, channel);
             }
         }
 
-        public void Disconnect(int connectionId)
-        {
-            if (connections.TryGetValue(connectionId, out KcpServerConnection connection))
-            {
+        public void Disconnect(int connectionId) {
+            if (connections.TryGetValue(connectionId, out KcpServerConnection connection)) {
                 connection.Disconnect();
             }
         }
 
-        public string GetClientAddress(int connectionId)
-        {
-            if (connections.TryGetValue(connectionId, out KcpServerConnection connection))
-            {
+        public string GetClientAddress(int connectionId) {
+            if (connections.TryGetValue(connectionId, out KcpServerConnection connection)) {
                 return (connection.GetRemoteEndPoint() as IPEndPoint).Address.ToString();
             }
             return "";
@@ -139,8 +125,7 @@ namespace kcp2k
 
         // EndPoint & Receive functions can be overwritten for where-allocation:
         // https://github.com/vis2k/where-allocation
-        protected virtual int ReceiveFrom(byte[] buffer, out int connectionHash)
-        {
+        protected virtual int ReceiveFrom(byte[] buffer, out int connectionHash) {
             // NOTE: ReceiveFrom allocates.
             //   we pass our IPEndPoint to ReceiveFrom.
             //   receive from calls newClientEP.Create(socketAddr).
@@ -166,12 +151,9 @@ namespace kcp2k
 
         // process incoming messages. should be called before updating the world.
         HashSet<int> connectionsToRemove = new HashSet<int>();
-        public void TickIncoming()
-        {
-            while (socket != null && socket.Poll(0, SelectMode.SelectRead))
-            {
-                try
-                {
+        public void TickIncoming() {
+            while (socket != null && socket.Poll(0, SelectMode.SelectRead)) {
+                try {
                     // receive
                     int msgLength = ReceiveFrom(rawReceiveBuffer, out int connectionId);
                     //Log.Info($"KCP: server raw recv {msgLength} bytes = {BitConverter.ToString(buffer, 0, msgLength)}");
@@ -180,11 +162,9 @@ namespace kcp2k
                     //            msgLength. otherwise the excess data would be
                     //            silently lost.
                     //            (see ReceiveFrom documentation)
-                    if (msgLength <= rawReceiveBuffer.Length)
-                    {
+                    if (msgLength <= rawReceiveBuffer.Length) {
                         // is this a new connection?
-                        if (!connections.TryGetValue(connectionId, out KcpServerConnection connection))
-                        {
+                        if (!connections.TryGetValue(connectionId, out KcpServerConnection connection)) {
                             // create a new KcpConnection based on last received
                             // EndPoint. can be overwritten for where-allocation.
                             connection = CreateConnection();
@@ -208,8 +188,7 @@ namespace kcp2k
                             // for now, this is fine.
 
                             // setup authenticated event that also adds to connections
-                            connection.OnAuthenticated = () =>
-                            {
+                            connection.OnAuthenticated = () => {
                                 // only send handshake to client AFTER we received his
                                 // handshake in OnAuthenticated.
                                 // we don't want to reply to random internet messages
@@ -226,16 +205,14 @@ namespace kcp2k
                                 // internet.
 
                                 // setup data event
-                                connection.OnData = (message) =>
-                                {
+                                connection.OnData = (message) => {
                                     // call mirror event
                                     //Log.Info($"KCP: OnServerDataReceived({connectionId}, {BitConverter.ToString(message.Array, message.Offset, message.Count)})");
                                     OnData.Invoke(connectionId, message);
                                 };
 
                                 // setup disconnected event
-                                connection.OnDisconnected = () =>
-                                {
+                                connection.OnDisconnected = () => {
                                     // flag for removal
                                     // (can't remove directly because connection is updated
                                     //  and event is called while iterating all connections)
@@ -263,44 +240,37 @@ namespace kcp2k
                             // connection will simply be garbage collected.
                         }
                         // existing connection: simply input the message into kcp
-                        else
-                        {
+                        else {
                             connection.RawInput(rawReceiveBuffer, msgLength);
                         }
-                    }
-                    else
-                    {
+                    } else {
                         Log.Error($"KCP Server: message of size {msgLength} does not fit into buffer of size {rawReceiveBuffer.Length}. The excess was silently dropped. Disconnecting connectionId={connectionId}.");
                         Disconnect(connectionId);
                     }
                 }
                 // this is fine, the socket might have been closed in the other end
-                catch (SocketException) {}
+                catch (SocketException) { }
             }
 
             // process inputs for all server connections
             // (even if we didn't receive anything. need to tick ping etc.)
-            foreach (KcpServerConnection connection in connections.Values)
-            {
+            foreach (KcpServerConnection connection in connections.Values) {
                 connection.TickIncoming();
             }
 
             // remove disconnected connections
             // (can't do it in connection.OnDisconnected because Tick is called
             //  while iterating connections)
-            foreach (int connectionId in connectionsToRemove)
-            {
+            foreach (int connectionId in connectionsToRemove) {
                 connections.Remove(connectionId);
             }
             connectionsToRemove.Clear();
         }
 
         // process outgoing messages. should be called after updating the world.
-        public void TickOutgoing()
-        {
+        public void TickOutgoing() {
             // flush all server connections
-            foreach (KcpServerConnection connection in connections.Values)
-            {
+            foreach (KcpServerConnection connection in connections.Values) {
                 connection.TickOutgoing();
             }
         }
@@ -308,28 +278,24 @@ namespace kcp2k
         // process incoming and outgoing for convenience.
         // => ideally call ProcessIncoming() before updating the world and
         //    ProcessOutgoing() after updating the world for minimum latency
-        public void Tick()
-        {
+        public void Tick() {
             TickIncoming();
             TickOutgoing();
         }
 
-        public void Stop()
-        {
+        public void Stop() {
             socket?.Close();
             socket = null;
         }
 
         // pause/unpause to safely support mirror scene handling and to
         // immediately pause the receive while loop if needed.
-        public void Pause()
-        {
+        public void Pause() {
             foreach (KcpServerConnection connection in connections.Values)
                 connection.Pause();
         }
 
-        public void Unpause()
-        {
+        public void Unpause() {
             foreach (KcpServerConnection connection in connections.Values)
                 connection.Unpause();
         }

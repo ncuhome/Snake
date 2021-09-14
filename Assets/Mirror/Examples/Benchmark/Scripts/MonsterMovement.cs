@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
 
-namespace Mirror.Examples.Benchmark
-{
-    public class MonsterMovement : NetworkBehaviour
-    {
+namespace Mirror.Examples.Benchmark {
+    public class MonsterMovement : NetworkBehaviour {
         public float speed = 1;
         public float movementProbability = 0.5f;
         public float movementDistance = 20;
@@ -12,38 +10,28 @@ namespace Mirror.Examples.Benchmark
         Vector3 start;
         Vector3 destination;
 
-        public override void OnStartServer()
-        {
+        public override void OnStartServer() {
             start = transform.position;
         }
 
         [ServerCallback]
-        void Update()
-        {
-            if (moving)
-            {
-                if (Vector3.Distance(transform.position, destination) <= 0.01f)
-                {
+        void Update() {
+            if (moving) {
+                if (Vector3.Distance(transform.position, destination) <= 0.01f) {
                     moving = false;
-                }
-                else
-                {
+                } else {
                     transform.position = Vector3.MoveTowards(transform.position, destination, speed * Time.deltaTime);
                 }
-            }
-            else
-            {
+            } else {
                 float r = Random.value;
-                if (r < movementProbability * Time.deltaTime)
-                {
+                if (r < movementProbability * Time.deltaTime) {
                     Vector2 circlePos = Random.insideUnitCircle;
                     Vector3 dir = new Vector3(circlePos.x, 0, circlePos.y);
                     Vector3 dest = transform.position + dir * movementDistance;
 
                     // within move dist around start?
                     // (don't want to wander off)
-                    if (Vector3.Distance(start, dest) <= movementDistance)
-                    {
+                    if (Vector3.Distance(start, dest) <= movementDistance) {
                         destination = dest;
                         moving = true;
                     }

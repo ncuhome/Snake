@@ -1,7 +1,8 @@
-using UnityEngine.UI;
+using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System;
+using UnityEngine.UI;
 
 public class GlobalManager : MonoBehaviour
 {
@@ -20,18 +21,24 @@ public class GlobalManager : MonoBehaviour
 
   public float fadeSpeed = 0.1f;
   // public GameObject monsterPrefab;
-
+  private Text ScoreText;
   public GameObject JoyStickToggle;
   private static GlobalManager _instance;
   public static GlobalManager Instance
   {
     get { return _instance; }
   }
-  private bool paused = false;
+  private bool paused = false, won = false;
 
   private float currentTimeScale;
 
+  public GameObject mainCam;
+
+  private bool isGlobalMode = false;
+
   private string token;
+
+  private DateTime standard = DateTime.Now;
 
   public static int totalLevel;
   private bool isJoyStick;
@@ -42,10 +49,10 @@ public class GlobalManager : MonoBehaviour
 
   // public Dictionary<GameObject, Coroutine> getCoroutines() { return coroutines; }
 
-  public void updateScore(int score)
-  {
-    GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text = "Score:" + score.ToString();
-  }
+  // public void updateScore(int score)
+  // {
+  //   GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text = "Score:" + score.ToString();
+  // }
 
   public bool getPaused()
   {
@@ -66,12 +73,12 @@ public class GlobalManager : MonoBehaviour
     int haveJoyStick = PlayerPrefs.GetInt("joyStickToggle");
     //挂载函数
     pauseMenu.transform.Find("JoyStickToggle").GetComponent<Toggle>().onValueChanged.AddListener(OnTogglejoyStick);
-    joyStick.Find("left").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickLeft);
-    joyStick.Find("right").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickRight);
-    joyStick.Find("up").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickUp);
-    joyStick.Find("down").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickDown);
-    fallBackButton.GetComponent<Button>().onClick.AddListener(Snake.Instance.FallBack);
-    if (haveJoyStick == 0)
+    // joyStick.Find("left").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickLeft);
+    // joyStick.Find("right").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickRight);
+    // joyStick.Find("up").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickUp);
+    // joyStick.Find("down").GetComponent<Button>().onClick.AddListener(Snake.Instance.onClickDown);
+    fallBackButton.GetComponent<Button>().onClick.AddListener(FallBack.FallBackManager.Instance.FallBack);
+    if (haveJoyStick == 1)
     {
       isJoyStick = false;
       JoyStickToggle.GetComponent<Toggle>().isOn = false;
@@ -84,13 +91,14 @@ public class GlobalManager : MonoBehaviour
       gui.transform.Find("JoyStick").gameObject.SetActive(true);
     }
     pauseMenu.SetActive(false);
+    winMenu.SetActive(false);
     // loseMenu.SetActive(false);
     // InvokeRepeating("instantiateMonster", 1.0f, 90.0f);
   }
   void OnTogglejoyStick(bool isOn)
   {
     Debug.Log(isOn);
-    PlayerPrefs.SetInt("joyStickToggle", Convert.ToInt32(isOn));
+    PlayerPrefs.SetInt("joyStickToggle", Convert.ToInt32(!isOn));
     PlayerPrefs.Save();
     gui.transform.Find("JoyStick").gameObject.SetActive(isOn);
     isJoyStick = isOn;
@@ -207,37 +215,82 @@ public class GlobalManager : MonoBehaviour
   {
     pauseMenu.SetActive(false);
     gui.SetActive(true);
+    var text = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>().text;
+    var textArr = text.Split(' ');
+    TimeSpan interval;
+    TimeSpan.TryParseExact(textArr[1], @"mm\:ss\:ff", null, out interval);
+    standard = DateTime.Now.Subtract(interval);
     paused = false;
     // Time.timeScale = currentTimeScale;
   }
   public void restart()
   {
-    SceneManager.UnloadSceneAsync("MainScene");
-    SceneManager.LoadScene("MainScene");
+    Scene scene = SceneManager.GetActiveScene();
+    SceneManager.LoadScene(scene.name);
     // Time.timeScale = 1;
   }
   public void win()
   {
+    won = true;
+    winMenu.transform.Find("Time").GetComponent<TextMeshProUGUI>().text = ScoreText.text;
     winMenu.SetActive(true);
+    gui.SetActive(false);
+  }
+
+  public void globalView()
+  {
+    if (!isGlobalMode)
+    {
+      gui.transform.Find("Panel").gameObject.SetActive(false);
+      fallBackButton.SetActive(false);
+      gui.transform.Find("JoyStick").gameObject.SetActive(false);
+      mainCam.SetActive(false);
+      isGlobalMode = true;
+
+    }
+    else
+    {
+      gui.transform.Find("Panel").gameObject.SetActive(true);
+      fallBackButton.SetActive(true);
+      if (isJoyStick)
+        gui.transform.Find("JoyStick").gameObject.SetActive(true);
+      mainCam.SetActive(true);
+      isGlobalMode = false;
+    }
+  }
+
+  private void TimeUpdate(TimeSpan time)
+  {
+    ScoreText.text = "Time: " + time.ToString(@"mm\:ss\:ff");
   }
   // Update is called once per frame
   void Update()
   {
-    if (Convert.ToInt32(SpawnMap.level)>=totalLevel)
+    ///测试代码///
+    if (ScoreText == null)
+    {
+      ScoreText = GameObject.FindGameObjectWithTag("Score").GetComponent<Text>();
+    }
+    ///测试代码结束///
+    if (Convert.ToInt32(SpawnMap.level) >= totalLevel)
     {
       nextLevelBtn.SetActive(false);
     }
     if (GameObject.FindWithTag("food") == null)
     {
-      GlobalManager.Instance.win();
+      win();
     }
-    if (!Snake.Instance.CanFallBack)
-    {
-      fallBackButton.GetComponent<Button>().interactable = false;
-    }
-    else
+    if (FallBack.FallBackManager.CanFallBack)
     {
       fallBackButton.GetComponent<Button>().interactable = true;
     }
+    else
+    {
+      fallBackButton.GetComponent<Button>().interactable = false;
+    }
+    DateTime now = DateTime.Now;
+    TimeSpan interval = now - standard;
+    if (!paused && !won)
+      TimeUpdate(interval);
   }
 }

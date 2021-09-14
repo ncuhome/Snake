@@ -1,17 +1,13 @@
 using System.IO;
 using UnityEngine;
 
-namespace Mirror.SimpleWeb
-{
-    internal class SslConfigLoader
-    {
-        internal struct Cert
-        {
+namespace Mirror.SimpleWeb {
+    internal class SslConfigLoader {
+        internal struct Cert {
             public string path;
             public string password;
         }
-        internal static SslConfig Load(SimpleWebTransport transport)
-        {
+        internal static SslConfig Load(SimpleWebTransport transport) {
             // don't need to load anything if ssl is not enabled
             if (!transport.sslEnabled)
                 return default;
@@ -28,17 +24,14 @@ namespace Mirror.SimpleWeb
             );
         }
 
-        internal static Cert LoadCertJson(string certJsonPath)
-        {
+        internal static Cert LoadCertJson(string certJsonPath) {
             string json = File.ReadAllText(certJsonPath);
             Cert cert = JsonUtility.FromJson<Cert>(json);
 
-            if (string.IsNullOrEmpty(cert.path))
-            {
+            if (string.IsNullOrEmpty(cert.path)) {
                 throw new InvalidDataException("Cert Json didn't not contain \"path\"");
             }
-            if (string.IsNullOrEmpty(cert.password))
-            {
+            if (string.IsNullOrEmpty(cert.password)) {
                 // password can be empty
                 cert.password = string.Empty;
             }

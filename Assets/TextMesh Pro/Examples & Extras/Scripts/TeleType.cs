@@ -1,12 +1,10 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 
-namespace TMPro.Examples
-{
-    
-    public class TeleType : MonoBehaviour
-    {
+namespace TMPro.Examples {
+
+    public class TeleType : MonoBehaviour {
 
 
         //[Range(0, 100)]
@@ -19,8 +17,7 @@ namespace TMPro.Examples
         private TMP_Text m_textMeshPro;
 
 
-        void Awake()
-        {
+        void Awake() {
             // Get Reference to TextMeshPro Component
             m_textMeshPro = GetComponent<TMP_Text>();
             m_textMeshPro.text = label01;
@@ -44,8 +41,7 @@ namespace TMPro.Examples
         }
 
 
-        IEnumerator Start()
-        {
+        IEnumerator Start() {
 
             // Force and update of the mesh to get valid information.
             m_textMeshPro.ForceMeshUpdate();
@@ -55,15 +51,13 @@ namespace TMPro.Examples
             int counter = 0;
             int visibleCount = 0;
 
-            while (true)
-            {
+            while (true) {
                 visibleCount = counter % (totalVisibleCharacters + 1);
 
                 m_textMeshPro.maxVisibleCharacters = visibleCount; // How many characters should TextMeshPro display?
 
                 // Once the last character has been revealed, wait 1.0 second and start over.
-                if (visibleCount >= totalVisibleCharacters)
-                {
+                if (visibleCount >= totalVisibleCharacters) {
                     yield return new WaitForSeconds(1.0f);
                     m_textMeshPro.text = label02;
                     yield return new WaitForSeconds(1.0f);

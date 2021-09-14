@@ -1,10 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace WhereAllocation
-{
-    public static class Extensions
-    {
+namespace WhereAllocation {
+    public static class Extensions {
         // always pass the same IPEndPointNonAlloc instead of allocating a new
         // one each time.
         //
@@ -20,19 +18,17 @@ namespace WhereAllocation
             int offset,
             int size,
             SocketFlags socketFlags,
-            IPEndPointNonAlloc remoteEndPoint)
-        {
+            IPEndPointNonAlloc remoteEndPoint) {
             // call ReceiveFrom with IPEndPointNonAlloc.
             // need to wrap this in ReceiveFrom_NonAlloc because it's not
             // obvious that IPEndPointNonAlloc.Create does NOT create a new
             // IPEndPoint. it saves the result in IPEndPointNonAlloc.temp!
             EndPoint casted = remoteEndPoint;
-            return  socket.ReceiveFrom(buffer, offset, size, socketFlags, ref casted);
+            return socket.ReceiveFrom(buffer, offset, size, socketFlags, ref casted);
         }
 
         // same as above, different parameters
-        public static int ReceiveFrom_NonAlloc(this Socket socket, byte[] buffer, IPEndPointNonAlloc remoteEndPoint)
-        {
+        public static int ReceiveFrom_NonAlloc(this Socket socket, byte[] buffer, IPEndPointNonAlloc remoteEndPoint) {
             EndPoint casted = remoteEndPoint;
             return socket.ReceiveFrom(buffer, ref casted);
         }
@@ -49,8 +45,7 @@ namespace WhereAllocation
             int offset,
             int size,
             SocketFlags socketFlags,
-            IPEndPointNonAlloc remoteEndPoint)
-        {
+            IPEndPointNonAlloc remoteEndPoint) {
             EndPoint casted = remoteEndPoint;
             return socket.SendTo(buffer, offset, size, socketFlags, casted);
         }

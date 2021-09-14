@@ -1,12 +1,10 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 
 
-namespace TMPro.Examples
-{
+namespace TMPro.Examples {
 
-    public class WarpTextExample : MonoBehaviour
-    {
+    public class WarpTextExample : MonoBehaviour {
 
         private TMP_Text m_TextComponent;
 
@@ -15,20 +13,17 @@ namespace TMPro.Examples
         public float SpeedMultiplier = 1.0f;
         public float CurveScale = 1.0f;
 
-        void Awake()
-        {
+        void Awake() {
             m_TextComponent = gameObject.GetComponent<TMP_Text>();
         }
 
 
-        void Start()
-        {
+        void Start() {
             StartCoroutine(WarpText());
         }
 
 
-        private AnimationCurve CopyAnimationCurve(AnimationCurve curve)
-        {
+        private AnimationCurve CopyAnimationCurve(AnimationCurve curve) {
             AnimationCurve newCurve = new AnimationCurve();
 
             newCurve.keys = curve.keys;
@@ -42,8 +37,7 @@ namespace TMPro.Examples
         /// </summary>
         /// <param name="textComponent"></param>
         /// <returns></returns>
-        IEnumerator WarpText()
-        {
+        IEnumerator WarpText() {
             VertexCurve.preWrapMode = WrapMode.Clamp;
             VertexCurve.postWrapMode = WrapMode.Clamp;
 
@@ -57,10 +51,8 @@ namespace TMPro.Examples
             float old_CurveScale = CurveScale;
             AnimationCurve old_curve = CopyAnimationCurve(VertexCurve);
 
-            while (true)
-            {
-                if (!m_TextComponent.havePropertiesChanged && old_CurveScale == CurveScale && old_curve.keys[1].value == VertexCurve.keys[1].value)
-                {
+            while (true) {
+                if (!m_TextComponent.havePropertiesChanged && old_CurveScale == CurveScale && old_curve.keys[1].value == VertexCurve.keys[1].value) {
                     yield return null;
                     continue;
                 }
@@ -84,8 +76,7 @@ namespace TMPro.Examples
 
 
 
-                for (int i = 0; i < characterCount; i++)
-                {
+                for (int i = 0; i < characterCount; i++) {
                     if (!textInfo.characterInfo[i].isVisible)
                         continue;
 

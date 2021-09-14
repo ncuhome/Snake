@@ -2,10 +2,8 @@
 // for example, NetworkTransform, NetworkRigidbody, CharacterController etc.
 // NOTE: we use '<T>' and 'where T : Snapshot' to avoid boxing.
 //       List<Snapshot> would cause allocations through boxing.
-namespace Mirror
-{
-    public interface Snapshot
-    {
+namespace Mirror {
+    public interface Snapshot {
         // snapshots have two timestamps:
         // -> the remote timestamp (when it was sent by the remote)
         //    used to interpolate.

@@ -4,13 +4,11 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 
-namespace Mirror
-{
+namespace Mirror {
     /// <summary>Helper class that weaver populates with all reader types.</summary>
     // Note that c# creates a different static variable for each type
     // -> Weaver.ReaderWriterProcessor.InitializeReaderAndWriters() populates it
-    public static class Reader<T>
-    {
+    public static class Reader<T> {
         public static Func<NetworkReader, T> read;
     }
 
@@ -18,8 +16,7 @@ namespace Mirror
     // Note: This class is intended to be extremely pedantic,
     // and throw exceptions whenever stuff is going slightly wrong.
     // The exceptions will be handled in NetworkServer/NetworkClient.
-    public class NetworkReader
-    {
+    public class NetworkReader {
         // internal buffer
         // byte[] pointer would work, but we use ArraySegment to also support
         // the ArraySegment constructor
@@ -36,34 +33,28 @@ namespace Mirror
         /// <summary>Remaining bytes that can be read, for convenience.</summary>
         public int Remaining => Length - Position;
 
-        public NetworkReader(byte[] bytes)
-        {
+        public NetworkReader(byte[] bytes) {
             buffer = new ArraySegment<byte>(bytes);
         }
 
-        public NetworkReader(ArraySegment<byte> segment)
-        {
+        public NetworkReader(ArraySegment<byte> segment) {
             buffer = segment;
         }
 
         // sometimes it's useful to point a reader on another buffer instead of
         // allocating a new reader (e.g. NetworkReaderPool)
-        public void SetBuffer(byte[] bytes)
-        {
+        public void SetBuffer(byte[] bytes) {
             buffer = new ArraySegment<byte>(bytes);
             Position = 0;
         }
 
-        public void SetBuffer(ArraySegment<byte> segment)
-        {
+        public void SetBuffer(ArraySegment<byte> segment) {
             buffer = segment;
             Position = 0;
         }
 
-        public byte ReadByte()
-        {
-            if (Position + 1 > buffer.Count)
-            {
+        public byte ReadByte() {
+            if (Position + 1 > buffer.Count) {
                 throw new EndOfStreamException("ReadByte out of range:" + ToString());
             }
             return buffer.Array[buffer.Offset + Position++];
@@ -71,11 +62,9 @@ namespace Mirror
 
         /// <summary>Read 'count' bytes into the bytes array</summary>
         // TODO why does this also return bytes[]???
-        public byte[] ReadBytes(byte[] bytes, int count)
-        {
+        public byte[] ReadBytes(byte[] bytes, int count) {
             // check if passed byte array is big enough
-            if (count > bytes.Length)
-            {
+            if (count > bytes.Length) {
                 throw new EndOfStreamException("ReadBytes can't read " + count + " + bytes because the passed byte[] only has length " + bytes.Length);
             }
 
@@ -85,11 +74,9 @@ namespace Mirror
         }
 
         /// <summary>Read 'count' bytes allocation-free as ArraySegment that points to the internal array.</summary>
-        public ArraySegment<byte> ReadBytesSegment(int count)
-        {
+        public ArraySegment<byte> ReadBytesSegment(int count) {
             // check if within buffer limits
-            if (Position + count > buffer.Count)
-            {
+            if (Position + count > buffer.Count) {
                 throw new EndOfStreamException("ReadBytesSegment can't read " + count + " bytes because it would read past the end of the stream. " + ToString());
             }
 
@@ -99,17 +86,14 @@ namespace Mirror
             return result;
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"NetworkReader pos={Position} len={Length} buffer={BitConverter.ToString(buffer.Array, buffer.Offset, buffer.Count)}";
         }
 
         /// <summary>Reads any data type that mirror supports. Uses weaver populated Reader(T).read</summary>
-        public T Read<T>()
-        {
+        public T Read<T>() {
             Func<NetworkReader, T> readerDelegate = Reader<T>.read;
-            if (readerDelegate == null)
-            {
+            if (readerDelegate == null) {
                 Debug.LogError($"No reader found for {typeof(T)}. Use a type supported by Mirror or define a custom reader");
                 return default;
             }
@@ -119,8 +103,7 @@ namespace Mirror
 
     // Mirror's Weaver automatically detects all NetworkReader function types,
     // but they do all need to be extensions.
-    public static class NetworkReaderExtensions
-    {
+    public static class NetworkReaderExtensions {
         // cache encoding instead of creating it each time
         // 1000 readers before:  1MB GC, 30ms
         // 1000 readers after: 0.8MB GC, 18ms
@@ -143,8 +126,7 @@ namespace Mirror
         // Deprecated 2021-05-18
         [Obsolete("We've cleaned up the API. Use ReadUShort instead.")]
         public static ushort ReadUInt16(this NetworkReader reader) => reader.ReadUShort();
-        public static ushort ReadUShort(this NetworkReader reader)
-        {
+        public static ushort ReadUShort(this NetworkReader reader) {
             ushort value = 0;
             value |= reader.ReadByte();
             value |= (ushort)(reader.ReadByte() << 8);
@@ -159,8 +141,7 @@ namespace Mirror
         // Deprecated 2021-05-18
         [Obsolete("We've cleaned up the API. Use ReadUInt instead.")]
         public static uint ReadUInt32(this NetworkReader reader) => reader.ReadUInt();
-        public static uint ReadUInt(this NetworkReader reader)
-        {
+        public static uint ReadUInt(this NetworkReader reader) {
             uint value = 0;
             value |= reader.ReadByte();
             value |= (uint)(reader.ReadByte() << 8);
@@ -177,8 +158,7 @@ namespace Mirror
         // Deprecated 2021-05-18
         [Obsolete("We've cleaned up the API. Use ReadULong instead.")]
         public static ulong ReadUInt64(this NetworkReader reader) => reader.ReadULong();
-        public static ulong ReadULong(this NetworkReader reader)
-        {
+        public static ulong ReadULong(this NetworkReader reader) {
             ulong value = 0;
             value |= reader.ReadByte();
             value |= ((ulong)reader.ReadByte()) << 8;
@@ -194,21 +174,18 @@ namespace Mirror
         // Deprecated 2021-05-18
         [Obsolete("We've cleaned up the API. Use ReadFloat instead.")]
         public static float ReadSingle(this NetworkReader reader) => reader.ReadFloat();
-        public static float ReadFloat(this NetworkReader reader)
-        {
+        public static float ReadFloat(this NetworkReader reader) {
             UIntFloat converter = new UIntFloat();
             converter.intValue = reader.ReadUInt();
             return converter.floatValue;
         }
 
-        public static double ReadDouble(this NetworkReader reader)
-        {
+        public static double ReadDouble(this NetworkReader reader) {
             UIntDouble converter = new UIntDouble();
             converter.longValue = reader.ReadULong();
             return converter.doubleValue;
         }
-        public static decimal ReadDecimal(this NetworkReader reader)
-        {
+        public static decimal ReadDecimal(this NetworkReader reader) {
             UIntDecimal converter = new UIntDecimal();
             converter.longValue1 = reader.ReadULong();
             converter.longValue2 = reader.ReadULong();
@@ -216,8 +193,7 @@ namespace Mirror
         }
 
         /// <exception cref="T:System.ArgumentException">if an invalid utf8 string is sent</exception>
-        public static string ReadString(this NetworkReader reader)
-        {
+        public static string ReadString(this NetworkReader reader) {
             // read number of bytes
             ushort size = reader.ReadUShort();
 
@@ -228,8 +204,7 @@ namespace Mirror
             int realSize = size - 1;
 
             // make sure it's within limits to avoid allocation attacks etc.
-            if (realSize >= NetworkWriter.MaxStringLength)
-            {
+            if (realSize >= NetworkWriter.MaxStringLength) {
                 throw new EndOfStreamException("ReadString too long: " + realSize + ". Limit is: " + NetworkWriter.MaxStringLength);
             }
 
@@ -240,8 +215,7 @@ namespace Mirror
         }
 
         /// <exception cref="T:OverflowException">if count is invalid</exception>
-        public static byte[] ReadBytesAndSize(this NetworkReader reader)
-        {
+        public static byte[] ReadBytesAndSize(this NetworkReader reader) {
             // count = 0 means the array was null
             // otherwise count -1 is the length of the array
             uint count = reader.ReadUInt();
@@ -250,8 +224,7 @@ namespace Mirror
         }
 
         /// <exception cref="T:OverflowException">if count is invalid</exception>
-        public static ArraySegment<byte> ReadBytesAndSizeSegment(this NetworkReader reader)
-        {
+        public static ArraySegment<byte> ReadBytesAndSizeSegment(this NetworkReader reader) {
             // count = 0 means the array was null
             // otherwise count - 1 is the length of the array
             uint count = reader.ReadUInt();
@@ -274,10 +247,8 @@ namespace Mirror
         public static Rect ReadRect(this NetworkReader reader) => new Rect(reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat(), reader.ReadFloat());
         public static Plane ReadPlane(this NetworkReader reader) => new Plane(reader.ReadVector3(), reader.ReadFloat());
         public static Ray ReadRay(this NetworkReader reader) => new Ray(reader.ReadVector3(), reader.ReadVector3());
-        public static Matrix4x4 ReadMatrix4x4(this NetworkReader reader)
-        {
-            return new Matrix4x4
-            {
+        public static Matrix4x4 ReadMatrix4x4(this NetworkReader reader) {
+            return new Matrix4x4 {
                 m00 = reader.ReadFloat(),
                 m01 = reader.ReadFloat(),
                 m02 = reader.ReadFloat(),
@@ -296,36 +267,31 @@ namespace Mirror
                 m33 = reader.ReadFloat()
             };
         }
-        public static byte[] ReadBytes(this NetworkReader reader, int count)
-        {
+        public static byte[] ReadBytes(this NetworkReader reader, int count) {
             byte[] bytes = new byte[count];
             reader.ReadBytes(bytes, count);
             return bytes;
         }
         public static Guid ReadGuid(this NetworkReader reader) => new Guid(reader.ReadBytes(16));
 
-        public static Transform ReadTransform(this NetworkReader reader)
-        {
+        public static Transform ReadTransform(this NetworkReader reader) {
             // Don't use null propagation here as it could lead to MissingReferenceException
             NetworkIdentity networkIdentity = reader.ReadNetworkIdentity();
             return networkIdentity != null ? networkIdentity.transform : null;
         }
 
-        public static GameObject ReadGameObject(this NetworkReader reader)
-        {
+        public static GameObject ReadGameObject(this NetworkReader reader) {
             // Don't use null propagation here as it could lead to MissingReferenceException
             NetworkIdentity networkIdentity = reader.ReadNetworkIdentity();
             return networkIdentity != null ? networkIdentity.gameObject : null;
         }
 
-        public static NetworkIdentity ReadNetworkIdentity(this NetworkReader reader)
-        {
+        public static NetworkIdentity ReadNetworkIdentity(this NetworkReader reader) {
             uint netId = reader.ReadUInt();
             if (netId == 0)
                 return null;
 
-            if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity))
-            {
+            if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity)) {
                 return identity;
             }
 
@@ -336,8 +302,7 @@ namespace Mirror
             return null;
         }
 
-        public static NetworkBehaviour ReadNetworkBehaviour(this NetworkReader reader)
-        {
+        public static NetworkBehaviour ReadNetworkBehaviour(this NetworkReader reader) {
             uint netId = reader.ReadUInt();
             if (netId == 0)
                 return null;
@@ -345,8 +310,7 @@ namespace Mirror
             // if netId is not 0, then index is also sent to read before returning
             byte componentIndex = reader.ReadByte();
 
-            if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity))
-            {
+            if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity)) {
                 return identity.NetworkBehaviours[componentIndex];
             }
 
@@ -357,40 +321,34 @@ namespace Mirror
             return null;
         }
 
-        public static T ReadNetworkBehaviour<T>(this NetworkReader reader) where T : NetworkBehaviour
-        {
+        public static T ReadNetworkBehaviour<T>(this NetworkReader reader) where T : NetworkBehaviour {
             return reader.ReadNetworkBehaviour() as T;
         }
 
-        public static NetworkBehaviour.NetworkBehaviourSyncVar ReadNetworkBehaviourSyncVar(this NetworkReader reader)
-        {
+        public static NetworkBehaviour.NetworkBehaviourSyncVar ReadNetworkBehaviourSyncVar(this NetworkReader reader) {
             uint netId = reader.ReadUInt();
             byte componentIndex = default;
 
             // if netId is not 0, then index is also sent to read before returning
-            if (netId != 0)
-            {
+            if (netId != 0) {
                 componentIndex = reader.ReadByte();
             }
 
             return new NetworkBehaviour.NetworkBehaviourSyncVar(netId, componentIndex);
         }
 
-        public static List<T> ReadList<T>(this NetworkReader reader)
-        {
+        public static List<T> ReadList<T>(this NetworkReader reader) {
             int length = reader.ReadInt();
             if (length < 0)
                 return null;
             List<T> result = new List<T>(length);
-            for (int i = 0; i < length; i++)
-            {
+            for (int i = 0; i < length; i++) {
                 result.Add(reader.Read<T>());
             }
             return result;
         }
 
-        public static T[] ReadArray<T>(this NetworkReader reader)
-        {
+        public static T[] ReadArray<T>(this NetworkReader reader) {
             int length = reader.ReadInt();
 
             //  we write -1 for null
@@ -402,21 +360,18 @@ namespace Mirror
             // this assumes that a reader for T reads at least 1 bytes
             // we can't know the exact size of T because it could have a user created reader
             // NOTE: don't add to length as it could overflow if value is int.max
-            if (length > reader.Length - reader.Position)
-            {
+            if (length > reader.Length - reader.Position) {
                 throw new EndOfStreamException($"Received array that is too large: {length}");
             }
 
             T[] result = new T[length];
-            for (int i = 0; i < length; i++)
-            {
+            for (int i = 0; i < length; i++) {
                 result[i] = reader.Read<T>();
             }
             return result;
         }
 
-        public static Uri ReadUri(this NetworkReader reader)
-        {
+        public static Uri ReadUri(this NetworkReader reader) {
             string uriString = reader.ReadString();
             return (string.IsNullOrEmpty(uriString) ? null : new Uri(uriString));
         }

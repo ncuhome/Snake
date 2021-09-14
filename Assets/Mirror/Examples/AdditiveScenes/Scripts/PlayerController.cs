@@ -1,38 +1,31 @@
 using UnityEngine;
 
-namespace Mirror.Examples.Additive
-{
+namespace Mirror.Examples.Additive {
     [RequireComponent(typeof(CapsuleCollider))]
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(NetworkTransform))]
     [RequireComponent(typeof(Rigidbody))]
-    public class PlayerController : NetworkBehaviour
-    {
+    public class PlayerController : NetworkBehaviour {
         public CharacterController characterController;
 
-        void OnValidate()
-        {
+        void OnValidate() {
             if (characterController == null)
                 characterController = GetComponent<CharacterController>();
         }
 
-        void Start()
-        {
+        void Start() {
             characterController.enabled = isLocalPlayer;
         }
 
-        public override void OnStartLocalPlayer()
-        {
+        public override void OnStartLocalPlayer() {
             Camera.main.orthographic = false;
             Camera.main.transform.SetParent(transform);
             Camera.main.transform.localPosition = new Vector3(0f, 3f, -8f);
             Camera.main.transform.localEulerAngles = new Vector3(10f, 0f, 0f);
         }
 
-        void OnDisable()
-        {
-            if (isLocalPlayer && Camera.main != null)
-            {
+        void OnDisable() {
+            if (isLocalPlayer && Camera.main != null) {
                 Camera.main.orthographic = true;
                 Camera.main.transform.SetParent(null);
                 Camera.main.transform.localPosition = new Vector3(0f, 70f, 0f);
@@ -54,8 +47,7 @@ namespace Mirror.Examples.Additive
         public bool isFalling;
         public Vector3 velocity;
 
-        void Update()
-        {
+        void Update() {
             if (!isLocalPlayer || !characterController.enabled)
                 return;
 
@@ -75,19 +67,15 @@ namespace Mirror.Examples.Additive
             if (isGrounded)
                 isFalling = false;
 
-            if ((isGrounded || !isFalling) && jumpSpeed < 1f && Input.GetKey(KeyCode.Space))
-            {
+            if ((isGrounded || !isFalling) && jumpSpeed < 1f && Input.GetKey(KeyCode.Space)) {
                 jumpSpeed = Mathf.Lerp(jumpSpeed, 1f, 0.5f);
-            }
-            else if (!isGrounded)
-            {
+            } else if (!isGrounded) {
                 isFalling = true;
                 jumpSpeed = 0;
             }
         }
 
-        void FixedUpdate()
-        {
+        void FixedUpdate() {
             if (!isLocalPlayer || characterController == null)
                 return;
 

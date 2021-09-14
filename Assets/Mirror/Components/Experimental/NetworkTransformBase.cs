@@ -19,10 +19,8 @@
 using System;
 using UnityEngine;
 
-namespace Mirror.Experimental
-{
-    public abstract class NetworkTransformBase : NetworkBehaviour
-    {
+namespace Mirror.Experimental {
+    public abstract class NetworkTransformBase : NetworkBehaviour {
         // target transform to sync. can be on a child.
         protected abstract Transform targetTransform { get; }
 
@@ -90,8 +88,7 @@ namespace Mirror.Experimental
         // client
         // use local position/rotation for VR support
         [Serializable]
-        public struct DataPoint
-        {
+        public struct DataPoint {
             public float timeStamp;
             public Vector3 localPosition;
             public Quaternion localRotation;
@@ -112,39 +109,30 @@ namespace Mirror.Experimental
         // We need to store this locally on the server so clients can't request Authority when ever they like
         bool clientAuthorityBeforeTeleport;
 
-        void FixedUpdate()
-        {
+        void FixedUpdate() {
             // if server then always sync to others.
             // let the clients know that this has moved
-            if (isServer && HasEitherMovedRotatedScaled())
-            {
+            if (isServer && HasEitherMovedRotatedScaled()) {
                 ServerUpdate();
             }
 
-            if (isClient)
-            {
+            if (isClient) {
                 // send to server if we have local authority (and aren't the server)
                 // -> only if connectionToServer has been initialized yet too
-                if (IsOwnerWithClientAuthority)
-                {
+                if (IsOwnerWithClientAuthority) {
                     ClientAuthorityUpdate();
-                }
-                else if (goal.isValid)
-                {
+                } else if (goal.isValid) {
                     ClientRemoteUpdate();
                 }
             }
         }
 
-        void ServerUpdate()
-        {
+        void ServerUpdate() {
             RpcMove(targetTransform.localPosition, Compression.CompressQuaternion(targetTransform.localRotation), targetTransform.localScale);
         }
 
-        void ClientAuthorityUpdate()
-        {
-            if (!isServer && HasEitherMovedRotatedScaled())
-            {
+        void ClientAuthorityUpdate() {
+            if (!isServer && HasEitherMovedRotatedScaled()) {
                 // serialize
                 // local position/rotation for VR support
                 // send to server
@@ -152,20 +140,16 @@ namespace Mirror.Experimental
             }
         }
 
-        void ClientRemoteUpdate()
-        {
+        void ClientRemoteUpdate() {
             // teleport or interpolate
-            if (NeedsTeleport())
-            {
+            if (NeedsTeleport()) {
                 // local position/rotation for VR support
                 ApplyPositionRotationScale(goal.localPosition, goal.localRotation, goal.localScale);
 
                 // reset data points so we don't keep interpolating
                 start = new DataPoint();
                 goal = new DataPoint();
-            }
-            else
-            {
+            } else {
                 // local position/rotation for VR support
                 ApplyPositionRotationScale(InterpolatePosition(start, goal, targetTransform.localPosition),
                                            InterpolateRotation(start, goal, targetTransform.localRotation),
@@ -174,14 +158,12 @@ namespace Mirror.Experimental
         }
 
         // moved or rotated or scaled since last time we checked it?
-        bool HasEitherMovedRotatedScaled()
-        {
+        bool HasEitherMovedRotatedScaled() {
             // Save last for next frame to compare only if change was detected, otherwise
             // slow moving objects might never sync because of C#'s float comparison tolerance.
             // See also: https://github.com/vis2k/Mirror/pull/428)
             bool changed = HasMoved || HasRotated || HasScaled;
-            if (changed)
-            {
+            if (changed) {
                 // local position/rotation for VR support
                 if (syncPosition) lastPosition = targetTransform.localPosition;
                 if (syncRotation) lastRotation = targetTransform.localRotation;
@@ -201,8 +183,7 @@ namespace Mirror.Experimental
         // teleport / lag / stuck detection
         // - checking distance is not enough since there could be just a tiny fence between us and the goal
         // - checking time always works, this way we just teleport if we still didn't reach the goal after too much time has elapsed
-        bool NeedsTeleport()
-        {
+        bool NeedsTeleport() {
             // calculate time between the two data points
             float startTime = start.isValid ? start.timeStamp : Time.time - Time.fixedDeltaTime;
             float goalTime = goal.isValid ? goal.timeStamp : Time.time;
@@ -213,8 +194,7 @@ namespace Mirror.Experimental
 
         // local authority client sends sync message to server for broadcasting
         [Command(channel = Channels.Unreliable)]
-        void CmdClientToServerSync(Vector3 position, uint packedRotation, Vector3 scale)
-        {
+        void CmdClientToServerSync(Vector3 position, uint packedRotation, Vector3 scale) {
             // Ignore messages from client if not in client authority mode
             if (!clientAuthority)
                 return;
@@ -230,8 +210,7 @@ namespace Mirror.Experimental
         }
 
         [ClientRpc(channel = Channels.Unreliable)]
-        void RpcMove(Vector3 position, uint packedRotation, Vector3 scale)
-        {
+        void RpcMove(Vector3 position, uint packedRotation, Vector3 scale) {
             if (hasAuthority && excludeOwnerUpdate) return;
 
             if (!isServer)
@@ -239,11 +218,9 @@ namespace Mirror.Experimental
         }
 
         // serialization is needed by OnSerialize and by manual sending from authority
-        void SetGoal(Vector3 position, Quaternion rotation, Vector3 scale)
-        {
+        void SetGoal(Vector3 position, Quaternion rotation, Vector3 scale) {
             // put it into a data point immediately
-            DataPoint temp = new DataPoint
-            {
+            DataPoint temp = new DataPoint {
                 // deserialize position
                 localPosition = position,
                 localRotation = rotation,
@@ -256,10 +233,8 @@ namespace Mirror.Experimental
 
             // reassign start wisely
             // first ever data point? then make something up for previous one so that we can start interpolation without waiting for next.
-            if (start.timeStamp == 0)
-            {
-                start = new DataPoint
-                {
+            if (start.timeStamp == 0) {
+                start = new DataPoint {
                     timeStamp = Time.time - Time.fixedDeltaTime,
                     // local position/rotation for VR support
                     localPosition = targetTransform.localPosition,
@@ -296,8 +271,7 @@ namespace Mirror.Experimental
             //             \.
             //              C
             //
-            else
-            {
+            else {
                 float oldDistance = Vector3.Distance(start.localPosition, goal.localPosition);
                 float newDistance = Vector3.Distance(goal.localPosition, temp.localPosition);
 
@@ -306,8 +280,7 @@ namespace Mirror.Experimental
                 // local position/rotation for VR support
                 // teleport / lag / obstacle detection: only continue at current position if we aren't too far away
                 // XC  < AB + BC (see comments above)
-                if (Vector3.Distance(targetTransform.localPosition, start.localPosition) < oldDistance + newDistance)
-                {
+                if (Vector3.Distance(targetTransform.localPosition, start.localPosition) < oldDistance + newDistance) {
                     start.localPosition = targetTransform.localPosition;
                     start.localRotation = targetTransform.localRotation;
                     start.localScale = targetTransform.localScale;
@@ -322,8 +295,7 @@ namespace Mirror.Experimental
         // - if this is the first time ever then we use our best guess:
         //     - delta based on transform.localPosition
         //     - elapsed based on send interval hoping that it roughly matches
-        static float EstimateMovementSpeed(DataPoint from, DataPoint to, Transform transform, float sendInterval)
-        {
+        static float EstimateMovementSpeed(DataPoint from, DataPoint to, Transform transform, float sendInterval) {
             Vector3 delta = to.localPosition - (from.localPosition != transform.localPosition ? from.localPosition : transform.localPosition);
             float elapsed = from.isValid ? to.timeStamp - from.timeStamp : sendInterval;
 
@@ -332,8 +304,7 @@ namespace Mirror.Experimental
         }
 
         // set position carefully depending on the target component
-        void ApplyPositionRotationScale(Vector3 position, Quaternion rotation, Vector3 scale)
-        {
+        void ApplyPositionRotationScale(Vector3 position, Quaternion rotation, Vector3 scale) {
             // local position/rotation for VR support
             if (syncPosition) targetTransform.localPosition = position;
             if (syncRotation) targetTransform.localRotation = rotation;
@@ -341,13 +312,11 @@ namespace Mirror.Experimental
         }
 
         // where are we in the timeline between start and goal? [0,1]
-        Vector3 InterpolatePosition(DataPoint start, DataPoint goal, Vector3 currentPosition)
-        {
+        Vector3 InterpolatePosition(DataPoint start, DataPoint goal, Vector3 currentPosition) {
             if (!interpolatePosition)
                 return currentPosition;
 
-            if (start.movementSpeed != 0)
-            {
+            if (start.movementSpeed != 0) {
                 // Option 1: simply interpolate based on time, but stutter will happen, it's not that smooth.
                 // This is especially noticeable if the camera automatically follows the player
                 // -         Tell SonarCloud this isn't really commented code but actual comments and to stfu about it
@@ -363,13 +332,11 @@ namespace Mirror.Experimental
             return currentPosition;
         }
 
-        Quaternion InterpolateRotation(DataPoint start, DataPoint goal, Quaternion defaultRotation)
-        {
+        Quaternion InterpolateRotation(DataPoint start, DataPoint goal, Quaternion defaultRotation) {
             if (!interpolateRotation)
                 return defaultRotation;
 
-            if (start.localRotation != goal.localRotation)
-            {
+            if (start.localRotation != goal.localRotation) {
                 float t = CurrentInterpolationFactor(start, goal);
                 return Quaternion.Slerp(start.localRotation, goal.localRotation, t);
             }
@@ -377,13 +344,11 @@ namespace Mirror.Experimental
             return defaultRotation;
         }
 
-        Vector3 InterpolateScale(DataPoint start, DataPoint goal, Vector3 currentScale)
-        {
+        Vector3 InterpolateScale(DataPoint start, DataPoint goal, Vector3 currentScale) {
             if (!interpolateScale)
                 return currentScale;
 
-            if (start.localScale != goal.localScale)
-            {
+            if (start.localScale != goal.localScale) {
                 float t = CurrentInterpolationFactor(start, goal);
                 return Vector3.Lerp(start.localScale, goal.localScale, t);
             }
@@ -391,10 +356,8 @@ namespace Mirror.Experimental
             return currentScale;
         }
 
-        static float CurrentInterpolationFactor(DataPoint start, DataPoint goal)
-        {
-            if (start.isValid)
-            {
+        static float CurrentInterpolationFactor(DataPoint start, DataPoint goal) {
+            if (start.isValid) {
                 float difference = goal.timeStamp - start.timeStamp;
 
                 // the moment we get 'goal', 'start' is supposed to start, so elapsed time is based on:
@@ -414,8 +377,7 @@ namespace Mirror.Experimental
         /// </summary>
         /// <param name="localPosition">Where to teleport this GameObject</param>
         [Server]
-        public void ServerTeleport(Vector3 localPosition)
-        {
+        public void ServerTeleport(Vector3 localPosition) {
             Quaternion localRotation = targetTransform.localRotation;
             ServerTeleport(localPosition, localRotation);
         }
@@ -429,8 +391,7 @@ namespace Mirror.Experimental
         /// <param name="localPosition">Where to teleport this GameObject</param>
         /// <param name="localRotation">Which rotation to set this GameObject</param>
         [Server]
-        public void ServerTeleport(Vector3 localPosition, Quaternion localRotation)
-        {
+        public void ServerTeleport(Vector3 localPosition, Quaternion localRotation) {
             // To prevent applying the position updates received from client (if they have ClientAuth) while being teleported.
             // clientAuthorityBeforeTeleport defaults to false when not teleporting, if it is true then it means that teleport
             // was previously called but not finished therefore we should keep it as true so that 2nd teleport call doesn't clear authority
@@ -443,8 +404,7 @@ namespace Mirror.Experimental
             RpcTeleport(localPosition, Compression.CompressQuaternion(localRotation), clientAuthorityBeforeTeleport);
         }
 
-        void DoTeleport(Vector3 newLocalPosition, Quaternion newLocalRotation)
-        {
+        void DoTeleport(Vector3 newLocalPosition, Quaternion newLocalRotation) {
             targetTransform.localPosition = newLocalPosition;
             targetTransform.localRotation = newLocalRotation;
 
@@ -457,8 +417,7 @@ namespace Mirror.Experimental
         }
 
         [ClientRpc(channel = Channels.Unreliable)]
-        void RpcTeleport(Vector3 newPosition, uint newPackedRotation, bool isClientAuthority)
-        {
+        void RpcTeleport(Vector3 newPosition, uint newPackedRotation, bool isClientAuthority) {
             DoTeleport(newPosition, Compression.DecompressQuaternion(newPackedRotation));
 
             // only send finished if is owner and is ClientAuthority on server 
@@ -471,17 +430,13 @@ namespace Mirror.Experimental
         /// </summary>
         /// <param name="initialAuthority"></param>
         [Command(channel = Channels.Unreliable)]
-        void CmdTeleportFinished()
-        {
-            if (clientAuthorityBeforeTeleport)
-            {
+        void CmdTeleportFinished() {
+            if (clientAuthorityBeforeTeleport) {
                 clientAuthority = true;
 
                 // reset value so doesn't effect future calls, see note in ServerTeleport
                 clientAuthorityBeforeTeleport = false;
-            }
-            else
-            {
+            } else {
                 Debug.LogWarning("Client called TeleportFinished when clientAuthority was false on server", this);
             }
         }
@@ -491,19 +446,16 @@ namespace Mirror.Experimental
         #region Debug Gizmos
 
         // draw the data points for easier debugging
-        void OnDrawGizmos()
-        {
+        void OnDrawGizmos() {
             // draw start and goal points and a line between them
-            if (start.localPosition != goal.localPosition)
-            {
+            if (start.localPosition != goal.localPosition) {
                 DrawDataPointGizmo(start, Color.yellow);
                 DrawDataPointGizmo(goal, Color.green);
                 DrawLineBetweenDataPoints(start, goal, Color.cyan);
             }
         }
 
-        static void DrawDataPointGizmo(DataPoint data, Color color)
-        {
+        static void DrawDataPointGizmo(DataPoint data, Color color) {
             // use a little offset because transform.localPosition might be in the ground in many cases
             Vector3 offset = Vector3.up * 0.01f;
 
@@ -518,8 +470,7 @@ namespace Mirror.Experimental
             Gizmos.DrawRay(data.localPosition + offset, data.localRotation * Vector3.up);
         }
 
-        static void DrawLineBetweenDataPoints(DataPoint data1, DataPoint data2, Color color)
-        {
+        static void DrawLineBetweenDataPoints(DataPoint data1, DataPoint data2, Color color) {
             Gizmos.color = color;
             Gizmos.DrawLine(data1.localPosition, data2.localPosition);
         }

@@ -1,4 +1,3 @@
-namespace Mirror.Discovery
-{
-    public struct ServerRequest : NetworkMessage {}
+namespace Mirror.Discovery {
+    public struct ServerRequest : NetworkMessage { }
 }

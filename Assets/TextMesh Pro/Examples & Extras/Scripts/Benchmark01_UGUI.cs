@@ -1,13 +1,11 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
 
-namespace TMPro.Examples
-{
-    
-    public class Benchmark01_UGUI : MonoBehaviour
-    {
+namespace TMPro.Examples {
+
+    public class Benchmark01_UGUI : MonoBehaviour {
 
         public int BenchmarkType = 0;
 
@@ -33,8 +31,7 @@ namespace TMPro.Examples
 
 
 
-        IEnumerator Start()
-        {
+        IEnumerator Start() {
 
 
 
@@ -69,18 +66,14 @@ namespace TMPro.Examples
                 m_material02 = Resources.Load<Material>("Fonts & Materials/LiberationSans SDF - BEVEL"); // Make sure the LiberationSans SDF exists before calling this...  
 
 
-            }
-            else if (BenchmarkType == 1) // TextMesh
-            {
+            } else if (BenchmarkType == 1) // TextMesh
+              {
                 m_textMesh = gameObject.AddComponent<Text>();
 
-                if (TextMeshFont != null)
-                {
+                if (TextMeshFont != null) {
                     m_textMesh.font = TextMeshFont;
                     //m_textMesh.renderer.sharedMaterial = m_textMesh.font.material;
-                }
-                else
-                {
+                } else {
                     //m_textMesh.font = Resources.Load("Fonts/ARIAL", typeof(Font)) as Font;
                     //m_textMesh.renderer.sharedMaterial = m_textMesh.font.material;
                 }
@@ -93,18 +86,15 @@ namespace TMPro.Examples
 
 
 
-            for (int i = 0; i <= 1000000; i++)
-            {
-                if (BenchmarkType == 0)
-                {
+            for (int i = 0; i <= 1000000; i++) {
+                if (BenchmarkType == 0) {
                     m_textMeshPro.text = label01 + (i % 1000);
                     if (i % 1000 == 999)
                         m_textMeshPro.fontSharedMaterial = m_textMeshPro.fontSharedMaterial == m_material01 ? m_textMeshPro.fontSharedMaterial = m_material02 : m_textMeshPro.fontSharedMaterial = m_material01;
 
 
 
-                }
-                else if (BenchmarkType == 1)
+                } else if (BenchmarkType == 1)
                     m_textMesh.text = label02 + (i % 1000).ToString();
 
                 yield return null;

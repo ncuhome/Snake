@@ -2,10 +2,8 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace WhereAllocation
-{
-    public class IPEndPointNonAlloc : IPEndPoint
-    {
+namespace WhereAllocation {
+    public class IPEndPointNonAlloc : IPEndPoint {
         // Two steps to remove allocations in ReceiveFrom_Internal:
         //
         // 1.) remoteEndPoint.Serialize():
@@ -38,12 +36,10 @@ namespace WhereAllocation
 
         // constructors simply create the field once by calling the base method.
         // (our overwritten method would create anything new)
-        public IPEndPointNonAlloc(long address, int port) : base(address, port)
-        {
+        public IPEndPointNonAlloc(long address, int port) : base(address, port) {
             temp = base.Serialize();
         }
-        public IPEndPointNonAlloc(IPAddress address, int port) : base(address, port)
-        {
+        public IPEndPointNonAlloc(IPAddress address, int port) : base(address, port) {
             temp = base.Serialize();
         }
 
@@ -53,8 +49,7 @@ namespace WhereAllocation
         // Create doesn't need to create anything.
         // SocketAddress object is already the one we returned in Serialize().
         // ReceiveFrom_Internal simply wrote into it.
-        public override EndPoint Create(SocketAddress socketAddress)
-        {
+        public override EndPoint Create(SocketAddress socketAddress) {
             // original IPEndPoint.Create validates:
             if (socketAddress.Family != AddressFamily)
                 throw new ArgumentException($"Unsupported socketAddress.AddressFamily: {socketAddress.Family}. Expected: {AddressFamily}");
@@ -63,8 +58,7 @@ namespace WhereAllocation
 
             // double check to guarantee that ReceiveFrom actually did write
             // into our 'temp' field. just in case that's ever changed.
-            if (socketAddress != temp)
-            {
+            if (socketAddress != temp) {
                 // well this is fun.
                 // in the latest mono from the above github links,
                 // the result of Serialize() is passed as 'ref' so ReceiveFrom
@@ -145,8 +139,7 @@ namespace WhereAllocation
                 // https://github.com/mono/mono/blob/bdd772531d379b4e78593587d15113c37edd4a64/mcs/class/referencesource/System/net/System/Net/SocketAddress.cs#L99
                 // so let's do that.
                 // -> unchecked in case it's byte.Max
-                unchecked
-                {
+                unchecked {
                     temp[0] += 1;
                     temp[0] -= 1;
                 }
@@ -178,8 +171,7 @@ namespace WhereAllocation
 
         // helper function to create an ACTUAL new IPEndPoint from this.
         // server needs it to store new connections as unique IPEndPoints.
-        public IPEndPoint DeepCopyIPEndPoint()
-        {
+        public IPEndPoint DeepCopyIPEndPoint() {
             // we need to create a new IPEndPoint from 'temp' SocketAddress.
             // there is no 'new IPEndPoint(SocketAddress) constructor.
             // so we need to be a bit creative...

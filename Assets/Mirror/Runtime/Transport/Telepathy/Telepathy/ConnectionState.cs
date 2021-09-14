@@ -9,10 +9,8 @@
 using System.Net.Sockets;
 using System.Threading;
 
-namespace Telepathy
-{
-    public class ConnectionState
-    {
+namespace Telepathy {
+    public class ConnectionState {
         public TcpClient client;
 
         // thread safe pipe to send messages from main thread to send thread
@@ -24,8 +22,7 @@ namespace Telepathy
         // -> call WaitOne() to block until Reset was called
         public ManualResetEvent sendPending = new ManualResetEvent(false);
 
-        public ConnectionState(TcpClient client, int MaxMessageSize)
-        {
+        public ConnectionState(TcpClient client, int MaxMessageSize) {
             this.client = client;
 
             // create send pipe with max message size for pooling

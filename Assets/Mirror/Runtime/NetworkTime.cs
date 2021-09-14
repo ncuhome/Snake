@@ -1,11 +1,9 @@
 using System;
 using Stopwatch = System.Diagnostics.Stopwatch;
 
-namespace Mirror
-{
+namespace Mirror {
     /// <summary>Synchronizes server time to clients.</summary>
-    public static class NetworkTime
-    {
+    public static class NetworkTime {
         /// <summary>Ping message frequency, used to calculate network time and RTT</summary>
         public static float PingFrequency = 2.0f;
 
@@ -18,8 +16,7 @@ namespace Mirror
         // TODO Unity 2020 / 2021 supposedly has double Time.time now?
         static readonly Stopwatch stopwatch = new Stopwatch();
 
-        static NetworkTime()
-        {
+        static NetworkTime() {
             stopwatch.Start();
         }
 
@@ -89,8 +86,7 @@ namespace Mirror
         [Obsolete("NetworkTime.rttSd was renamed to rttStandardDeviation")]
         public static double rttSd => rttStandardDeviation;
 
-        public static void Reset()
-        {
+        public static void Reset() {
             stopwatch.Restart();
             _rtt = new ExponentialMovingAverage(PingWindowSize);
             _offset = new ExponentialMovingAverage(PingWindowSize);
@@ -99,11 +95,9 @@ namespace Mirror
             lastPingTime = 0;
         }
 
-        internal static void UpdateClient()
-        {
+        internal static void UpdateClient() {
             // localTime (double) instead of Time.time for accuracy over days
-            if (localTime - lastPingTime >= PingFrequency)
-            {
+            if (localTime - lastPingTime >= PingFrequency) {
                 NetworkPingMessage pingMessage = new NetworkPingMessage(localTime);
                 NetworkClient.Send(pingMessage, Channels.Unreliable);
                 lastPingTime = localTime;
@@ -113,11 +107,9 @@ namespace Mirror
         // executed at the server when we receive a ping message
         // reply with a pong containing the time from the client
         // and time from the server
-        internal static void OnServerPing(NetworkConnection conn, NetworkPingMessage message)
-        {
+        internal static void OnServerPing(NetworkConnection conn, NetworkPingMessage message) {
             // Debug.Log("OnPingServerMessage  conn=" + conn);
-            NetworkPongMessage pongMessage = new NetworkPongMessage
-            {
+            NetworkPongMessage pongMessage = new NetworkPongMessage {
                 clientTime = message.clientTime,
                 serverTime = localTime
             };
@@ -127,8 +119,7 @@ namespace Mirror
         // Executed at the client when we receive a Pong message
         // find out how long it took since we sent the Ping
         // and update time offset
-        internal static void OnClientPong(NetworkPongMessage message)
-        {
+        internal static void OnClientPong(NetworkPongMessage message) {
             double now = localTime;
 
             // how long did this message take to come back
@@ -145,14 +136,11 @@ namespace Mirror
             offsetMin = Math.Max(offsetMin, newOffsetMin);
             offsetMax = Math.Min(offsetMax, newOffsetMax);
 
-            if (_offset.Value < offsetMin || _offset.Value > offsetMax)
-            {
+            if (_offset.Value < offsetMin || _offset.Value > offsetMax) {
                 // the old offset was offrange,  throw it away and use new one
                 _offset = new ExponentialMovingAverage(PingWindowSize);
                 _offset.Add(newOffset);
-            }
-            else if (newOffset >= offsetMin || newOffset <= offsetMax)
-            {
+            } else if (newOffset >= offsetMin || newOffset <= offsetMax) {
                 // new offset looks reasonable,  add to the average
                 _offset.Add(newOffset);
             }

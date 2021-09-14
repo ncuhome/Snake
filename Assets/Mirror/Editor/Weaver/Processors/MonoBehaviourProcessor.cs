@@ -1,38 +1,30 @@
 using Mono.CecilX;
 
-namespace Mirror.Weaver
-{
+namespace Mirror.Weaver {
     /// <summary>
     /// only shows warnings in case we use SyncVars etc. for MonoBehaviour.
     /// </summary>
-    static class MonoBehaviourProcessor
-    {
-        public static void Process(TypeDefinition td)
-        {
+    static class MonoBehaviourProcessor {
+        public static void Process(TypeDefinition td) {
             ProcessSyncVars(td);
             ProcessMethods(td);
         }
 
-        static void ProcessSyncVars(TypeDefinition td)
-        {
+        static void ProcessSyncVars(TypeDefinition td) {
             // find syncvars
-            foreach (FieldDefinition fd in td.Fields)
-            {
+            foreach (FieldDefinition fd in td.Fields) {
                 if (fd.HasCustomAttribute<SyncVarAttribute>())
                     Weaver.Error($"SyncVar {fd.Name} must be inside a NetworkBehaviour.  {td.Name} is not a NetworkBehaviour", fd);
 
-                if (SyncObjectInitializer.ImplementsSyncObject(fd.FieldType))
-                {
+                if (SyncObjectInitializer.ImplementsSyncObject(fd.FieldType)) {
                     Weaver.Error($"{fd.Name} is a SyncObject and must be inside a NetworkBehaviour.  {td.Name} is not a NetworkBehaviour", fd);
                 }
             }
         }
 
-        static void ProcessMethods(TypeDefinition td)
-        {
+        static void ProcessMethods(TypeDefinition td) {
             // find command and RPC functions
-            foreach (MethodDefinition md in td.Methods)
-            {
+            foreach (MethodDefinition md in td.Methods) {
                 if (md.HasCustomAttribute<CommandAttribute>())
                     Weaver.Error($"Command {md.Name} must be declared inside a NetworkBehaviour", md);
                 if (md.HasCustomAttribute<ClientRpcAttribute>())

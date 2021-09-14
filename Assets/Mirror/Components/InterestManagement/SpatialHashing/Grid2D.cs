@@ -3,10 +3,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Mirror
-{
-    public class Grid2D<T>
-    {
+namespace Mirror {
+    public class Grid2D<T> {
         // the grid
         // note that we never remove old keys.
         // => over time, HashSet<T>s will be allocated for every possible
@@ -33,11 +31,9 @@ namespace Mirror
         };
 
         // helper function so we can add an entry without worrying
-        public void Add(Vector2Int position, T value)
-        {
+        public void Add(Vector2Int position, T value) {
             // initialize set in grid if it's not in there yet
-            if (!grid.TryGetValue(position, out HashSet<T> hashSet))
-            {
+            if (!grid.TryGetValue(position, out HashSet<T> hashSet)) {
                 hashSet = new HashSet<T>();
                 grid[position] = hashSet;
             }
@@ -50,11 +46,9 @@ namespace Mirror
         // -> result is passed as parameter to avoid allocations
         // -> result is not cleared before. this allows us to pass the HashSet from
         //    GetWithNeighbours and avoid .UnionWith which is very expensive.
-        void GetAt(Vector2Int position, HashSet<T> result)
-        {
+        void GetAt(Vector2Int position, HashSet<T> result) {
             // return the set at position
-            if (grid.TryGetValue(position, out HashSet<T> hashSet))
-            {
+            if (grid.TryGetValue(position, out HashSet<T> hashSet)) {
                 foreach (T entry in hashSet)
                     result.Add(entry);
             }
@@ -62,8 +56,7 @@ namespace Mirror
 
         // helper function to get at position and it's 8 neighbors without worrying
         // -> result is passed as parameter to avoid allocations
-        public void GetWithNeighbours(Vector2Int position, HashSet<T> result)
-        {
+        public void GetWithNeighbours(Vector2Int position, HashSet<T> result) {
             // clear result first
             result.Clear();
 
@@ -79,8 +72,7 @@ namespace Mirror
         //               every position in there
         //            => see 'grid' comments above!
         //            => named ClearNonAlloc to make it more obvious!
-        public void ClearNonAlloc()
-        {
+        public void ClearNonAlloc() {
             foreach (HashSet<T> hashSet in grid.Values)
                 hashSet.Clear();
         }

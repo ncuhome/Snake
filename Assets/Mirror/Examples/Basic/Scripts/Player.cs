@@ -1,10 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Mirror.Examples.Basic
-{
-    public class Player : NetworkBehaviour
-    {
+namespace Mirror.Examples.Basic {
+    public class Player : NetworkBehaviour {
         // Events that the UI will subscribe to
         public event System.Action<int> OnPlayerNumberChanged;
         public event System.Action<Color32> OnPlayerColorChanged;
@@ -13,11 +11,9 @@ namespace Mirror.Examples.Basic
         // Players List to manage playerNumber
         internal static readonly List<Player> playersList = new List<Player>();
 
-        internal static void ResetPlayerNumbers()
-        {
+        internal static void ResetPlayerNumbers() {
             int playerNumber = 0;
-            foreach (Player player in playersList)
-            {
+            foreach (Player player in playersList) {
                 player.playerNumber = playerNumber++;
             }
         }
@@ -47,20 +43,17 @@ namespace Mirror.Examples.Basic
         public Color32 playerColor = Color.white;
 
         // This is called by the hook of playerNumber SyncVar above
-        void PlayerNumberChanged(int _, int newPlayerNumber)
-        {
+        void PlayerNumberChanged(int _, int newPlayerNumber) {
             OnPlayerNumberChanged?.Invoke(newPlayerNumber);
         }
 
         // This is called by the hook of playerData SyncVar above
-        void PlayerDataChanged(int _, int newPlayerData)
-        {
+        void PlayerDataChanged(int _, int newPlayerData) {
             OnPlayerDataChanged?.Invoke(newPlayerData);
         }
 
         // This is called by the hook of playerColor SyncVar above
-        void PlayerColorChanged(Color32 _, Color32 newPlayerColor)
-        {
+        void PlayerColorChanged(Color32 _, Color32 newPlayerColor) {
             OnPlayerColorChanged?.Invoke(newPlayerColor);
         }
 
@@ -69,8 +62,7 @@ namespace Mirror.Examples.Basic
         /// <para>This could be triggered by NetworkServer.Listen() for objects in the scene, or by NetworkServer.Spawn() for objects that are dynamically created.</para>
         /// <para>This will be called for objects on a "host" as well as for object on a dedicated server.</para>
         /// </summary>
-        public override void OnStartServer()
-        {
+        public override void OnStartServer() {
             base.OnStartServer();
 
             // Add this to the static Players List
@@ -87,16 +79,14 @@ namespace Mirror.Examples.Basic
         /// Invoked on the server when the object is unspawned
         /// <para>Useful for saving object data in persistent storage</para>
         /// </summary>
-        public override void OnStopServer()
-        {
+        public override void OnStopServer() {
             CancelInvoke();
             playersList.Remove(this);
         }
 
         // This only runs on the server, called from OnStartServer via InvokeRepeating
         [ServerCallback]
-        void UpdateData()
-        {
+        void UpdateData() {
             playerData = Random.Range(100, 1000);
         }
 
@@ -104,8 +94,7 @@ namespace Mirror.Examples.Basic
         /// Called on every NetworkBehaviour when it is activated on a client.
         /// <para>Objects on the host have this function called, as there is a local client on the host. The values of SyncVars on object are guaranteed to be initialized correctly with the latest state from the server when this function is called on the client.</para>
         /// </summary>
-        public override void OnStartClient()
-        {
+        public override void OnStartClient() {
             // Activate the main panel
             ((BasicNetManager)NetworkManager.singleton).mainPanel.gameObject.SetActive(true);
 
@@ -125,8 +114,7 @@ namespace Mirror.Examples.Basic
         /// This is invoked on clients when the server has caused this object to be destroyed.
         /// <para>This can be used as a hook to invoke effects or do client specific cleanup.</para>
         /// </summary>
-        public override void OnStopClient()
-        {
+        public override void OnStopClient() {
             // Remove this player's UI object
             Destroy(playerUI);
 
