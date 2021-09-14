@@ -254,6 +254,7 @@ public class GlobalManager : MonoBehaviour
       fallBackButton.SetActive(true);
       if (isJoyStick)
         gui.transform.Find("JoyStick").gameObject.SetActive(true);
+      EventHelper.Moved = false;
       mainCam.SetActive(true);
       isGlobalMode = false;
     }
