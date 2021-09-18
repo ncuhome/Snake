@@ -93,7 +93,7 @@ public class LevelGUI : MonoBehaviour
   }
   private IEnumerator closeTip()
   {
-    yield return new WaitForSecondsRealtime(2.0f);
+    yield return new WaitForSecondsRealtime(1.5f);
     var canvasGroup = tipPanel.GetComponent<CanvasGroup>();
     while (canvasGroup.alpha > 0)
     {
@@ -113,6 +113,13 @@ public class LevelGUI : MonoBehaviour
   {
     if (Input.GetKeyUp(KeyCode.Escape))
     {
+      if (isInLevelSelector)
+      {
+        isInLevelSelector = false;
+        gui.gameObject.SetActive(false);
+        homeCanvas.SetActive(true);
+        return;
+      }
       if (CountDown == 0)
       {
         CountDown = Time.time;
