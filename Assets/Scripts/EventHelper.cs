@@ -5,8 +5,9 @@ using UnityEngine.EventSystems;
 public class EventHelper : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IUpdateSelectedHandler
 {
   private bool buttonPressed;
-  public float waitTime = 0.8f;
-  private bool moved;
+  public float waitTime = 0.45f;
+  private static bool moved;
+  public static bool Moved { get => moved; set => moved = value; }
 
   public void OnUpdateSelected(BaseEventData data)
   {

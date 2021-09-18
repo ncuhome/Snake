@@ -17,6 +17,7 @@ public class LevelGUI : MonoBehaviour
   public GameObject homeCanvas;
   public GameObject content;
   public GameObject levelButtonPrefab;
+  public GameObject panel;
   // Start is called before the first frame update
   void Start()
   {
@@ -82,9 +83,17 @@ public class LevelGUI : MonoBehaviour
   {
     exitDetection();
   }
+  public void showRule()
+  {
+    panel.SetActive(true);
+  }
+  public void hideRule()
+  {
+    panel.SetActive(false);
+  }
   private IEnumerator closeTip()
   {
-    yield return new WaitForSecondsRealtime(2.0f);
+    yield return new WaitForSecondsRealtime(1.5f);
     var canvasGroup = tipPanel.GetComponent<CanvasGroup>();
     while (canvasGroup.alpha > 0)
     {
@@ -104,6 +113,13 @@ public class LevelGUI : MonoBehaviour
   {
     if (Input.GetKeyUp(KeyCode.Escape))
     {
+      if (isInLevelSelector)
+      {
+        isInLevelSelector = false;
+        gui.gameObject.SetActive(false);
+        homeCanvas.SetActive(true);
+        return;
+      }
       if (CountDown == 0)
       {
         CountDown = Time.time;
