@@ -17,6 +17,7 @@ public class LevelGUI : MonoBehaviour
   public GameObject homeCanvas;
   public GameObject content;
   public GameObject levelButtonPrefab;
+  public GameObject panel;
   // Start is called before the first frame update
   void Start()
   {
@@ -81,6 +82,14 @@ public class LevelGUI : MonoBehaviour
   void Update()
   {
     exitDetection();
+  }
+  public void showRule()
+  {
+    panel.SetActive(true);
+  }
+  public void hideRule()
+  {
+    panel.SetActive(false);
   }
   private IEnumerator closeTip()
   {
